@@ -11,13 +11,18 @@ Event ticketing platform with virtual queue (Redis Sorted Set), TTL seat locking
 ### Backend Structure (MVC + Service Layer)
 ```
 backend/
-├── routes/           # Express route definitions
-├── controllers/      # Request handling, validation
-├── services/         # Business logic, transactions
-├── models/           # Raw SQL queries per table (no business logic here)
-├── middlewares/       # Auth, authorization, error handling
-├── config/           # Database, Redis clients, constants
-└── migrations/       # node-pg-migrate files
+├── src/
+│   ├── routes/        # Express route definitions
+│   ├── controllers/   # Request handling, validation
+│   ├── services/      # Business logic, transactions
+│   ├── models/        # Raw SQL queries per table (no business logic here)
+│   ├── middlewares/   # Auth, authorization, error handling
+│   ├── config/        # Database, Redis clients, constants
+│   ├── jobs/          # Scheduled background jobs
+│   └── utils/         # Helper utilities
+├── migrations/        # node-pg-migrate files
+├── package.json
+└── .env.example
 ```
 
 ### Frontend Structure

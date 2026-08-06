@@ -23,11 +23,11 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 - [ ] Init monorepo: folder `backend/` dan `frontend/`, root `README.md` kosong
 - [ ] Setup `backend/`: `npm init`, install Express, pg, dotenv, jsonwebtoken, bcrypt
-- [ ] Setup struktur folder backend (MVC/service layer): `routes/`, `controllers/`, `services/`, `middlewares/`, `config/`
+- [ ] Setup struktur folder backend (MVC/service layer): `src/routes/`, `src/controllers/`, `src/services/`, `src/models/`, `src/middlewares/`, `src/config/`, `src/jobs/`, `src/utils/`
 - [ ] Setup koneksi PostgreSQL dengan connection pool (`pg.Pool`), baca `DATABASE_URL` dari `.env`
 - [ ] Setup `node-pg-migrate`, copy migration files yang sudah dibuat ke `backend/migrations/`
 - [ ] Jalankan migration ke database Supabase/Neon, verifikasi semua tabel & seed platform_revenue terbuat
-- [ ] Setup koneksi Redis (Upstash) — buat helper/client terpisah (`config/redis.js`)
+- [ ] Setup koneksi Redis (Upstash) — buat helper/client terpisah (`src/config/redis.js`)
 - [ ] Setup `.env.example` (tanpa value asli) + pastikan `.env` masuk `.gitignore`
 - [ ] Setup Express app skeleton: health check endpoint `GET /api/health`
 - [ ] Setup `frontend/`: `npm create vite@latest`, install Tailwind CSS
