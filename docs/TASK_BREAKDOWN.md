@@ -4,6 +4,11 @@ Setiap item = 1 unit kerja yang selesai dalam sekali jalan dan **cocok jadi 1 co
 Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung).
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
+## Status Terkini (Active Context)
+- **Terakhir Dikerjakan:** Fase 0 — Frontend setup + custom pop design components completed
+- **Keputusan Teknis / Catatan:** Backend Phase 0 complete (express, db pool, redis, migrations). Frontend Phase 0 complete (Vite, Tailwind v4, shadcn/ui, custom components with pop design). Explicit commit & push protocol added to AGENTS.md.
+- **Task Selanjutnya:** Fase 1 — Auth & Middleware (backend)
+
 ## Ringkasan per Minggu
 
 | Minggu   | Target tanggal (PRD) | Fase       | Fokus                                                          |
@@ -21,16 +26,16 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 0 — Project Setup
 
-- [ ] Init monorepo: folder `backend/` dan `frontend/`, root `README.md` kosong
-- [ ] Setup `backend/`: `npm init`, install Express, pg, dotenv, jsonwebtoken, bcrypt
-- [ ] Setup struktur folder backend (MVC/service layer): `src/routes/`, `src/controllers/`, `src/services/`, `src/models/`, `src/middlewares/`, `src/config/`, `src/jobs/`, `src/utils/`
-- [ ] Setup koneksi PostgreSQL dengan connection pool (`pg.Pool`), baca `DATABASE_URL` dari `.env`
-- [ ] Setup `node-pg-migrate`, copy migration files yang sudah dibuat ke `backend/migrations/`
+- [x] Init monorepo: folder `backend/` dan `frontend/`, root `README.md` kosong
+- [x] Setup `backend/`: `npm init`, install Express, pg, dotenv, jsonwebtoken, bcrypt
+- [x] Setup struktur folder backend (MVC/service layer): `src/routes/`, `src/controllers/`, `src/services/`, `src/models/`, `src/middlewares/`, `src/config/`, `src/jobs/`, `src/utils/`
+- [x] Setup koneksi PostgreSQL dengan connection pool (`pg.Pool`), baca `DATABASE_URL` dari `.env`
+- [x] Setup `node-pg-migrate`, copy migration files yang sudah dibuat ke `backend/migrations/`
 - [ ] Jalankan migration ke database Supabase/Neon, verifikasi semua tabel & seed platform_revenue terbuat
-- [ ] Setup koneksi Redis (Upstash) — buat helper/client terpisah (`src/config/redis.js`)
-- [ ] Setup `.env.example` (tanpa value asli) + pastikan `.env` masuk `.gitignore`
-- [ ] Setup Express app skeleton: health check endpoint `GET /api/health`
-- [ ] Setup `frontend/`: `npm create vite@latest`, install Tailwind CSS
+- [x] Setup koneksi Redis (Upstash) — buat helper/client terpisah (`src/config/redis.js`)
+- [x] Setup `.env.example` (tanpa value asli) + pastikan `.env` masuk `.gitignore`
+- [x] Setup Express app skeleton: health check endpoint `GET /api/health`
+- [x] Setup `frontend/`: Vite + React, Tailwind CSS, shadcn/ui dengan custom pop design components
 - [ ] Setup ESLint/Prettier dasar (opsional, kalau mau konsisten dari awal)
 
 ---
