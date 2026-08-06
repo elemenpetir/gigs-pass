@@ -90,6 +90,33 @@ Each checklist item = 1 unit of work = 1 commit.
 2. Run lint (when available): `npm run lint`
 3. Verify no `.env` committed
 
+### Commit & Push Protocol (ABSOLUTE — NO EXCEPTIONS)
+
+**This protocol is persistent across all sessions. Follow strictly regardless of session memory.**
+
+**BEFORE ANY `git commit` OR `git push`:**
+
+1. **Summarize files** being committed (list files or describe change scope)
+2. **Show commit message** that will be used (exact format: `<type>: <description>`)
+3. **ASK USER explicitly:** "Apakah saya boleh commit dengan pesan: `<type>: <description>`?"
+4. **WAIT for user confirmation** — DO NOT PROCEED without explicit "yes", "setuju", "lanjut", or similar approval
+5. **ONLY THEN execute** `git commit`
+6. **For push:** After commit succeeds, **ASK AGAIN** "Apakah saya boleh push ke origin/main?"
+7. **WAIT for user confirmation** — DO NOT PUSH without explicit approval
+8. **ONLY THEN execute** `git push origin main`
+
+**CRITICAL CONSTRAINTS:**
+- ❌ NEVER combine commit + push in single bash command (must be separate steps with confirmation between them)
+- ❌ NEVER batch multiple commits without individual confirmation per commit
+- ❌ NEVER assume "execute phase X" means "commit and push automatically"
+- ❌ NEVER skip the ASK step even if changes seem minor or obvious
+- ✅ ALWAYS treat ASK step as mandatory, non-negotiable checkpoint
+
+**Why this protocol exists:**
+- Lack of memory across sessions means agent must rely on explicit written rules
+- User must have visibility and control over every git operation
+- This ensures accountability and prevents accidental commits/pushes
+
 ### Commit Convention
 
 Follow Conventional Commits format: `<type>: <description>`
