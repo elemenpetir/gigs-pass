@@ -14,7 +14,8 @@ backend/
 ├── routes/           # Express route definitions
 ├── controllers/      # Request handling, validation
 ├── services/         # Business logic, transactions
-├── middlewares/      # Auth, authorization, error handling
+├── models/           # Raw SQL queries per table (no business logic here)
+├── middlewares/       # Auth, authorization, error handling
 ├── config/           # Database, Redis clients, constants
 └── migrations/       # node-pg-migrate files
 ```
