@@ -73,6 +73,10 @@ Frontend must follow `docs/design/design.md`:
 
 ## Development Workflow
 
+### Strict Execution & Git Rules
+1. **Tidak Ada Eksekusi Otomatis:** DILARANG mengeksekusi kode, membuat file, atau mengubah sistem tanpa perintah/persetujuan eksplisit dari User per unit kerja.
+2. **Konfirmasi Sebelum Commit & Push:** WAJIB menanyakan dan meminta konfirmasi persetujuan dari User terlebih dahulu sebelum menjalankan perintah `git commit` maupun `git push`.
+
 ### Task Execution
 Follow `docs/TASK_BREAKDOWN.md` phase order — do not skip phases unless independent.
 
@@ -82,6 +86,24 @@ Each checklist item = 1 unit of work = 1 commit.
 1. Run tests (when available): `npm test`
 2. Run lint (when available): `npm run lint`
 3. Verify no `.env` committed
+
+### Commit Convention
+
+Follow Conventional Commits format: `<type>: <description>`
+
+Types used in this project:
+- `feat:` — new feature/endpoint/functionality
+- `fix:` — bug fix
+- `docs:` — documentation only (PRD, README, AGENTS.md, etc)
+- `test:` — adding/updating tests
+- `chore:` — tooling, config, dependencies (no production code change)
+- `refactor:` — code change that doesn't add feature or fix bug
+
+Each commit should correspond to ONE checklist item in `docs/TASK_BREAKDOWN.md`.
+Do not bundle multiple unrelated checklist items into a single commit.
+
+Example: `feat: add seat lock with TTL via Redis`
+Example: `test: add unit test for ledger entry balance validation`
 
 ## Database Migrations
 
@@ -129,21 +151,3 @@ Document results in README with concrete numbers.
 - Customer-triggered dispute window
 - WebSocket (SSE only)
 - Email/push notifications
-
-### Commit Convention
-
-Follow Conventional Commits format: `<type>: <description>`
-
-Types used in this project:
-- `feat:` — new feature/endpoint/functionality
-- `fix:` — bug fix
-- `docs:` — documentation only (PRD, README, AGENTS.md, etc)
-- `test:` — adding/updating tests
-- `chore:` — tooling, config, dependencies (no production code change)
-- `refactor:` — code change that doesn't add feature or fix bug
-
-Each commit should correspond to ONE checklist item in `docs/TASK_BREAKDOWN.md`.
-Do not bundle multiple unrelated checklist items into a single commit.
-
-Example: `feat: add seat lock with TTL via Redis`
-Example: `test: add unit test for ledger entry balance validation`
