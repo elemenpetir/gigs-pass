@@ -4,9 +4,22 @@ Setiap item = 1 unit kerja yang selesai dalam sekali jalan dan **cocok jadi 1 co
 Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung).
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
+## Ringkasan per Minggu
+
+| Minggu   | Target tanggal (PRD) | Fase       | Fokus                                                          |
+| -------- | -------------------- | ---------- | -------------------------------------------------------------- |
+| Minggu 1 | 1-7 Agustus          | Fase 0-3   | Setup project, auth, event & ticket category                   |
+| Minggu 2 | 8-14 Agustus         | Fase 4-9   | Virtual queue, seat lock, ledger, alur dana, dashboard backend |
+| Minggu 3 | 15-21 Agustus        | Fase 10-14 | Frontend lengkap, testing & CI, Docker Compose, deploy AWS     |
+| Minggu 4 | 22-31 Agustus        | Fase 15-16 | Stress testing k6, polish, README, buffer                      |
+
+> Catatan: pembagian ini asumsi mulai coding dari 1 Agustus sesuai PRD. Kalau start aktualmu mundur, geser tanggalnya secara proporsional — urutan fase tetap sama, cuma jendela waktunya yang menyesuaikan.
+
 ---
 
-## Fase 0 — Project Setup
+## MINGGU 1 (1-7 Agustus)
+
+### Fase 0 — Project Setup
 
 - [ ] Init monorepo: folder `backend/` dan `frontend/`, root `README.md` kosong
 - [ ] Setup `backend/`: `npm init`, install Express, pg, dotenv, jsonwebtoken, bcrypt
@@ -22,7 +35,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 1 — Auth & Middleware
+### Fase 1 — Auth & Middleware
 
 - [ ] Buat service `hashPassword`/`comparePassword` (bcrypt)
 - [ ] Endpoint `POST /api/auth/register` — buyer & organizer, validasi email unik
@@ -34,7 +47,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 2 — Event Management
+### Fase 2 — Event Management
 
 - [ ] Endpoint `POST /api/events` (organizer) — create event status `draft`
 - [ ] Endpoint `PUT /api/events/:id` (organizer, hanya pemilik event)
@@ -47,7 +60,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 3 — Ticket Categories
+### Fase 3 — Ticket Categories
 
 - [ ] Endpoint `POST /api/events/:id/categories` (organizer)
 - [ ] Endpoint `PUT /api/categories/:id` (organizer, hanya pemilik)
@@ -57,7 +70,9 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 4 — Virtual Queue (Redis)
+## MINGGU 2 (8-14 Agustus)
+
+### Fase 4 — Virtual Queue (Redis)
 
 - [ ] Service `joinQueue` — `ZADD` buyer ke Sorted Set dengan timestamp
 - [ ] Service `getQueuePosition` — `ZRANK` posisi buyer
@@ -69,7 +84,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 5 — Seat Lock & Checkout
+### Fase 5 — Seat Lock & Checkout
 
 - [ ] Service `lockSeat` — `SET ... EX 300 NX` di Redis
 - [ ] Service `releaseSeat` — hapus lock manual (dipanggil saat bayar sukses atau batal)
@@ -80,7 +95,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 6 — Mock Payment
+### Fase 6 — Mock Payment
 
 - [ ] Endpoint `POST /api/orders/:id/pay` — simulasi pembayaran berhasil/gagal
 - [ ] Saat pembayaran sukses: hapus seat lock, order tetap `pending` (menunggu event_date lewat)
@@ -89,7 +104,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 7 — Ledger System (Inti)
+### Fase 7 — Ledger System (Inti)
 
 - [ ] Service `createLedgerEntry` — insert baris ke `ledger_entries`, validasi debit=kredit dalam 1 transaksi
 - [ ] Service `getAccountBalance` — `SUM` entries per `account_id`
@@ -100,7 +115,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 8 — Alur Dana (Holding Period, Refund, Override)
+### Fase 8 — Alur Dana (Holding Period, Refund, Override)
 
 - [ ] Scheduled job harian: cek order yang `event_date`-nya sudah lewat → ubah status `pending` jadi `holding_period`, set `holding_until` (+7 hari)
 - [ ] Scheduled job harian: cek order `holding_period` yang `holding_until` sudah lewat → ubah status jadi `released`, buat ledger entry pindah saldo `organizer_pending` → `organizer_available`
@@ -111,7 +126,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 9 — Dashboard Statistik
+### Fase 9 — Dashboard Statistik
 
 - [ ] Endpoint `GET /api/analytics/event/:id/overview` (organizer) — revenue, tiket terjual per kategori, status dana
 - [ ] Endpoint `GET /api/analytics/platform/overview` (admin) — ringkasan lintas event
@@ -120,7 +135,9 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 10 — Frontend Buyer Flow
+## MINGGU 3 (15-21 Agustus)
+
+### Fase 10 — Frontend Buyer Flow
 
 - [ ] Halaman list event (public)
 - [ ] Halaman detail event (gambar + deskripsi ala artikel)
@@ -130,7 +147,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 11 — Frontend Organizer & Admin Flow
+### Fase 11 — Frontend Organizer & Admin Flow
 
 - [ ] Form create/edit event (termasuk upload gambar)
 - [ ] Form create/edit kategori tiket
@@ -140,7 +157,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 12 — Unit Test Lanjutan & CI
+### Fase 12 — Unit Test Lanjutan & CI
 
 - [ ] Lengkapi test coverage untuk semua service kritikal (ledger, queue, lock)
 - [ ] Setup GitHub Actions: jalankan test (`--runInBand`) setiap push
@@ -148,7 +165,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 13 — Docker Compose
+### Fase 13 — Docker Compose
 
 - [ ] Dockerfile backend
 - [ ] Dockerfile frontend
@@ -158,7 +175,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 14 — Deployment AWS
+### Fase 14 — Deployment AWS
 
 - [ ] Setup EC2 instance (t2.micro/t3.micro)
 - [ ] Install Docker Engine di EC2
@@ -170,7 +187,9 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 15 — Stress Testing (k6)
+## MINGGU 4 (22-31 Agustus)
+
+### Fase 15 — Stress Testing (k6)
 
 - [ ] Tulis script k6 dasar: simulasi buyer join queue + checkout
 - [ ] Jalankan stress test skala kecil (20-50 VU) dari GitHub Actions
@@ -182,7 +201,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-## Fase 16 — Polish & README
+### Fase 16 — Polish & README
 
 - [ ] Tulis README lengkap: problem statement, arsitektur, tech stack, cara setup, hasil stress test, API docs
 - [ ] Screenshot dashboard, waiting room, checkout flow
