@@ -151,3 +151,11 @@ Document results in README with concrete numbers.
 - Customer-triggered dispute window
 - WebSocket (SSE only)
 - Email/push notifications
+
+## Learning & Adaptation
+
+### Critical Rule: Learn from Mistakes Immediately
+- When an error occurs, identify the root cause and apply the fix WITHIN THE SAME SESSION.
+- Do NOT repeat the exact same error a second time — if you catch yourself about to make the same mistake again, STOP immediately.
+- If you make the same mistake twice, it indicates a failure to learn and adapt. This is unacceptable.
+- Always maintain awareness of corrections made and apply them consistently for the rest of the session.
