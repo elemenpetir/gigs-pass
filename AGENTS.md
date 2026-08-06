@@ -66,10 +66,13 @@ pending → holding_period (after event_date)
 ## Design System
 
 Frontend must follow `docs/design/design.md`:
-- Colors: primary black `#000000`, text-link blue `#0d74ce` (inline links only)
-- Typography: Inter (display 600, body 400), JetBrains Mono (code)
-- CTAs: `rounded.md` (8px), never pill shape
-- No saturated brand colors — black CTAs only
+- Canvas: Cream-tinted white (`#fffaf0`) — warm & playful for event/festival vibe
+- Primary CTA: Near-black (`#0a0a0a`)
+- Feature cards: 6-color saturated palette (pink `#ff4d8b`, teal `#1a3a3a`, lavender `#b8a4ed`, peach `#ffb084`, ochre `#e8b94a`, mint `#a4d4c5`)
+- Typography: Inter 500 (display, with negative letter-spacing) / Inter 400 (body)
+- Border radius: `rounded.md` (12px) for CTAs & inputs, `rounded.lg` (16px) for content cards, `rounded.xl` (24px) for feature cards
+- Vibe: Vibrant, playful, festival-energy — not minimal or editorial
+- Component variants: feature cards must cycle through 6-color palette (never repeat same color twice in row)
 
 ## Development Workflow
 

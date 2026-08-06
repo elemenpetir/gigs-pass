@@ -1,133 +1,125 @@
 ---
 version: alpha
-name: Expo-design-analysis
-description: A React Native developer-platform whose marketing site reads like a quietly-confident infrastructure brand. The base canvas is pure white with a soft sky-blue gradient atmospheric wash behind the hero; near-black ink (`#171717`) carries body and display alike. The single brand voltage is **pure black** (`#000000`) for primary CTAs — minimal and editorial-feeling, paired with a small blue text-link accent (`#0d74ce`) reserved for inline body links. Type pairs Inter at modest weights (display 600, body 400) with JetBrains Mono on every code surface. The brand's strongest visual signature is the **device-mockup hero** — a centered MacBook + iPhone composite showing real Expo dev surfaces — over the gradient sky wash.
+name: Gigs Pass - Pop Design System
+description: A vibrant, energetic pop design system for event ticketing platform. Tailored for Gen Z/millennial concert & festival attendees. Anchors on cream canvas (#fffaf0), saturated 6-color feature cards (hot pink, teal, lavender, peach, ochre, mint), rounded typography with negative letter-spacing, and generous border radius. Brand voltage comes from bold color contrast, playful animations, and tactile hover states that evoke excitement of live events. Not minimal or corporate — designed to feel energetic, trustworthy, and festival-forward.
 
 colors:
-  primary: "#000000"
-  primary-active: "#1a1a1a"
-  text-link: "#0d74ce"
-  text-link-secondary: "#476cff"
-  ink: "#171717"
-  body: "#60646c"
-  body-strong: "#171717"
-  muted: "#999999"
-  muted-soft: "#cccccc"
-  hairline: "#f0f0f3"
-  hairline-soft: "#f5f5f7"
-  hairline-strong: "#dcdee0"
-  canvas: "#ffffff"
-  canvas-soft: "#fafafa"
-  surface-card: "#ffffff"
-  surface-strong: "#f0f0f3"
-  surface-dark: "#171717"
-  surface-dark-elevated: "#1a1a1a"
+  primary: "#0a0a0a"
+  primary-active: "#1f1f1f"
+  primary-disabled: "#e5e5e5"
+  ink: "#0a0a0a"
+  body: "#3a3a3a"
+  body-strong: "#1a1a1a"
+  muted: "#6a6a6a"
+  muted-soft: "#9a9a9a"
+  hairline: "#e5e5e5"
+  hairline-soft: "#f0f0f0"
+  canvas: "#fffaf0"
+  surface-soft: "#faf5e8"
+  surface-card: "#f5f0e0"
+  surface-strong: "#ebe6d6"
+  surface-dark: "#0a1a1a"
+  surface-dark-elevated: "#1a2a2a"
   on-primary: "#ffffff"
   on-dark: "#ffffff"
-  on-dark-soft: "#b0b4ba"
-  gradient-sky-light: "#cfe7ff"
-  gradient-sky-mid: "#a8c8e8"
-  accent-warning: "#ab6400"
-  accent-preview: "#8145b5"
-  accent-link-bright: "#47c2ff"
-  semantic-error: "#eb8e90"
-  semantic-success: "#16a34a"
+  on-dark-soft: "#a0a0a0"
+  brand-pink: "#ff4d8b"
+  brand-teal: "#1a3a3a"
+  brand-lavender: "#b8a4ed"
+  brand-peach: "#ffb084"
+  brand-ochre: "#e8b94a"
+  brand-mint: "#a4d4c5"
+  brand-coral: "#ff6b5a"
+  success: "#22c55e"
+  warning: "#f59e0b"
+  error: "#ef4444"
 
 typography:
-  display-mega:
-    fontFamily: "'Inter', -apple-system, system-ui, sans-serif"
-    fontSize: 64px
-    fontWeight: 600
-    lineHeight: 1.05
-    letterSpacing: -1.92px
   display-xl:
-    fontFamily: "'Inter', sans-serif"
-    fontSize: 48px
-    fontWeight: 600
-    lineHeight: 1.1
-    letterSpacing: -1.44px
+    fontFamily: "Plain Black, Inter, sans-serif"
+    fontSize: 72px
+    fontWeight: 500
+    lineHeight: 1
+    letterSpacing: -2.5px
   display-lg:
-    fontFamily: "'Inter', sans-serif"
-    fontSize: 36px
-    fontWeight: 600
-    lineHeight: 1.15
-    letterSpacing: -1.08px
+    fontFamily: "Plain Black, Inter, sans-serif"
+    fontSize: 56px
+    fontWeight: 500
+    lineHeight: 1.05
+    letterSpacing: -2px
   display-md:
-    fontFamily: "'Inter', sans-serif"
-    fontSize: 28px
-    fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: -0.84px
+    fontFamily: "Plain Black, Inter, sans-serif"
+    fontSize: 40px
+    fontWeight: 500
+    lineHeight: 1.1
+    letterSpacing: -1px
   display-sm:
-    fontFamily: "'Inter', sans-serif"
-    fontSize: 22px
-    fontWeight: 600
-    lineHeight: 1.25
+    fontFamily: "Plain Black, Inter, sans-serif"
+    fontSize: 32px
+    fontWeight: 500
+    lineHeight: 1.15
     letterSpacing: -0.5px
+  title-lg:
+    fontFamily: "Inter, sans-serif"
+    fontSize: 24px
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: -0.3px
   title-md:
-    fontFamily: "'Inter', sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: 18px
     fontWeight: 600
     lineHeight: 1.4
     letterSpacing: 0
   title-sm:
-    fontFamily: "'Inter', sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: 16px
     fontWeight: 600
     lineHeight: 1.4
     letterSpacing: 0
   body-md:
-    fontFamily: "'Inter', sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: 16px
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.55
     letterSpacing: 0
   body-sm:
-    fontFamily: "'Inter', sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: 14px
     fontWeight: 400
-    lineHeight: 1.5
+    lineHeight: 1.55
     letterSpacing: 0
   caption:
-    fontFamily: "'Inter', sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: 13px
-    fontWeight: 400
+    fontWeight: 500
     lineHeight: 1.4
     letterSpacing: 0
   caption-uppercase:
-    fontFamily: "'Inter', sans-serif"
-    fontSize: 11px
+    fontFamily: "Inter, sans-serif"
+    fontSize: 12px
     fontWeight: 600
     lineHeight: 1.4
-    letterSpacing: 0.88px
-    textTransform: uppercase
-  code:
-    fontFamily: "'JetBrains Mono', 'Fira Code', monospace"
-    fontSize: 13px
-    fontWeight: 400
-    lineHeight: 1.5
-    letterSpacing: 0
+    letterSpacing: 1.5px
   button:
-    fontFamily: "'Inter', sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: 14px
-    fontWeight: 500
-    lineHeight: 1.0
+    fontWeight: 600
+    lineHeight: 1
     letterSpacing: 0
   nav-link:
-    fontFamily: "'Inter', sans-serif"
+    fontFamily: "Inter, sans-serif"
     fontSize: 14px
     fontWeight: 500
     lineHeight: 1.4
     letterSpacing: 0
 
 rounded:
-  none: 0px
-  xs: 4px
-  sm: 6px
-  md: 8px
-  lg: 12px
-  xl: 16px
-  xxl: 24px
+  xs: 6px
+  sm: 8px
+  md: 12px
+  lg: 16px
+  xl: 24px
   pill: 9999px
   full: 9999px
 
@@ -135,257 +127,345 @@ spacing:
   xxs: 4px
   xs: 8px
   sm: 12px
-  base: 16px
-  md: 20px
+  md: 16px
   lg: 24px
   xl: 32px
   xxl: 48px
   section: 96px
 
 components:
-  top-nav:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.nav-link}"
-    height: 64px
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
     typography: "{typography.button}"
     rounded: "{rounded.md}"
-    padding: 10px 18px
-    height: 40px
+    padding: 12px 20px
+    height: 44px
   button-primary-active:
     backgroundColor: "{colors.primary-active}"
     textColor: "{colors.on-primary}"
     rounded: "{rounded.md}"
+  button-primary-disabled:
+    backgroundColor: "{colors.primary-disabled}"
+    textColor: "{colors.muted}"
+    rounded: "{rounded.md}"
   button-secondary:
-    backgroundColor: "{colors.surface-card}"
+    backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.button}"
     rounded: "{rounded.md}"
-    padding: 9px 17px
-    height: 40px
-  button-tertiary-text:
-    backgroundColor: transparent
-    textColor: "{colors.text-link}"
+    padding: 12px 20px
+    height: 44px
+  button-on-color:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
     typography: "{typography.button}"
+    rounded: "{rounded.md}"
+    padding: 12px 20px
+    height: 44px
+  button-text-link:
+    backgroundColor: transparent
+    textColor: "{colors.ink}"
+    typography: "{typography.button}"
+  text-link:
+    backgroundColor: transparent
+    textColor: "{colors.ink}"
+    typography: "{typography.body-md}"
+  top-nav:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.nav-link}"
+    height: 64px
   hero-band:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
-    typography: "{typography.display-mega}"
+    typography: "{typography.display-xl}"
     padding: 96px
-  device-mockup-card:
-    backgroundColor: "{colors.surface-card}"
+  hero-illustration-card:
+    backgroundColor: "{colors.surface-soft}"
     textColor: "{colors.ink}"
     rounded: "{rounded.xl}"
-    padding: 0
-  feature-card:
+  feature-card-pink:
+    backgroundColor: "{colors.brand-pink}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.title-md}"
+    rounded: "{rounded.xl}"
+    padding: 32px
+  feature-card-teal:
+    backgroundColor: "{colors.brand-teal}"
+    textColor: "{colors.on-dark}"
+    typography: "{typography.title-md}"
+    rounded: "{rounded.xl}"
+    padding: 32px
+  feature-card-lavender:
+    backgroundColor: "{colors.brand-lavender}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title-md}"
+    rounded: "{rounded.xl}"
+    padding: 32px
+  feature-card-peach:
+    backgroundColor: "{colors.brand-peach}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title-md}"
+    rounded: "{rounded.xl}"
+    padding: 32px
+  feature-card-ochre:
+    backgroundColor: "{colors.brand-ochre}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title-md}"
+    rounded: "{rounded.xl}"
+    padding: 32px
+  feature-card-cream:
     backgroundColor: "{colors.surface-card}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title-md}"
+    rounded: "{rounded.xl}"
+    padding: 32px
+  product-mockup-card:
+    backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.title-md}"
     rounded: "{rounded.lg}"
     padding: 24px
-  feature-card-dark:
-    backgroundColor: "{colors.surface-dark}"
-    textColor: "{colors.on-dark}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.lg}"
-    padding: 24px
-  workflow-step-card:
+  testimonial-card:
     backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.body}"
+    textColor: "{colors.ink}"
     typography: "{typography.body-md}"
     rounded: "{rounded.lg}"
-    padding: 20px
-  workflow-step-icon:
-    backgroundColor: "{colors.surface-strong}"
-    rounded: "{rounded.md}"
-    size: 32px
-  code-block:
-    backgroundColor: "{colors.surface-dark}"
-    textColor: "{colors.on-dark}"
-    typography: "{typography.code}"
-    rounded: "{rounded.lg}"
-    padding: 20px
-  ide-mockup-card:
-    backgroundColor: "{colors.surface-dark}"
-    textColor: "{colors.on-dark}"
-    rounded: "{rounded.lg}"
-    padding: 0
+    padding: 24px
   pricing-tier-card:
-    backgroundColor: "{colors.surface-card}"
+    backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
+    typography: "{typography.title-lg}"
     rounded: "{rounded.lg}"
     padding: 32px
-  pricing-tier-featured:
-    backgroundColor: "{colors.surface-dark}"
+  pricing-tier-card-featured:
+    backgroundColor: "{colors.brand-teal}"
     textColor: "{colors.on-dark}"
-    typography: "{typography.body-md}"
+    typography: "{typography.title-lg}"
     rounded: "{rounded.lg}"
     padding: 32px
   text-input:
-    backgroundColor: "{colors.surface-card}"
+    backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.body-md}"
     rounded: "{rounded.md}"
     padding: 12px 16px
     height: 44px
-  badge-pill:
-    backgroundColor: "{colors.surface-strong}"
-    textColor: "{colors.ink}"
-    typography: "{typography.caption-uppercase}"
-    rounded: "{rounded.pill}"
-    padding: 4px 10px
-  ecosystem-tile:
-    backgroundColor: "{colors.surface-card}"
-    rounded: "{rounded.md}"
-    size: 64px
-  cta-band:
+  text-input-focused:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
-    typography: "{typography.display-lg}"
-    padding: 96px
-  testimonial-card:
+    rounded: "{rounded.md}"
+  category-tab:
+    backgroundColor: transparent
+    textColor: "{colors.muted}"
+    typography: "{typography.nav-link}"
+    rounded: "{rounded.pill}"
+    padding: 8px 16px
+  category-tab-active:
     backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.body}"
-    typography: "{typography.body-md}"
+    textColor: "{colors.ink}"
+    typography: "{typography.nav-link}"
+    rounded: "{rounded.pill}"
+  badge-pill:
+    backgroundColor: "{colors.surface-card}"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.pill}"
+    padding: 4px 12px
+  expert-card:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.title-md}"
     rounded: "{rounded.lg}"
     padding: 24px
-  footer-light:
-    backgroundColor: "{colors.canvas}"
+  cta-band-illustrated:
+    backgroundColor: "{colors.surface-soft}"
+    textColor: "{colors.ink}"
+    typography: "{typography.display-md}"
+    rounded: "{rounded.xl}"
+    padding: 80px
+  footer:
+    backgroundColor: "{colors.surface-soft}"
     textColor: "{colors.body}"
     typography: "{typography.body-sm}"
-    padding: 64px 48px
-  footer-link:
-    backgroundColor: transparent
-    textColor: "{colors.body}"
-    typography: "{typography.body-sm}"
+    padding: 80px
 ---
 
 ## Overview
 
-Expo's marketing site reads like a quietly-confident React-Native developer platform. The base canvas is **pure white** (`{colors.canvas}` — #ffffff) with a soft **sky-blue gradient atmospheric wash** behind the hero band. Near-black ink `{colors.ink}` (#171717) carries body and display alike. The single brand voltage is **pure black** (`{colors.primary}` — #000000) for primary CTAs — minimal and editorial-feeling. A small blue text-link accent (`{colors.text-link}` — #0d74ce) is reserved for inline body links, never as a CTA.
+Clay.com is the most playful B2B SaaS interface in the GTM-data category. The base atmosphere is **cream-tinted white canvas** (`{colors.canvas}` — #fffaf0) holding dark-navy ink type and **3D-rendered claymation illustrations** (mountains, mascot characters, peach/ochre/lavender landscapes) as the dominant brand voltage. Where most data-platform brands play it cool with grids and gradients, Clay leans hard into hand-crafted-looking 3D illustrations and saturated single-color feature cards.
 
-Type runs **Inter** as the single sans family at modest weights (display 600, body 400). JetBrains Mono carries every code surface. No custom typeface — the brand trusts Inter's editorial neutrality.
+Type voice runs **Plain Black** (or substituted with Inter weight 500-600) — a custom rounded display face used at very large sizes (72px hero) with negative letter-spacing. Body type uses Inter at standard weights. The display weight stays at 500, never bolder — the rounded character of the typeface gives it warmth without needing weight.
 
-The brand's strongest visual signature is the **device-mockup hero** — a centered MacBook + iPhone composite showing real Expo dev surfaces (Expo Studio, EAS Build dashboard, the Expo Go simulator) — over a sky-blue gradient atmospheric wash. The composite is the page's chrome instead of an illustration.
+Component voltage comes from **saturated single-color feature cards** in a 6-color palette: hot pink, deep teal, lavender, peach, ochre, and cream-card. Each card shows product UI fragments at small scale — Claygent agent runs, sequencer flows, CRM enrichment outputs. The colored card IS the primary visual element on every long-scroll page.
 
 **Key Characteristics:**
-- Pure white canvas with sky-blue gradient atmospheric backdrop in hero only.
-- Single primary CTA: pure black pill at `{rounded.md}` (8px) — compact developer-tool dialect.
-- Text-link blue (`{colors.text-link}`) for inline links only — never on a CTA.
-- Inter as the single sans family — no custom display typeface.
-- JetBrains Mono on every code surface.
-- Device-mockup hero with real Expo product surfaces is the brand chrome.
-- Hairline + soft drop depth; no atmospheric brand decoration outside the hero.
-- 96px section rhythm.
+- Cream-tinted white canvas (`{colors.canvas}` — #fffaf0). The warmth differentiates Clay from cool-gray competitor sites.
+- Dark navy/black primary CTAs (`{colors.primary}` — #0a0a0a). Buttons rounded `{rounded.md}` (12px) — friendly modern but not pill.
+- 6-color saturated feature card palette: `{colors.brand-pink}`, `{colors.brand-teal}`, `{colors.brand-lavender}`, `{colors.brand-peach}`, `{colors.brand-ochre}`, `{colors.surface-card}` (cream).
+- 3D claymation illustrations (mountains, characters, abstract shapes) as full-bleed hero artifacts — the brand's most-recognized visual element.
+- Custom rounded Plain Black display typeface at 500 weight with -1 to -2.5px letter-spacing on display sizes.
+- Border radius is generous: `{rounded.md}` (12px) for buttons + inputs, `{rounded.lg}` (16px) for content cards, `{rounded.xl}` (24px) for feature cards. The bigger radius matches the rounded display type's character.
+- Product UI fragments embedded inside colored cards at small scale — agent run logs, sequencer flows, enrichment results.
+- Section rhythm `{spacing.section}` (96px) between major bands.
+- Footer is cream-tinted (`{colors.surface-soft}`) — Clay does NOT use a dark footer. Even the closing band stays warm-light.
+
+## Design Philosophy
+
+### Pop Design Principles for Event/Festival Platform
+
+**Core Aesthetic:**
+- **Vibrant & Energetic** — Not minimal or corporate. Event tickets should feel exciting, not sterile.
+- **Playful but Trustworthy** — Fun colors + rounded shapes, but clear hierarchy and readability. Users should feel confident buying tickets.
+- **Festival Energy** — Saturated colors evoke live music, concerts, and celebration. Every page should spark interest.
+- **Tactile & Interactive** — Hover states, animations, and micro-interactions create engagement and reward user interaction.
+
+**Color Strategy:**
+- Cream canvas (#fffaf0) as warm base — immediately differentiates from cool-white competitor sites (Ticketmaster, Eventbrite)
+- 6-color saturated palette cycles through feature cards — strict cycling prevents color overload while maintaining visual rhythm
+- Hot pink (#ff4d8b) + ochre (#e8b94a) are highest-energy colors — reserve for CTAs, urgency badges, and high-priority actions
+- Teal (#1a3a3a) for trust/premium features (featured event tier, organizer dashboard, admin sections)
+- Peach (#ffb084) + lavender (#b8a4ed) for approachable, secondary features
+- Mint (#a4d4c5) for success states and confirmation screens
+
+**Typography Strategy:**
+- Inter 500 display with negative letter-spacing — rounded, modern, friendly (not corporate)
+- Large display sizes (72px hero, 56px section heads) command attention — event discovery is visual
+- Never go below 14px for body text — small text = timid, we want confident communication
+- Inter 400 body remains clean and readable at all sizes
+
+**Shape Language:**
+- Generous border radius (12px buttons, 24px feature cards) — approachable, not sharp or minimalist
+- No pill-shaped CTAs — pills read as "soft" or "contained", we want confident rounded rectangles
+- Consistent radius creates visual rhythm and playful character
+
+**Animation Philosophy (Implementation Later):**
+- Bounce easing (cubic-bezier(0.68, -0.55, 0.265, 1.55)) for playful card interactions
+- Scale hover states (1.03–1.05) for tactile feedback and encouragement to click
+- Stagger animations for feature cards entrance — creates energy on page load
+- Pulse for urgency states (almost sold out, queue position updates, limited tickets)
+- Smooth count-up animations for queue position numbers
+- No linear easing — always use cubic-bezier curves for personality
+
+**Color Cycling Rule:**
+Feature cards cycle through 6-color palette in strict order: Pink → Teal → Lavender → Peach → Ochre → Mint → repeat
+NEVER repeat the same color twice consecutively. Example page flow:
+```
+Row 1: Pink card (featured event)
+Row 2: Teal card (premium tier)
+Row 3: Lavender card (unique category)
+Row 4: Peach card (general event)
+Row 5: Ochre card (popular)
+Row 6: Mint card (special offer or success state)
+```
+
+**Color Usage Hierarchy:**
+- **Hot Pink (#ff4d8b)** — Highest energy. Use for: primary CTAs, "Buy Now" buttons, urgency badges ("Almost Sold Out"), featured event highlights
+- **Ochre (#e8b94a)** — High energy. Use for: "Popular" badges, "Limited Tickets" warnings, secondary CTAs, featured organizer badges
+- **Teal (#1a3a3a)** — Trust & premium. Use for: featured pricing tier, organizer dashboard cards, admin interfaces, "VIP" badges
+- **Lavender (#b8a4ed)** — Creative & unique. Use for: special event categories (theater, art, comedy), artist highlights, creative content
+- **Peach (#ffb084)** — Warm & inviting. Use for: general content cards, testimonials, success confirmations, buyer reviews
+- **Mint (#a4d4c5)** — Fresh & calm. Use for: success states, confirmation screens, "Order Confirmed" badges, queue position improvements
+- **Coral (#ff6b5a)** — RESERVE for critical states: "SOLD OUT" badges, critical errors, cancellation warnings
 
 ## Colors
 
 ### Brand & Accent
-- **Black** (`{colors.primary}` — #000000): Primary CTA fill. Used scarcely.
-- **Black Active** (`{colors.primary-active}` — #1a1a1a): Press state.
-- **Text Link Blue** (`{colors.text-link}` — #0d74ce): Inline body links inside long-form copy. Scoped narrowly — never on CTAs.
-- **Legal Link Blue** (`{colors.text-link-secondary}` — #476cff): Inline links inside legal copy footer.
-- **Bright Cyan** (`{colors.accent-link-bright}` — #47c2ff): Used very sparingly inside docs widget links.
+- **Primary** (`{colors.primary}` — #0a0a0a): All primary CTAs, h1/h2 ink type. Near-black with slight warmth.
+- **Brand Pink** (`{colors.brand-pink}` — #ff4d8b): Hot-pink feature card surface. Sequencer / outbound feature pages.
+- **Brand Teal** (`{colors.brand-teal}` — #1a3a3a): Deep teal-green feature card. Often the featured pricing tier.
+- **Brand Lavender** (`{colors.brand-lavender}` — #b8a4ed): Soft lavender feature card.
+- **Brand Peach** (`{colors.brand-peach}` — #ffb084): Warm peach feature card.
+- **Brand Ochre** (`{colors.brand-ochre}` — #e8b94a): Mustard / ochre feature card and illustration accents.
+- **Brand Mint** (`{colors.brand-mint}` — #a4d4c5): Mint accent on illustrations and small badges.
+- **Brand Coral** (`{colors.brand-coral}` — #ff6b5a): Coral accent for highlights.
 
 ### Surface
-- **Canvas** (`{colors.canvas}` — #ffffff): Pure white page floor.
-- **Canvas Soft** (`{colors.canvas-soft}` — #fafafa): Subtle alternating band.
-- **Surface Card** (`{colors.surface-card}` — #ffffff): Pure white card.
-- **Surface Strong** (`{colors.surface-strong}` — #f0f0f3): Badges, ecosystem tiles, secondary buttons.
-- **Surface Dark** (`{colors.surface-dark}` — #171717): Dark feature cards, code blocks, IDE mockups, featured pricing.
-- **Surface Dark Elevated** (`{colors.surface-dark-elevated}` — #1a1a1a): One step lighter inside dark cards.
-
-### Atmospheric Backdrop
-- **Sky Light** (`{colors.gradient-sky-light}` — #cfe7ff) + **Sky Mid** (`{colors.gradient-sky-mid}` — #a8c8e8): The soft sky-blue gradient wash behind the homepage hero only. Not a brand action color.
-
-### Hairlines
-- **Hairline** (`{colors.hairline}` — #f0f0f3): Default 1px divider.
-- **Hairline Soft** (`{colors.hairline-soft}` — #f5f5f7): Lighter divider.
-- **Hairline Strong** (`{colors.hairline-strong}` — #dcdee0): Stronger panel outline.
+- **Canvas** (`{colors.canvas}` — #fffaf0): The default page floor. Cream-tinted white.
+- **Surface Soft** (`{colors.surface-soft}` — #faf5e8): Footer and CTA-band background.
+- **Surface Card** (`{colors.surface-card}` — #f5f0e0): Cream feature cards, testimonial cards.
+- **Surface Strong** (`{colors.surface-strong}` — #ebe6d6): Stronger cream for emphasized bands.
+- **Surface Dark** (`{colors.surface-dark}` — #0a1a1a): Dark teal-tinted near-black for occasional dark cards (rare).
+- **Surface Dark Elevated** (`{colors.surface-dark-elevated}` — #1a2a2a): Elevated dark cards.
+- **Hairline** (`{colors.hairline}` — #e5e5e5): 1px borders on cards and inputs.
 
 ### Text
-- **Ink** (`{colors.ink}` — #171717): Display, body emphasis.
-- **Body** (`{colors.body}` — #60646c): Default running-text — slightly cool gray.
-- **Body Strong** (`{colors.body-strong}` — #171717): Same as ink.
-- **Muted** (`{colors.muted}` — #999999): Sub-titles.
-- **Muted Soft** (`{colors.muted-soft}` — #cccccc): Disabled text.
-- **On Primary** (`{colors.on-primary}` — #ffffff): White text on black CTA.
-- **On Dark** (`{colors.on-dark}` — #ffffff): White text on dark cards.
-- **On Dark Soft** (`{colors.on-dark-soft}` — #b0b4ba): Muted off-white on dark.
+- **Ink** (`{colors.ink}` — #0a0a0a): Headlines and primary text.
+- **Body Strong** (`{colors.body-strong}` — #1a1a1a): Emphasized body, lead paragraphs.
+- **Body** (`{colors.body}` — #3a3a3a): Default running-text.
+- **Muted** (`{colors.muted}` — #6a6a6a): Sub-headings, breadcrumbs, footer body.
+- **Muted Soft** (`{colors.muted-soft}` — #9a9a9a): Captions, fine-print.
+- **On Primary / On Dark** (`{colors.on-primary}` — #ffffff): Text on primary buttons + dark feature cards (teal).
 
 ### Semantic
-- **Warning** (`{colors.accent-warning}` — #ab6400): Warning text inside docs callouts.
-- **Preview** (`{colors.accent-preview}` — #8145b5): "Preview" tag color.
-- **Success** (`{colors.semantic-success}` — #16a34a): Confirmation.
-- **Error** (`{colors.semantic-error}` — #eb8e90): Validation errors.
+- **Success** (`{colors.success}` — #22c55e): Success states.
+- **Warning** (`{colors.warning}` — #f59e0b): Warning callouts.
+- **Error** (`{colors.error}` — #ef4444): Validation errors.
 
 ## Typography
 
 ### Font Family
-**Inter** is the single sans family across every text role. **JetBrains Mono** carries every code surface. Fallback: `-apple-system, system-ui, sans-serif`.
+The system runs **Plain Black** (a custom rounded display face) for headlines and **Inter** for body, navigation, and UI. Plain Black at weight 500 with negative letter-spacing handles every display headline; Inter handles the rest. The fallback stack walks `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` for both.
 
 ### Hierarchy
 
 | Token | Size | Weight | Line Height | Letter Spacing | Use |
 |---|---|---|---|---|---|
-| `{typography.display-mega}` | 64px | 600 | 1.05 | -1.92px | Homepage hero h1 |
-| `{typography.display-xl}` | 48px | 600 | 1.1 | -1.44px | Subsidiary heroes |
-| `{typography.display-lg}` | 36px | 600 | 1.15 | -1.08px | Section heads |
-| `{typography.display-md}` | 28px | 600 | 1.2 | -0.84px | Sub-section heads |
-| `{typography.display-sm}` | 22px | 600 | 1.25 | -0.5px | Card group titles |
-| `{typography.title-md}` | 18px | 600 | 1.4 | 0 | Component titles |
-| `{typography.title-sm}` | 16px | 600 | 1.4 | 0 | List labels |
-| `{typography.body-md}` | 16px | 400 | 1.5 | 0 | Default body |
-| `{typography.body-sm}` | 14px | 400 | 1.5 | 0 | Footer body |
-| `{typography.caption}` | 13px | 400 | 1.4 | 0 | Photo captions |
-| `{typography.caption-uppercase}` | 11px | 600 | 1.4 | 0.88px | Section labels, badges |
-| `{typography.code}` | 13px | 400 | 1.5 | 0 | Code blocks — JetBrains Mono |
-| `{typography.button}` | 14px | 500 | 1.0 | 0 | CTA labels |
-| `{typography.nav-link}` | 14px | 500 | 1.4 | 0 | Top-nav menu |
+| `{typography.display-xl}` | 72px | 500 | 1.0 | -2.5px | Homepage h1 ("Go to market with unique data") — Plain Black |
+| `{typography.display-lg}` | 56px | 500 | 1.05 | -2px | Section heads — Plain Black |
+| `{typography.display-md}` | 40px | 500 | 1.1 | -1px | Sub-section heads, product names |
+| `{typography.display-sm}` | 32px | 500 | 1.15 | -0.5px | CTA-band heads, feature card titles |
+| `{typography.title-lg}` | 24px | 600 | 1.3 | -0.3px | Pricing plan names, larger feature titles |
+| `{typography.title-md}` | 18px | 600 | 1.4 | 0 | Card titles, intro paragraphs |
+| `{typography.title-sm}` | 16px | 600 | 1.4 | 0 | Small card titles, list labels |
+| `{typography.body-md}` | 16px | 400 | 1.55 | 0 | Default running-text |
+| `{typography.body-sm}` | 14px | 400 | 1.55 | 0 | Footer body, fine-print |
+| `{typography.caption}` | 13px | 500 | 1.4 | 0 | Badge labels, captions |
+| `{typography.caption-uppercase}` | 12px | 600 | 1.4 | 1.5px | Section labels, "FEATURED" badges |
+| `{typography.button}` | 14px | 600 | 1.0 | 0 | Standard button labels |
+| `{typography.nav-link}` | 14px | 500 | 1.4 | 0 | Top-nav menu items |
 
 ### Principles
-- **Display weight stays at 600** — confident but not bombastic. Inter at 600 reads cleaner than 700.
-- **Negative letter-spacing on display** — -0.5px to -1.92px tracking.
-- **JetBrains Mono on every code surface.**
+Plain Black at weight 500 + negative letter-spacing IS the brand voice. Going to weight 700 reads as bombastic; the rounded character of the typeface adds warmth that bolder weight would flatten.
+
+The body-vs-display split is functional: Plain Black for Plain Black moments (headlines), Inter for everything else (running text, UI, buttons). Mixing them is a system violation.
 
 ### Note on Font Substitutes
-Inter and JetBrains Mono are both freely available — the system uses them directly.
+If Plain Black is unavailable, **Inter** at weight 500 with -0.05em letter-spacing is a usable approximation. **Söhne Breit** at weight Buch is an alternative if licensed. **Recoleta** at weight 500 carries similar rounded-display warmth.
 
 ## Layout
 
 ### Spacing System
 - **Base unit:** 4px.
-- **Tokens:** `{spacing.xxs}` 4px · `{spacing.xs}` 8px · `{spacing.sm}` 12px · `{spacing.base}` 16px · `{spacing.md}` 20px · `{spacing.lg}` 24px · `{spacing.xl}` 32px · `{spacing.xxl}` 48px · `{spacing.section}` 96px.
-- **Section padding:** 96px.
+- **Tokens:** `{spacing.xxs}` 4px · `{spacing.xs}` 8px · `{spacing.sm}` 12px · `{spacing.md}` 16px · `{spacing.lg}` 24px · `{spacing.xl}` 32px · `{spacing.xxl}` 48px · `{spacing.section}` 96px.
+- **Section padding:** `{spacing.section}` (96px) between major editorial bands.
+- **Card internal padding:** `{spacing.xl}` (32px) for feature cards and pricing tiers; `{spacing.lg}` (24px) for testimonial and product mockup cards.
 
 ### Grid & Container
-- Max content width: ~1200px.
-- Editorial body: 12-column grid.
-- Feature card grids: 2-up at desktop for hero splits, 3-up for benefit grids.
-- Ecosystem tile grid: 8-up at desktop.
-- Footer: 5-column at desktop.
+- **Max content width:** ~1280px centered.
+- **Editorial body:** Single 12-column grid; hero often uses 7/5 split (h1 left, illustration right).
+- **Feature card grids:** 3-up at desktop, 2-up at tablet, 1-up at mobile.
+- **Pricing grid:** 3-4 up at desktop, 1-up at mobile.
 
 ### Whitespace Philosophy
-Generous editorial pacing. The white canvas does not compete with the hero's gradient sky wash; cards inside dense workflow sections sit close (16-24px gap).
+Clay uses generous whitespace around big rounded display headlines and saturated feature cards. The cream canvas + colored cards + 3D illustrations create a playful warmth that competing data-platform sites lack.
 
 ## Elevation & Depth
 
 | Level | Treatment | Use |
 |---|---|---|
-| Flat (canvas) | `{colors.canvas}` (#ffffff) | Body bands, footer |
-| Card | `{colors.surface-card}` (#ffffff) | Content cards |
-| Hairline border | 1px `{colors.hairline}` | Card outlines |
-| Soft drop | `0 4px 12px rgba(0, 0, 0, 0.04)` | Hovered cards (single shadow tier) |
-| Atmospheric gradient | Sky-blue radial wash | Hero backdrop only |
-| Dark inversion | `{colors.surface-dark}` (#171717) | Dark feature cards, code blocks, featured pricing |
+| Flat | No shadow, no border | Body sections, top nav, hero |
+| Soft hairline | 1px `{colors.hairline}` border | Inputs, small content cards |
+| Saturated card | Brand pink/teal/lavender/peach/ochre fill — no shadow | Feature cards |
+| Cream card | `{colors.surface-card}` background — no shadow | Testimonial, secondary cards |
+| Subtle drop shadow | Faint shadow at low alpha | Hover-elevated states (rare) |
+
+The system uses no heavy shadows. Depth comes from the saturated color contrast between cream canvas and bright feature cards.
 
 ### Decorative Depth
-- **Sky-blue gradient backdrop** in the hero only — atmospheric depth without claiming to be a brand color.
-- **Device mockup composite** as page chrome — MacBook + iPhone showing real Expo dev surfaces.
+- **3D claymation illustrations** — mountains, characters, mascots rendered in a hand-crafted 3D style. The brand's most-recognized depth element. Not a token — these are illustrated assets.
+- **Mascot characters** appear as inline figures in feature cards and CTAs.
 
 ## Shapes
 
@@ -393,99 +473,172 @@ Generous editorial pacing. The white canvas does not compete with the hero's gra
 
 | Token | Value | Use |
 |---|---|---|
-| `{rounded.none}` | 0px | Reserved |
-| `{rounded.xs}` | 4px | Inline tags |
-| `{rounded.sm}` | 6px | Compact rows |
-| `{rounded.md}` | 8px | CTA buttons, form inputs, ecosystem tiles |
-| `{rounded.lg}` | 12px | Feature cards, code blocks, pricing tiers |
-| `{rounded.xl}` | 16px | Device mockup cards |
-| `{rounded.xxl}` | 24px | Larger atmospheric cards (rare) |
-| `{rounded.pill}` | 9999px | Badges only |
-| `{rounded.full}` | 9999px | Avatar plates (rare) |
+| `{rounded.xs}` | 6px | Small badges, dropdown items |
+| `{rounded.sm}` | 8px | Small buttons, hairline-border accent |
+| `{rounded.md}` | 12px | Standard CTA buttons, text inputs |
+| `{rounded.lg}` | 16px | Content cards, testimonial cards, pricing tiers |
+| `{rounded.xl}` | 24px | Feature cards (the saturated brand-color cards) |
+| `{rounded.pill}` | 9999px | Category tabs, badge pills |
+| `{rounded.full}` | 9999px / 50% | Avatars, icon buttons |
 
-Compact developer-ergonomic radii — 8px CTAs, 12px cards. Pill geometry is reserved for badges, never CTAs.
+## Animations
+
+### Duration Tokens (Implementation Later)
+- **`duration-instant`** (100ms) — Micro-interactions, button press feedback
+- **`duration-fast`** (150ms) — Hover states, tooltips
+- **`duration-base`** (250ms) — Default transitions, card lifts, standard animations
+- **`duration-slow`** (400ms) — Modals, page transitions, complex sequences
+- **`duration-slower`** (600ms) — Hero entrance, stagger animations, grand reveals
+
+### Easing Functions (Playful, Not Linear)
+- **`easing-default`** (cubic-bezier(0.4, 0, 0.2, 1)) — Standard smooth ease-in-out for most transitions
+- **`easing-bounce`** (cubic-bezier(0.68, -0.55, 0.265, 1.55)) — Playful bounce for festival energy (cards, feature cards, buttons)
+- **`easing-smooth`** (cubic-bezier(0.25, 0.1, 0.25, 1)) — Smooth acceleration for complex animations
+
+### Scale Values (Hover & Active States)
+- **`scale-hover`** (1.03) — Subtle lift for feature cards on hover
+- **`scale-button-hover`** (1.05) — Button scale on hover (noticeable but not extreme)
+- **`scale-active`** (0.98) — Button press feedback (slight compress)
+
+### Shadow Lift Values (Hover States)
+- **`shadow-lift-subtle`** (0 4px 12px rgba(0, 0, 0, 0.08)) — Minimal lift for cards
+- **`shadow-lift-medium`** (0 8px 24px rgba(0, 0, 0, 0.12)) — Standard card hover
+- **`shadow-lift-strong`** (0 12px 32px rgba(0, 0, 0, 0.16)) — Pronounced lift for featured elements
+
+### Component Animation Behaviors
+
+**Button Primary (`button-primary`):**
+- Hover: Scale to `scale-button-hover` + `shadow-lift-subtle`
+- Active: Scale to `scale-active` (press feedback)
+- Transition: `duration-fast` with `easing-default`
+
+**Feature Cards (all color variants):**
+- Hover: Scale to `scale-hover` + `shadow-lift-medium`
+- Transition: `duration-base` with `easing-bounce` (playful for pop design)
+- Entrance: Stagger animation with 100ms delay per card (`duration-slower` + `easing-smooth`)
+
+**Hero Band Entrance:**
+- Headline: Fade in + slide up (150ms stagger from headline to subheading to CTA)
+- Duration: `duration-slower`
+- Easing: `easing-smooth`
+
+**Text Input Focus:**
+- Border thicken + color change to ink
+- Transition: `duration-fast` with `easing-default`
+
+**Urgency Badges (Almost Sold Out, Limited Tickets):**
+- Pulse animation (subtle breathing effect)
+- Duration: 2000ms (looping)
+
+**Queue Position Counter:**
+- Count-up animation when position changes
+- Duration: `duration-base` with `easing-smooth`
+
+### Animation Philosophy
+
+**Do:**
+- ✅ Use `easing-bounce` for playful interactions (feature cards, hero elements)
+- ✅ Stagger feature card entrances (100ms delay per card for energy)
+- ✅ Scale hover states (1.03–1.05) for tactile, rewarding feedback
+- ✅ Pulse animation for urgency states ("Almost sold out", limited availability)
+- ✅ Smooth count-up for queue position numbers and countdown timers
+- ✅ Keep animations under 600ms — faster feels responsive, slower feels sluggish
+- ✅ Reserve animations for interactive elements — not decorative
+
+**Don't:**
+- ❌ Don't use linear easing — feels robotic and corporate (antithesis of pop design)
+- ❌ Don't overuse bounce on every element — reserve for hero & feature cards for maximum impact
+- ❌ Don't animate more than 3 properties simultaneously — hurts performance
+- ❌ Don't use duration > 600ms unless absolutely necessary
+- ❌ Don't animate things that aren't interactive — animations should reward user action
+
+### Implementation Notes
+
+**Current Status:** Animation tokens are defined here as garis besar (outline) for pop design aesthetic. Technical implementation (CSS keyframes, Framer Motion, or `@tailwindcss` utilities) will be handled during component development phase.
+
+**Recommended Approach:** Use Tailwind CSS + custom `@keyframes` for MVP (zero additional dependencies). Optional lightweight libraries like `react-countup` for specific cases (queue counter). Defer Framer Motion until complex page transitions are required.
 
 ## Components
 
 ### Top Navigation
 
-**`top-nav`** — Background `{colors.canvas}`, text `{colors.ink}`, height 64px. Layout: Expo wordmark left, primary horizontal menu (Tools / Workflows / EAS / Pricing / Docs / Showcase), Sign In + Get started CTA right.
+**`top-nav`** — Cream nav bar pinned to top. 64px tall, `{colors.canvas}` background. Carries the Clay logo + wordmark at left, primary horizontal menu (Product, Solutions, Resources, Pricing, Customers) center, right-side cluster with "Sign in" + "Try free" `{component.button-primary}`. Menu items in `{typography.nav-link}` (Inter 14px / 500).
 
 ### Buttons
 
-**`button-primary`** — Pure black pill. Background `{colors.primary}`, text `{colors.on-primary}`, type `{typography.button}` (14px / 500), padding 10px × 18px, height 40px, rounded `{rounded.md}` (8px).
+**`button-primary`** — Background `{colors.primary}` (near-black), text `{colors.on-primary}` (white), type `{typography.button}` (Inter 14px / 600), padding 12px × 20px, height 44px, rounded `{rounded.md}` (12px).
 
-**`button-primary-active`** — Press state. Background `{colors.primary-active}`.
+**`button-secondary`** — Cream button with hairline outline. Background `{colors.canvas}`, text `{colors.ink}`, 1px hairline border.
 
-**`button-secondary`** — White card with 1px hairline-strong border. Background `{colors.surface-card}`, text `{colors.ink}`, 1px `{colors.hairline-strong}` border.
+**`button-on-color`** — White button used over saturated brand-color feature cards. Same shape as primary but inverted (white background, ink text).
 
-**`button-tertiary-text`** — Inline blue text link. Background transparent, text `{colors.text-link}`.
+**`button-text-link`** — Inline text button, no background. Used for "Sign in" and inline link CTAs.
 
-### Hero & Device Mockup
+**`text-link`** — Inline body links in `{colors.ink}` with underline.
 
-**`hero-band`** — Background `{colors.canvas}` with a soft sky-blue gradient wash behind the centered headline. Display headline in `{typography.display-mega}` (64px / 600 / -1.92px), subhead in `{typography.body-md}`, single primary CTA, then below — the device mockup composite.
+### Cards & Containers
 
-**`device-mockup-card`** — A layered MacBook + iPhone composite showing real Expo dev surfaces. Background `{colors.surface-card}`, rounded `{rounded.xl}`. The MacBook holds the EAS dashboard or Expo Studio screenshot; the iPhone overlay shows the running app in Expo Go. This is the page chrome.
+**`hero-band`** — Cream-canvas hero with 7-5 grid: h1 + sub-headline + button row on the left, 3D claymation illustration on the right. Vertical padding `{spacing.section}` (96px).
 
-### Cards
+**`hero-illustration-card`** — Right-side artifact holding 3D claymation illustration (mountains, mascot character, abstract shapes). Background `{colors.surface-soft}`, rounded `{rounded.xl}` (24px). The illustration IS the artifact.
 
-**`feature-card`** — Background `{colors.surface-card}`, text `{colors.ink}`, type `{typography.title-md}`, rounded `{rounded.lg}`, padding 24px, 1px `{colors.hairline-strong}` border.
+**`feature-card-pink`** / **`feature-card-teal`** / **`feature-card-lavender`** / **`feature-card-peach`** / **`feature-card-ochre`** — Saturated single-color feature cards. Background varies per variant; rounded `{rounded.xl}` (24px); padding `{spacing.xl}` (32px). Each card carries an h3 in `{typography.title-md}`, a body description, and a product UI fragment or mascot illustration. Text color flips to `{colors.on-dark}` (white) on pink and teal cards, `{colors.ink}` (dark) on lavender/peach/ochre cards (the lighter saturations have enough contrast for dark text).
 
-**`feature-card-dark`** — Dark variant. Background `{colors.surface-dark}`, text `{colors.on-dark}`. Same shape, dark inversion.
+**`feature-card-cream`** — Lower-key feature card variant on `{colors.surface-card}`. Used for less-emphasized features that don't warrant a saturated color.
 
-**`workflow-step-card`** — Step in the "Get your app on every device" workflow row. Background `{colors.surface-card}`, text `{colors.body}`, rounded `{rounded.lg}`, padding 20px. Layout: 32px square `{component.workflow-step-icon}` + step number + label + body.
+**`product-mockup-card`** — Card showing actual Clay product UI (Claygent agent runs, sequencer flows, CRM enrichment tables). Background `{colors.canvas}` with hairline border, rounded `{rounded.lg}`, padding `{spacing.lg}` (24px).
 
-**`workflow-step-icon`** — Square plate. Background `{colors.surface-strong}`, rounded `{rounded.md}`, 32px size.
+**`testimonial-card`** — Customer quote cards. Background `{colors.surface-card}` (cream), rounded `{rounded.lg}`, padding `{spacing.lg}` (24px). Top row has avatar + name + role; below sits the testimonial in `{typography.body-md}`.
 
-**`testimonial-card`** — Quote card. Background `{colors.surface-card}`, text `{colors.body}`, rounded `{rounded.lg}`, padding 24px.
+**`pricing-tier-card`** — Standard tier card. Background `{colors.canvas}` with hairline, rounded `{rounded.lg}`, padding `{spacing.xl}` (32px).
 
-### Code & IDE
+**`pricing-tier-card-featured`** — The featured tier flips to `{colors.brand-teal}` (deep teal-green). The teal surface IS the featured signal.
 
-**`code-block`** — Inline code block. Background `{colors.surface-dark}`, text `{colors.on-dark}` in `{typography.code}` (JetBrains Mono 13px), rounded `{rounded.lg}`, padding 20px. White text on dark.
+**`expert-card`** — Used on /experts page. Background `{colors.canvas}` with hairline, rounded `{rounded.lg}`, padding `{spacing.lg}`. Carries an avatar at top, expert name, specialization, and a "Book session" link.
 
-**`ide-mockup-card`** — Stylized IDE mockup. Background `{colors.surface-dark}`, rounded `{rounded.lg}`. Multi-pane editor + terminal preview.
+### Inputs & Forms
 
-### Pricing
+**`text-input`** — Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.body-md}`, rounded `{rounded.md}` (12px), padding 12px × 16px, height 44px. 1px hairline border.
 
-**`pricing-tier-card`** — Standard pricing tier. Background `{colors.surface-card}`, rounded `{rounded.lg}`, padding 32px, 1px `{colors.hairline-strong}` border.
+**`text-input-focused`** — Border thickens to ink for emphasis.
 
-**`pricing-tier-featured`** — Featured tier. Background `{colors.surface-dark}`, text `{colors.on-dark}`. Same shape, dark inversion.
+### Tabs / Badges
 
-### Ecosystem
+**`category-tab`** + **`category-tab-active`** — Pill-shaped tabs in sub-nav. Inactive: transparent + muted text. Active: cream-card background + ink text. Padding 8px × 16px.
 
-**`ecosystem-tile`** — Square logo plate for ecosystem partner logos (TypeScript, React, Sentry, etc.). Background `{colors.surface-card}`, rounded `{rounded.md}`, 64px size, 1px `{colors.hairline}` border.
-
-### Forms & Tags
-
-**`text-input`** — Background `{colors.surface-card}`, text `{colors.ink}`, rounded `{rounded.md}` (8px), padding 12px × 16px, height 44px, 1px `{colors.hairline-strong}` border. Focus thickens border to 2px ink.
-
-**`badge-pill`** — Small uppercase pill. Background `{colors.surface-strong}`, text `{colors.ink}`, type `{typography.caption-uppercase}`, rounded `{rounded.pill}`, padding 4px × 10px.
+**`badge-pill`** — Small cream-fill pill labels in `{typography.caption}` (13px / 500), rounded `{rounded.pill}`.
 
 ### CTA / Footer
 
-**`cta-band`** — Pre-footer band. Background `{colors.canvas}`, centered display headline in `{typography.display-lg}`, single black pill CTA. 96px padding.
+**`cta-band-illustrated`** — Pre-footer "Turn your growth ideas into reality today" band. Background `{colors.surface-soft}`, rounded `{rounded.xl}`, padding 80px. Carries an h2 in `{typography.display-md}`, a sub-line, and a `{component.button-primary}` — usually paired with a 3D illustration of a mascot or scene.
 
-**`footer-light`** — Closing white footer. Background `{colors.canvas}`, text `{colors.body}`. 5-column link list. 64×48px padding.
-
-**`footer-link`** — Background transparent, text `{colors.body}`, type `{typography.body-sm}`.
+**`footer`** — Cream-tinted footer (NOT dark navy unlike most SaaS sites). Background `{colors.surface-soft}`, text `{colors.body}`. 4-column link list. Vertical padding 80px. Often features a horizon-style 3D mountain illustration at the very bottom — Clay's signature footer mountain.
 
 ## Do's and Don'ts
 
-### Do
-- Reserve `{colors.primary}` (black) for primary CTAs.
-- Use `{colors.text-link}` (blue) for inline body links only — never on CTAs or buttons.
-- Set every CTA at `{rounded.md}` (8px) — developer dialect.
-- Use Inter at weight 600 for display, 400 for body.
-- Render every code surface in JetBrains Mono.
-- Pair the hero with the device-mockup composite — it's the page chrome.
+### Do (Pop Design for Event Platform)
+- Anchor every page on the cream canvas (`{colors.canvas}` — #fffaf0). The warm tint differentiates Gigs Pass from cool-white competitor sites (Ticketmaster, Eventbrite).
+- Use saturated brand colors boldly — pink/ochre for high-energy features, teal for premium/trust elements.
+- Cycle saturated feature cards across the page in strict order: pink → teal → lavender → peach → ochre → mint → repeat. Repeating the same color twice in a row reads as off-rhythm and breaks visual momentum.
+- Use Inter 500 at display sizes with negative letter-spacing on every display headline. Large text (72px hero) commands attention for event discovery.
+- Reserve hot pink (#ff4d8b) for highest-priority CTAs and urgency states ("Buy Now", "Almost Sold Out").
+- Reserve ochre (#e8b94a) for "Popular" badges and limited availability warnings.
+- Reserve teal (#1a3a3a) for trust/premium features (featured event tier, organizer dashboard, admin sections).
+- Add hover states with scale (1.03–1.05) + shadow lift for tactile feedback — reward user interaction.
+- Use cream footer, not dark. Maintain warm-throughout aesthetic.
+- Anchor every band with `{spacing.section}` (96px) vertical rhythm.
 
-### Don't
-- Don't introduce a saturated brand action color. Black is the only CTA fill.
-- Don't use blue (`{colors.text-link}`) on a CTA. Inline links only.
-- Don't drop display below weight 600 or above 700.
-- Don't use full pills on CTAs — pills are for badges only.
-- Don't replicate the sky-blue gradient backdrop outside the hero.
-- Don't extract a CTA color from a third-party widget (cookie consent, OneTrust). The brand's CTA is what appears on actual page CTAs.
+### Don't (Pop Design Anti-patterns)
+- Don't use cool grays or whites for canvas. The cream tint (#fffaf0) is non-negotiable for warm vibe.
+- Don't repeat the same brand-color card twice consecutively. This kills visual momentum and feels unplanned.
+- Don't use more than 6 brand colors + coral. Overcolor palette = overwhelming and inconsistent.
+- Don't make ALL interactions bounce. Reserve bounce easing for hero & feature cards only — overuse = exhausting.
+- Don't use gray-scale or muted color variants for feature cards. Pop design demands saturated, confident colors.
+- Don't bold display weight beyond 500. Inter at 700 reads as bombastic and corporate.
+- Don't use linear easing on animations. Always use cubic-bezier curves for personality.
+- Don't drop below 14px body text — small text reads timid, we want confident communication.
+- Don't add a dark footer. Maintain warm cream aesthetic throughout.
+- Don't add hover state styling beyond scale + shadow. Keep it simple and consistent.
 
 ## Responsive Behavior
 
@@ -493,34 +646,37 @@ Compact developer-ergonomic radii — 8px CTAs, 12px cards. Pill geometry is res
 
 | Name | Width | Key Changes |
 |---|---|---|
-| Mobile | < 640px | Hero h1 64→32px; device mockup → single iPhone screen; feature grid 1-up; nav hamburger. |
-| Tablet | 640–1024px | Hero h1 48px; device mockup compresses; feature grid 2-up. |
-| Desktop | 1024–1280px | Full hero h1 64px; full MacBook + iPhone composite; feature grid 3-up. |
-| Wide | > 1280px | Content caps at 1200px. |
+| Mobile | < 768px | Hamburger nav; hero h1 72→36px; hero-illustration-card stacks below; feature grids 1-up; pricing 1-up |
+| Tablet | 768–1024px | Top nav tightens; feature cards 2-up; pricing 2-up |
+| Desktop | 1024–1440px | Full top-nav; 3-up feature cards; 3-up pricing tiers |
+| Wide | > 1440px | Same as desktop with more breathing room; max content 1280px |
 
 ### Touch Targets
-- Primary CTA at 40px height — at WCAG AA, padded for AAA.
-- Search input 44px — at AAA.
+- `{component.button-primary}` at minimum 44 × 44px (matches WCAG AAA).
+- `{component.text-input}` height is 44px.
 
 ### Collapsing Strategy
-- Top nav switches to hamburger below 768px.
-- Device mockup MacBook + iPhone collapses to a single iPhone preview on mobile.
-- Feature grid: 3-up → 2-up → 1-up.
-- Ecosystem tile grid: 8-up → 4-up → 3-up → 2-up.
+- Top nav collapses to hamburger at < 768px.
+- Hero 7-5 grid → single-column on mobile.
+- Feature card grids reduce columns rather than scaling.
+- Saturated feature cards retain their colored fill at every breakpoint.
+- Pricing tier cards collapse 4 → 2 → 1.
 
 ## Iteration Guide
 
-1. Focus on a single component at a time.
-2. CTAs default to `{rounded.md}` (8px). Cards use `{rounded.lg}` (12px).
-3. Variants live as separate entries.
+1. Focus on ONE component at a time. Reference its YAML key (`{component.feature-card-pink}`, `{component.pricing-tier-card-featured}`).
+2. Pick the right brand-color card for the feature: pink for outbound/sequencer, teal for enterprise/featured, lavender for AI-agent products, peach for general SaaS warmth, ochre for community / experts.
+3. Variants of an existing component (`-active`, `-disabled`) live as separate entries.
 4. Use `{token.refs}` everywhere — never inline hex.
-5. Hover state never documented.
-6. Inter 600 for display, Inter 400 for body. JetBrains Mono on code.
-7. Black stays the only CTA color; text-link blue stays inline-only.
+5. Never document hover.
+6. Display headlines stay Plain Black 500 with negative letter-spacing. Body stays Inter 400.
+7. The cream-throughout palette is a system contract — don't add a dark footer.
 
 ## Known Gaps
 
-- Inter and JetBrains Mono are freely available — no licensing concerns.
-- Animation timings (device mockup parallax, hero entrance) out of scope.
-- In-app surfaces (EAS dashboard interactive, Expo Go simulator) only partially captured via marketing mockups.
-- Form validation states beyond focus not visible on captured surfaces.
+- Plain Black is licensed to Clay and not available as a public web font; Inter weight 500 with negative letter-spacing is the closest substitute.
+- 3D claymation illustrations are commissioned assets, not system tokens — they're rendered per-page.
+- The mascot characters (named characters that recur across the site) are illustrated assets; their exact lineage and naming are not formalized in tokens.
+- Animation and transition timings (3D illustration parallax on scroll, feature card entrance animations) are not in scope.
+- Form validation states beyond `{component.text-input-focused}` are not extracted.
+- The actual Clay product surface (in-app data tables, formula editor, agent builder) shares some tokens with the marketing site but adds many product-specific components that are out of scope.
