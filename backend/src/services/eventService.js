@@ -1,8 +1,12 @@
 const eventModel = require("../models/eventModel");
+const cloudinaryService = require("./cloudinaryService");
 
 const isFutureDate = (date) => {
   return new Date(date).getTime() > Date.now();
 };
+
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const createEvent = async (organizerId, data) => {
   const { title, description, event_date } = data;
@@ -79,9 +83,59 @@ const getEventById = async (eventId) => {
   return event;
 };
 
+const uploadEventImage = async (userId, eventId, file) => {
+  const event = await eventModel.findById(eventId);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (event.organizer_id !== userId) {
+    const error = new Error("Forbidden: only event owner can update");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (!file || !file.buffer) {
+    const error = new Error("Image file is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+    const error = new Error(
+      "Invalid image type. Allowed: jpeg, png, webp, gif",
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    const error = new Error("Image too large. Maximum size is 5MB");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const result = await cloudinaryService.uploadImage(file.buffer, {
+    folder: `gigspass/events/${eventId}`,
+  });
+
+  const previousImageUrl = event.image_url;
+  const updated = await eventModel.updateImage(eventId, result.secure_url);
+
+  if (previousImageUrl && previousImageUrl !== result.secure_url) {
+    const oldPublicId = previousImageUrl.split("/").pop().split(".")[0];
+    await cloudinaryService.deleteImage(oldPublicId).catch(() => {});
+  }
+
+  return updated;
+};
+
 module.exports = {
   createEvent,
   updateEvent,
   listPublishedEvents,
   getEventById,
+  uploadEventImage,
 };

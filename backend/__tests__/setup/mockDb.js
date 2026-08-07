@@ -98,6 +98,17 @@ const mockDb = {
       return Promise.resolve({ rows: [event], rowCount: 1 });
     }
 
+    if (sql.includes("UPDATE events") && sql.includes("image_url = $2")) {
+      const [id, imageUrl] = params;
+      const event = this.events.find((e) => e.id === id);
+      if (!event) {
+        return Promise.resolve({ rows: [], rowCount: 0 });
+      }
+      event.image_url = imageUrl;
+      event.updated_at = new Date();
+      return Promise.resolve({ rows: [event], rowCount: 1 });
+    }
+
     if (sql.includes("FROM events WHERE id")) {
       const [id] = params;
       const event = this.events.find((e) => e.id === id);

@@ -50,10 +50,22 @@ const updateStatus = async (id, status) => {
   return result.rows[0] || null;
 };
 
+const updateImage = async (id, imageUrl) => {
+  const query = `
+    UPDATE events
+    SET image_url = $2
+    WHERE id = $1
+    RETURNING id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at;
+  `;
+  const result = await pool.query(query, [id, imageUrl]);
+  return result.rows[0] || null;
+};
+
 module.exports = {
   createEvent,
   findById,
   findPublished,
   updateEvent,
   updateStatus,
+  updateImage,
 };

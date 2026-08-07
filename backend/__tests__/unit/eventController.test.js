@@ -1,7 +1,13 @@
 const mockDb = require("../setup/mockDb");
 jest.mock("../../src/config/db", () => mockDb);
 
+jest.mock("../../src/services/cloudinaryService", () => ({
+  uploadImage: jest.fn(),
+  deleteImage: jest.fn(),
+}));
+
 const eventController = require("../../src/controllers/eventController");
+const cloudinaryService = require("../../src/services/cloudinaryService");
 
 const createMockReqRes = () => {
   const res = {
@@ -21,6 +27,13 @@ const createMockReqRes = () => {
 
 const FUTURE_DATE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 const PAST_DATE = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+const createMockImageFile = (overrides = {}) => ({
+  buffer: Buffer.from("fake-image-bytes"),
+  mimetype: "image/jpeg",
+  size: 1024,
+  ...overrides,
+});
 
 describe("Event Controller", () => {
   beforeEach(() => {
@@ -194,6 +207,78 @@ describe("Event Controller", () => {
       const res = createMockReqRes();
 
       await eventController.getById(req, res);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toBe("Event not found");
+    });
+  });
+
+  describe("uploadImage", () => {
+    beforeEach(() => {
+      cloudinaryService.uploadImage.mockReset();
+      cloudinaryService.deleteImage.mockReset();
+      cloudinaryService.uploadImage.mockResolvedValue({
+        secure_url: "https://res.cloudinary.com/demo/image/upload/v1/gigspass/events/1/new-image.jpg",
+      });
+      cloudinaryService.deleteImage.mockResolvedValue({ result: "ok" });
+    });
+
+    test("should upload image and return 200", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Image Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: eventId },
+        file: createMockImageFile(),
+      };
+      const res = createMockReqRes();
+
+      await eventController.uploadImage(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.status).toBe("success");
+      expect(res.body.message).toBe("Event image uploaded");
+      expect(res.body.data.event.image_url).toContain("new-image.jpg");
+    });
+
+    test("should return 403 when non-owner uploads", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Image Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      const req = {
+        user: { id: "org-2", role: "organizer" },
+        params: { id: eventId },
+        file: createMockImageFile(),
+      };
+      const res = createMockReqRes();
+
+      await eventController.uploadImage(req, res);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.status).toBe("error");
+    });
+
+    test("should return 404 for non-existent event", async () => {
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: 9999 },
+        file: createMockImageFile(),
+      };
+      const res = createMockReqRes();
+
+      await eventController.uploadImage(req, res);
 
       expect(res.statusCode).toBe(404);
       expect(res.body.status).toBe("error");

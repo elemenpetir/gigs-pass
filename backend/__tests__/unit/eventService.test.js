@@ -1,11 +1,24 @@
 const mockDb = require("../setup/mockDb");
 jest.mock("../../src/config/db", () => mockDb);
 
+jest.mock("../../src/services/cloudinaryService", () => ({
+  uploadImage: jest.fn(),
+  deleteImage: jest.fn(),
+}));
+
 const eventService = require("../../src/services/eventService");
 const eventModel = require("../../src/models/eventModel");
+const cloudinaryService = require("../../src/services/cloudinaryService");
 
 const FUTURE_DATE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 const PAST_DATE = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+const createMockImageFile = (overrides = {}) => ({
+  buffer: Buffer.from("fake-image-bytes"),
+  mimetype: "image/jpeg",
+  size: 1024,
+  ...overrides,
+});
 
 describe("Event Service", () => {
   beforeEach(() => {
@@ -162,6 +175,107 @@ describe("Event Service", () => {
       await expect(eventService.getEventById(9999)).rejects.toThrow(
         "Event not found",
       );
+    });
+  });
+
+  describe("uploadEventImage", () => {
+    beforeEach(() => {
+      cloudinaryService.uploadImage.mockReset();
+      cloudinaryService.deleteImage.mockReset();
+      cloudinaryService.uploadImage.mockResolvedValue({
+        secure_url: "https://res.cloudinary.com/demo/image/upload/v1/gigspass/events/1/new-image.jpg",
+      });
+      cloudinaryService.deleteImage.mockResolvedValue({ result: "ok" });
+    });
+
+    test("should upload image and update event image_url", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Image Event",
+        event_date: FUTURE_DATE,
+      });
+
+      const updated = await eventService.uploadEventImage(
+        "org-1",
+        created.id,
+        createMockImageFile(),
+      );
+
+      expect(cloudinaryService.uploadImage).toHaveBeenCalledTimes(1);
+      expect(updated).toBeDefined();
+      expect(updated.image_url).toContain("new-image.jpg");
+    });
+
+    test("should reject upload by non-owner", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Image Event",
+        event_date: FUTURE_DATE,
+      });
+
+      await expect(
+        eventService.uploadEventImage("org-2", created.id, createMockImageFile()),
+      ).rejects.toThrow("only event owner");
+      expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
+    });
+
+    test("should reject upload for non-existent event", async () => {
+      await expect(
+        eventService.uploadEventImage("org-1", 9999, createMockImageFile()),
+      ).rejects.toThrow("Event not found");
+      expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
+    });
+
+    test("should reject missing file", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Image Event",
+        event_date: FUTURE_DATE,
+      });
+
+      await expect(
+        eventService.uploadEventImage("org-1", created.id, null),
+      ).rejects.toThrow("Image file is required");
+    });
+
+    test("should reject invalid file type", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Image Event",
+        event_date: FUTURE_DATE,
+      });
+
+      await expect(
+        eventService.uploadEventImage(
+          "org-1",
+          created.id,
+          createMockImageFile({ mimetype: "text/plain" }),
+        ),
+      ).rejects.toThrow("Invalid image type");
+    });
+
+    test("should reject oversized file", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Image Event",
+        event_date: FUTURE_DATE,
+      });
+
+      await expect(
+        eventService.uploadEventImage(
+          "org-1",
+          created.id,
+          createMockImageFile({ size: 6 * 1024 * 1024 }),
+        ),
+      ).rejects.toThrow("Image too large");
+    });
+
+    test("should delete old image when replacing", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Image Event",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateImage(created.id, "https://res.cloudinary.com/demo/image/upload/v1/gigspass/events/1/old-image.jpg");
+
+      await eventService.uploadEventImage("org-1", created.id, createMockImageFile());
+
+      expect(cloudinaryService.deleteImage).toHaveBeenCalledTimes(1);
+      expect(cloudinaryService.deleteImage).toHaveBeenCalledWith("old-image");
     });
   });
 });

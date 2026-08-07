@@ -69,9 +69,31 @@ const getById = async (req, res) => {
   }
 };
 
+const uploadImage = async (req, res) => {
+  try {
+    const event = await eventService.uploadEventImage(
+      req.user.id,
+      req.params.id,
+      req.file,
+    );
+
+    return res.status(200).json({
+      status: "success",
+      message: "Event image uploaded",
+      data: { event },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
+
 module.exports = {
   create,
   update,
   list,
   getById,
+  uploadImage,
 };
