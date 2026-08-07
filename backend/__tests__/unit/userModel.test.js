@@ -24,8 +24,8 @@ describe("User Model", () => {
       expect(user).toBeDefined();
       expect(user.email).toBe("test@example.com");
       expect(user.role).toBe("buyer");
-      expect(user.full_name).toBe("John Doe");
-      expect(user.password_hash).toBeUndefined();
+      expect(user.name).toBe("John Doe");
+      expect(user.password).toBeUndefined();
     });
 
     test("should create organizer user", async () => {
@@ -57,16 +57,10 @@ describe("User Model", () => {
       expect(user1.id).not.toBe(user2.id);
     });
 
-    test("should accept null full_name", async () => {
-      const user = await createUser(
-        "nofullname@example.com",
-        "hashedpassword123",
-        "buyer",
-        null,
-      );
-
-      expect(user).toBeDefined();
-      expect(user.full_name).toBeNull();
+    test("should reject null name (schema: notNull true)", async () => {
+      await expect(
+        createUser("noname@example.com", "hashedpassword123", "buyer", null),
+      ).rejects.toThrow();
     });
   });
 
@@ -83,7 +77,7 @@ describe("User Model", () => {
 
       expect(user).toBeDefined();
       expect(user.email).toBe("find@example.com");
-      expect(user.full_name).toBe("Find Me");
+      expect(user.name).toBe("Find Me");
     });
 
     test("should return null when user not found", async () => {
@@ -105,7 +99,7 @@ describe("User Model", () => {
       expect(user).toBeNull();
     });
 
-    test("should include password_hash in result", async () => {
+    test("should include password in result", async () => {
       await createUser(
         "withpass@example.com",
         "hashedpassword123",
@@ -115,7 +109,7 @@ describe("User Model", () => {
 
       const user = await findByEmail("withpass@example.com");
 
-      expect(user.password_hash).toBe("hashedpassword123");
+      expect(user.password).toBe("hashedpassword123");
     });
   });
 
@@ -141,7 +135,7 @@ describe("User Model", () => {
       expect(user).toBeNull();
     });
 
-    test("should not include password_hash in result", async () => {
+    test("should not include password in result", async () => {
       const created = await createUser(
         "nopassword@example.com",
         "hashedpassword123",
@@ -151,7 +145,7 @@ describe("User Model", () => {
 
       const user = await findById(created.id);
 
-      expect(user.password_hash).toBeUndefined();
+      expect(user.password).toBeUndefined();
     });
 
     test("should include created_at timestamp", async () => {
