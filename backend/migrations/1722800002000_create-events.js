@@ -1,7 +1,8 @@
 /**
  * Tabel events.
- * status: draft -> pending_approval -> published (oleh admin), atau cancelled
- * (organizer lapor batal resmi, memicu refund_triggered di orders terkait).
+ * status: draft -> published (organizer sendiri), suspended (admin, investigasi),
+ * atau cancelled (organizer/admin lapor batal resmi, memicu refund_triggered di orders terkait).
+ * suspended/cancelled hanya valid kalau event_date > NOW() (belum digelar).
  */
 
 exports.up = (pgm) => {
@@ -25,7 +26,7 @@ exports.up = (pgm) => {
       type: 'varchar(20)',
       notNull: true,
       default: 'draft',
-      check: "status IN ('draft', 'pending_approval', 'published', 'cancelled')",
+      check: "status IN ('draft', 'published', 'suspended', 'cancelled')",
     },
     created_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
     updated_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
