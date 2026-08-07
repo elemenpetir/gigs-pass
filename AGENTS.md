@@ -63,6 +63,34 @@ pending → holding_period (after event_date)
               └── held / refunded (admin manual override — ONLY valid while status = holding_period)
 ```
 
+## API Response Convention (envelope format)
+
+Semua endpoint backend harus mengembalikan respons dengan envelope yang konsisten:
+
+### Success
+```json
+{
+  "status": "success",
+  "message": "<deskripsi singkat>",
+  "data": { }
+}
+```
+
+### Error
+```json
+{
+  "status": "error",
+  "message": "<alasan kegagalan>"
+}
+```
+
+### Aturan
+- HTTP status code tetap mencerminkan hasil (2xx success, 4xx client error, 5xx server error) — jangan duplikasi di field `status`
+- Field `status` di body membedakan success/error, bukan menggantikan HTTP code
+- Semua payload business logic ada di `data` (kecuali error — tanpa `data`)
+- Berlaku untuk SEMUA endpoint ke depan (auth, events, categories, queue, orders, ledger, analytics)
+- Response tidak pernah mengekspos password/hash
+
 ## Design System
 
 Frontend must follow `docs/design/design.md`:
