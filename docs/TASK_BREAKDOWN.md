@@ -5,9 +5,9 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** Fase 0 — Frontend setup + custom pop design components completed
-- **Keputusan Teknis / Catatan:** Backend Phase 0 complete (express, db pool, redis, migrations). Frontend Phase 0 complete (Vite, Tailwind v4, shadcn/ui, custom components with pop design). Explicit commit & push protocol added to AGENTS.md.
-- **Task Selanjutnya:** Fase 1 — Auth & Middleware (backend)
+- **Terakhir Dikerjakan:** Fase 1 — Auth & Middleware (backend) completed
+- **Keputusan Teknis / Catatan:** Fase 0 complete (setup, migrations ke Supabase, ESLint, Jest). Fase 1 complete (authService, userModel, authController, middlewares authenticate/authorize, routes, 56 tests pass). API Response Convention (envelope format) ditambahkan ke AGENTS.md. Supabase pooler memerlukan username qualified (`postgres.<project_ref>`) di DATABASE_URL.
+- **Task Selanjutnya:** Fase 2 — Event Management
 
 ## Ringkasan per Minggu
 
@@ -31,24 +31,24 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 - [x] Setup struktur folder backend (MVC/service layer): `src/routes/`, `src/controllers/`, `src/services/`, `src/models/`, `src/middlewares/`, `src/config/`, `src/jobs/`, `src/utils/`
 - [x] Setup koneksi PostgreSQL dengan connection pool (`pg.Pool`), baca `DATABASE_URL` dari `.env`
 - [x] Setup `node-pg-migrate`, copy migration files yang sudah dibuat ke `backend/migrations/`
-- [ ] Jalankan migration ke database Supabase/Neon, verifikasi semua tabel & seed platform_revenue terbuat
+- [x] Jalankan migration ke database Supabase/Neon, verifikasi semua tabel & seed platform_revenue terbuat
 - [x] Setup koneksi Redis (Upstash) — buat helper/client terpisah (`src/config/redis.js`)
 - [x] Setup `.env.example` (tanpa value asli) + pastikan `.env` masuk `.gitignore`
 - [x] Setup Express app skeleton: health check endpoint `GET /api/health`
 - [x] Setup `frontend/`: Vite + React, Tailwind CSS, shadcn/ui dengan custom pop design components
-- [ ] Setup ESLint/Prettier dasar (opsional, kalau mau konsisten dari awal)
+- [x] Setup ESLint/Prettier dasar (opsional, kalau mau konsisten dari awal)
 
 ---
 
 ### Fase 1 — Auth & Middleware
 
-- [ ] Buat service `hashPassword`/`comparePassword` (bcrypt)
-- [ ] Endpoint `POST /api/auth/register` — buyer & organizer, validasi email unik
-- [ ] Endpoint `POST /api/auth/login` — return JWT
-- [ ] Middleware `authenticate` — verifikasi JWT, attach `req.user`
-- [ ] Middleware `authorize(roles)` — cek role sesuai endpoint
-- [ ] Endpoint `GET /api/auth/me`
-- [ ] Unit test: register, login (sukses & gagal), akses endpoint protected tanpa token
+- [x] Buat service `hashPassword`/`comparePassword` (bcrypt)
+- [x] Endpoint `POST /api/auth/register` — buyer & organizer, validasi email unik
+- [x] Endpoint `POST /api/auth/login` — return JWT
+- [x] Middleware `authenticate` — verifikasi JWT, attach `req.user`
+- [x] Middleware `authorize(roles)` — cek role sesuai endpoint
+- [x] Endpoint `GET /api/auth/me`
+- [x] Unit test: register, login (sukses & gagal), akses endpoint protected tanpa token
 
 ---
 
