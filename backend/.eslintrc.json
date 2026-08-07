@@ -1,7 +1,8 @@
 {
   "env": {
     "node": true,
-    "es2021": true
+    "es2021": true,
+    "jest": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
@@ -11,9 +12,9 @@
   "rules": {
     "indent": ["error", 2],
     "linebreak-style": ["error", "unix"],
-    "quotes": ["error", "single"],
+    "quotes": ["error", "double", { "avoidEscape": true }],
     "semi": ["error", "always"],
-    "no-unused-vars": ["warn"],
+    "no-unused-vars": ["warn", { "ignoreRestSiblings": true }],
     "no-console": "off",
     "eqeqeq": ["error", "always"]
   }

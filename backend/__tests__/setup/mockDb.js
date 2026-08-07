@@ -9,8 +9,8 @@ const mockDb = {
   },
 
   query(sql, params) {
-    if (sql.includes('INSERT INTO users')) {
-      const [email, password, role, name] = params;
+    if (sql.includes("INSERT INTO users")) {
+      const [email, hashedPassword, role, name] = params;
       if (!name) {
         return Promise.reject(new Error('null value in column "name" violates not-null constraint'));
       }
@@ -18,23 +18,23 @@ const mockDb = {
       const user = {
         id,
         email,
-        password,
+        password: hashedPassword,
         role,
         name,
         created_at: new Date(),
       };
       this.users.push(user);
-      const { password: pass, ...userWithoutPassword } = user;
+      const { password, ...userWithoutPassword } = user;
       return Promise.resolve({ rows: [userWithoutPassword], rowCount: 1 });
     }
 
-    if (sql.includes('SELECT * FROM users WHERE email')) {
+    if (sql.includes("SELECT * FROM users WHERE email")) {
       const [email] = params;
       const user = this.users.find((u) => u.email === email);
       return Promise.resolve({ rows: user ? [user] : [], rowCount: user ? 1 : 0 });
     }
 
-    if (sql.includes('SELECT id, email, role, name, created_at FROM users WHERE id')) {
+    if (sql.includes("SELECT id, email, role, name, created_at FROM users WHERE id")) {
       const [id] = params;
       const user = this.users.find((u) => u.id === id);
       if (!user) {
