@@ -77,10 +77,10 @@ Membangun platform ticketing dengan mekanisme virtual queue untuk menangani lonj
 
 ### 4.3 Admin
 
-- Approve event sebelum tayang publik (opsional, sederhana).
-- Melihat seluruh transaksi & status ledger lintas event.
-- Melakukan manual override status dana (dipicu laporan eksternal/investigasi manual, bukan dispute otomatis dari customer).
-- Melihat dashboard statistik platform secara keseluruhan.
+- Mengontrol event status: suspend (freeze, investigasi) atau cancel (refund) hanya jika belum digelar
+- Melihat seluruh transaksi & status ledger lintas event
+- Melakukan manual override status dana (dipicu laporan eksternal/investigasi manual)
+- Melihat dashboard statistik platform secara keseluruhan
 
 Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dynamic RBAC, untuk menjaga scope tetap terkendali.
 
@@ -101,7 +101,8 @@ Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dyna
 - Upload gambar event via Cloudinary (free tier) — memenuhi requirement upload file.
 - Deskripsi event dalam format konten dinamis (gambar + teks, ala halaman artikel).
 - Kategori tiket & kuota per kategori.
-- Approval event oleh admin (sederhana) sebelum tayang publik.
+- Organizer bisa publish event sendiri (status draft → published).
+- Admin bisa suspend/cancel event hanya jika belum digelar, cancel juga memicu refund di orders terkait.
 
 ### 5.3 Virtual Queue
 
@@ -216,7 +217,7 @@ title
 description (rich content / artikel)
 image_url (Cloudinary)
 event_date
-status (draft / published / cancelled)
+status (draft / published / suspended / cancelled)
 created_at
 updated_at
 ```
@@ -278,9 +279,12 @@ GET  /api/auth/me
 ```txt
 GET    /api/events                 (public, tanpa login)
 GET    /api/events/:id             (public, tanpa login)
-POST   /api/events                 (organizer)
-PUT    /api/events/:id             (organizer)
-POST   /api/events/:id/publish     (admin approve)
+POST   /api/events                 (organizer, draft)
+PUT    /api/events/:id             (organizer, hanya pemilik)
+POST   /api/events/:id/publish     (organizer, hanya pemilik — draft to published)
+PUT    /api/events/:id/suspend     (admin — published to suspended, hanya belum digelar)
+PUT    /api/events/:id/cancel      (organizer/admin — published/suspended to cancelled, trigger refund)
+POST   /api/events/:id/image       (organizer, hanya pemilik)
 ```
 
 ### 8.3 Ticket Categories

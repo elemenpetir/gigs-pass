@@ -63,6 +63,31 @@ pending → holding_period (after event_date)
               └── held / refunded (admin manual override — ONLY valid while status = holding_period)
 ```
 
+### Event Status Flow (Limited Lifecycle)
+Event status hanya dapat diintervensi **SEBELUM event_date**. Setelah event digelar, intervensi pindah ke order flow:
+
+```
+draft → published (organizer)
+              ├── suspended (admin — violation investigasi, belum digelar)
+              │    ├── published (admin unsuspend, clear)
+              │    └── cancelled (admin confirmed batal) → trigger refund_triggered di semua orders
+              └── cancelled (organizer/admin langsung) → trigger refund_triggered di semua orders terkait
+
+SETELAH event_date LEWAT:
+  Event status: TIDAK BERUBAH (biarkan as-is)
+  Yang berjalan: Order status flow (holding_period → released/refund_triggered/held/refunded)
+  Violation/dispute: ditangani via admin override di orders
+```
+
+### Event Status Constraints
+- `suspended`/`cancelled` hanya valid kalau `event_date > NOW()` (belum digelar)
+- Organizer bukan pemilik → update event gagal (403)
+- `publish` → hanya dari status `draft`
+- `suspend` → hanya dari status `published`, hanya admin
+- `cancel` → hanya dari status `published`/`suspended`, hanya organizer/admin, dan hanya jika belum digelar
+- `suspended` **tidak** trigger refund (hanya review sementara)
+- `cancelled` **wajib** trigger refund_triggered di semua orders terkait
+
 ## API Response Convention (envelope format)
 
 Semua endpoint backend harus mengembalikan respons dengan envelope yang konsisten:

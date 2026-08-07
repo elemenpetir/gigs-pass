@@ -54,14 +54,18 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 2 — Event Management
 
+- [ ] Update migration `1722800002000_create-events.js` — hapus `pending_approval`, tambah `suspended` status
 - [ ] Endpoint `POST /api/events` (organizer) — create event status `draft`
-- [ ] Endpoint `PUT /api/events/:id` (organizer, hanya pemilik event)
+- [ ] Endpoint `PUT /api/events/:id` (organizer, hanya pemilik)
 - [ ] Setup Cloudinary SDK, buat service upload gambar
-- [ ] Endpoint upload gambar event (terpisah atau embedded di create/update event)
+- [ ] Endpoint `POST /api/events/:id/image` (organizer, hanya pemilik) — upload gambar
+- [ ] Endpoint `PUT /api/events/:id/unpublish` (organizer, hanya pemilik) — optional, jika ingin drawer pulang dari published ke draft (tidak wajib MVP)
+- [ ] Endpoint `PUT /api/events/:id/publish` (organizer, hanya pemilik — status `draft` to `published`)
+- [ ] Endpoint `PUT /api/events/:id/suspend` (admin) — status `published` to `suspended`, hanya jika belum digelar
+- [ ] Endpoint `PUT /api/events/:id/cancel` (organizer/admin) — status `published`/`suspended` to `cancelled`, hanya jika belum digelar, trigger refund di orders
 - [ ] Endpoint `GET /api/events` (public, tanpa login, hanya status `published`)
 - [ ] Endpoint `GET /api/events/:id` (public, tanpa login)
-- [ ] Endpoint `POST /api/events/:id/publish` (admin, ubah status ke `published`)
-- [ ] Unit test: create event, update event oleh bukan pemilik (harus gagal), publish oleh non-admin (harus gagal)
+- [ ] Unit test: create event, update oleh bukan pemilik (gagal), publish oleh non-organizer (gagal), suspend/cancel saat sudah digelar (gagal)
 
 ---
 
