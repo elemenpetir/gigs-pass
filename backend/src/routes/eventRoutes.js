@@ -14,6 +14,7 @@ const router = express.Router();
 
 router.get("/", eventController.list);
 router.get("/:id", eventController.getById);
+router.get("/:id/categories", categoryController.listByEvent);
 
 router.post(
   "/",

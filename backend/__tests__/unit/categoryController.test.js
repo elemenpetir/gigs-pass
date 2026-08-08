@@ -163,4 +163,45 @@ describe("Category Controller", () => {
       expect(res.body.message).toBe("Category not found");
     });
   });
+
+  describe("listByEvent", () => {
+    test("should return categories for event with 200", async () => {
+      const createEventReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Festival", event_date: FUTURE_DATE },
+      };
+      const createEventRes = createMockReqRes();
+      await eventController.create(createEventReq, createEventRes);
+      const eventId = createEventRes.body.data.event.id;
+
+      const createCatReq = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: eventId },
+        body: { name: "Early Bird", price: 150000, quota: 50 },
+      };
+      await categoryController.create(createCatReq, createMockReqRes());
+
+      const req = { params: { id: eventId } };
+      const res = createMockReqRes();
+
+      await categoryController.listByEvent(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.status).toBe("success");
+      expect(res.body.message).toBe("Ticket categories retrieved");
+      expect(res.body.data.categories).toHaveLength(1);
+      expect(res.body.data.categories[0].name).toBe("Early Bird");
+    });
+
+    test("should return 404 for non-existent event", async () => {
+      const req = { params: { id: 9999 } };
+      const res = createMockReqRes();
+
+      await categoryController.listByEvent(req, res);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toBe("Event not found");
+    });
+  });
 });

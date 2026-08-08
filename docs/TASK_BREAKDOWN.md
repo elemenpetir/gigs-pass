@@ -5,9 +5,9 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** Fase 3 — Ticket Categories (backend) partial
-- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 progress: create & update kategori + inisialisasi/sync Redis stock, 145 tests pass. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
-- **Task Selanjutnya:** Fase 3 lanjutan — endpoint `GET /api/events/:id/categories` (public), lalu Fase 4
+- **Terakhir Dikerjakan:** Fase 3 — Ticket Categories (backend) complete
+- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync), 150 tests pass. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
+- **Task Selanjutnya:** Fase 4 — Virtual Queue (Redis)
 
 ## Ringkasan per Minggu
 
@@ -73,7 +73,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 - [x] Endpoint `POST /api/events/:id/categories` (organizer)
 - [x] Endpoint `PUT /api/categories/:id` (organizer, hanya pemilik)
-- [ ] Endpoint `GET /api/events/:id/categories` (public)
+- [x] Endpoint `GET /api/events/:id/categories` (public)
 - [x] Setelah kategori dibuat, inisialisasi `stock:category:{id}` di Redis = `quota`
 - [x] Unit test: create kategori, cek stock Redis ter-inisialisasi benar
 

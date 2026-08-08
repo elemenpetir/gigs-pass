@@ -235,4 +235,46 @@ describe("Category Service", () => {
       ).rejects.toThrow("Quota must be a positive integer");
     });
   });
+
+  describe("listCategoriesByEvent", () => {
+    test("should return categories for an event", async () => {
+      const event = await eventService.createEvent("org-1", {
+        title: "Concert",
+        event_date: FUTURE_DATE,
+      });
+      await categoryService.createCategory("org-1", event.id, {
+        name: "VIP",
+        price: 500000,
+        quota: 100,
+      });
+      await categoryService.createCategory("org-1", event.id, {
+        name: "GA",
+        price: 100000,
+        quota: 500,
+      });
+
+      const categories = await categoryService.listCategoriesByEvent(event.id);
+
+      expect(categories).toHaveLength(2);
+      expect(categories.map((c) => c.name)).toContain("VIP");
+      expect(categories.map((c) => c.name)).toContain("GA");
+    });
+
+    test("should return empty array when event has no categories", async () => {
+      const event = await eventService.createEvent("org-1", {
+        title: "Concert",
+        event_date: FUTURE_DATE,
+      });
+
+      const categories = await categoryService.listCategoriesByEvent(event.id);
+
+      expect(categories).toEqual([]);
+    });
+
+    test("should reject listing categories of non-existent event", async () => {
+      await expect(
+        categoryService.listCategoriesByEvent(9999),
+      ).rejects.toThrow("Event not found");
+    });
+  });
 });

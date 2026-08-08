@@ -103,7 +103,19 @@ const updateCategory = async (userId, categoryId, data) => {
   return updated;
 };
 
+const listCategoriesByEvent = async (eventId) => {
+  const event = await eventModel.findById(eventId);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return categoryModel.findByEventId(eventId);
+};
+
 module.exports = {
   createCategory,
   updateCategory,
+  listCategoriesByEvent,
 };

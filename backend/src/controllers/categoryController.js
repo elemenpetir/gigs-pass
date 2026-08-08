@@ -42,7 +42,25 @@ const update = async (req, res) => {
   }
 };
 
+const listByEvent = async (req, res) => {
+  try {
+    const categories = await categoryService.listCategoriesByEvent(req.params.id);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Ticket categories retrieved",
+      data: { categories },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
+
 module.exports = {
   create,
   update,
+  listByEvent,
 };
