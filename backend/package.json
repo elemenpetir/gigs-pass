@@ -10,7 +10,9 @@
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
     "lint": "eslint src/ __tests__/ --fix",
-    "test": "jest"
+    "test": "jest",
+    "test:integration": "jest --config jest.config.integration.js --runInBand",
+    "test:all": "npm test && npm run test:integration"
   },
   "keywords": [],
   "author": "",
