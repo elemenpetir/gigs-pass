@@ -411,4 +411,130 @@ describe("Event Controller", () => {
       expect(res.body.message).toBe("Event not found");
     });
   });
+
+  describe("cancel", () => {
+    test("should cancel published event by owner and return 200", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Cancel Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      await eventController.publish(
+        { user: { id: "org-1", role: "organizer" }, params: { id: eventId } },
+        createMockReqRes(),
+      );
+
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: eventId },
+      };
+      const res = createMockReqRes();
+
+      await eventController.cancel(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.status).toBe("success");
+      expect(res.body.message).toBe("Event cancelled");
+      expect(res.body.data.event.status).toBe("cancelled");
+    });
+
+    test("should cancel suspended event by admin and return 200", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Suspended Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      await eventController.publish(
+        { user: { id: "org-1", role: "organizer" }, params: { id: eventId } },
+        createMockReqRes(),
+      );
+      await eventController.suspend({ params: { id: eventId } }, createMockReqRes());
+
+      const req = {
+        user: { id: "admin-1", role: "admin" },
+        params: { id: eventId },
+      };
+      const res = createMockReqRes();
+
+      await eventController.cancel(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.event.status).toBe("cancelled");
+    });
+
+    test("should return 403 when non-owner organizer cancels", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Cancel Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      await eventController.publish(
+        { user: { id: "org-1", role: "organizer" }, params: { id: eventId } },
+        createMockReqRes(),
+      );
+
+      const req = {
+        user: { id: "org-2", role: "organizer" },
+        params: { id: eventId },
+      };
+      const res = createMockReqRes();
+
+      await eventController.cancel(req, res);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toContain("only event owner");
+    });
+
+    test("should return 400 when cancelling a past event", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Past Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      await eventModel.updateEvent(eventId, "Past Event", null, PAST_DATE);
+      await eventController.publish(
+        { user: { id: "org-1", role: "organizer" }, params: { id: eventId } },
+        createMockReqRes(),
+      );
+
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: eventId },
+      };
+      const res = createMockReqRes();
+
+      await eventController.cancel(req, res);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toContain("has already taken place");
+    });
+
+    test("should return 404 for cancelling non-existent event", async () => {
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: 9999 },
+      };
+      const res = createMockReqRes();
+
+      await eventController.cancel(req, res);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toBe("Event not found");
+    });
+  });
 });

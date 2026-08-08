@@ -50,4 +50,11 @@ router.put(
   eventController.suspend,
 );
 
+router.put(
+  "/:id/cancel",
+  authenticate,
+  authorize(["organizer", "admin"]),
+  eventController.cancel,
+);
+
 module.exports = router;

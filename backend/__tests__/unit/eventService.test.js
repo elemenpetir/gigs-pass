@@ -20,6 +20,32 @@ const createMockImageFile = (overrides = {}) => ({
   ...overrides,
 });
 
+const seedCategoryAndOrder = (eventId, buyerId, status = "pending") => {
+  const category = {
+    id: `cat-${mockDb.categories.length + 1}`,
+    event_id: eventId,
+    name: "General Admission",
+    price: 100,
+    quota: 10,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+  mockDb.categories.push(category);
+
+  const order = {
+    id: `ord-${mockDb.orders.length + 1}`,
+    buyer_id: buyerId,
+    category_id: category.id,
+    status,
+    holding_until: null,
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+  mockDb.orders.push(order);
+
+  return { category, order };
+};
+
 describe("Event Service", () => {
   beforeEach(() => {
     mockDb.reset();
@@ -364,6 +390,96 @@ describe("Event Service", () => {
       await expect(
         eventService.suspendEvent(created.id),
       ).rejects.toThrow("Only published events can be suspended");
+    });
+  });
+
+  describe("cancelEvent", () => {
+    test("should cancel published event by owner and trigger refund_triggered on related orders", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Cancel Test",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateStatus(created.id, "published");
+      const { order } = seedCategoryAndOrder(created.id, "buyer-1");
+
+      const cancelled = await eventService.cancelEvent(
+        { userId: "org-1", role: "organizer" },
+        created.id,
+      );
+
+      expect(cancelled).toBeDefined();
+      expect(cancelled.status).toBe("cancelled");
+      expect(order.status).toBe("refund_triggered");
+    });
+
+    test("should cancel suspended event by admin", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Suspended Event",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateStatus(created.id, "published");
+      await eventModel.updateStatus(created.id, "suspended");
+
+      const cancelled = await eventService.cancelEvent(
+        { userId: "admin-1", role: "admin" },
+        created.id,
+      );
+
+      expect(cancelled.status).toBe("cancelled");
+    });
+
+    test("should reject cancel by non-owner organizer", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Cancel Test",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateStatus(created.id, "published");
+
+      await expect(
+        eventService.cancelEvent(
+          { userId: "org-2", role: "organizer" },
+          created.id,
+        ),
+      ).rejects.toThrow("only event owner can cancel");
+    });
+
+    test("should reject cancel of non-existent event", async () => {
+      await expect(
+        eventService.cancelEvent(
+          { userId: "org-1", role: "organizer" },
+          9999,
+        ),
+      ).rejects.toThrow("Event not found");
+    });
+
+    test("should reject cancel of an event that already took place", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Past Event",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateEvent(created.id, "Past Event", null, PAST_DATE);
+      await eventModel.updateStatus(created.id, "published");
+
+      await expect(
+        eventService.cancelEvent(
+          { userId: "org-1", role: "organizer" },
+          created.id,
+        ),
+      ).rejects.toThrow("has already taken place");
+    });
+
+    test("should reject cancel if event is not published or suspended", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Draft Event",
+        event_date: FUTURE_DATE,
+      });
+
+      await expect(
+        eventService.cancelEvent(
+          { userId: "org-1", role: "organizer" },
+          created.id,
+        ),
+      ).rejects.toThrow("Only published or suspended events can be cancelled");
     });
   });
 });

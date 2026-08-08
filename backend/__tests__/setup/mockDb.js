@@ -1,15 +1,23 @@
 let idCounter = 1;
 let eventIdCounter = 1;
+let categoryIdCounter = 1;
+let orderIdCounter = 1;
 
 const mockDb = {
   users: [],
   events: [],
+  categories: [],
+  orders: [],
 
   reset() {
     this.users = [];
     this.events = [];
+    this.categories = [];
+    this.orders = [];
     idCounter = 1;
     eventIdCounter = 1;
+    categoryIdCounter = 1;
+    orderIdCounter = 1;
   },
 
   query(sql, params) {
@@ -107,6 +115,51 @@ const mockDb = {
       event.image_url = imageUrl;
       event.updated_at = new Date();
       return Promise.resolve({ rows: [event], rowCount: 1 });
+    }
+
+    if (sql.includes("INSERT INTO ticket_categories")) {
+      const [eventId, name, price, quota] = params;
+      const id = categoryIdCounter++;
+      const category = {
+        id,
+        event_id: eventId,
+        name,
+        price,
+        quota,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+      this.categories.push(category);
+      return Promise.resolve({ rows: [category], rowCount: 1 });
+    }
+
+    if (sql.includes("INSERT INTO orders")) {
+      const [buyerId, categoryId, status] = params;
+      const id = orderIdCounter++;
+      const order = {
+        id,
+        buyer_id: buyerId,
+        category_id: categoryId,
+        status: status || "pending",
+        holding_until: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+      this.orders.push(order);
+      return Promise.resolve({ rows: [order], rowCount: 1 });
+    }
+
+    if (sql.includes("UPDATE orders") && sql.includes("refund_triggered")) {
+      const [eventId] = params;
+      const matching = this.orders.filter((order) => {
+        const category = this.categories.find((c) => c.id === order.category_id);
+        return category && category.event_id === eventId;
+      });
+      matching.forEach((order) => {
+        order.status = "refund_triggered";
+        order.updated_at = new Date();
+      });
+      return Promise.resolve({ rows: matching, rowCount: matching.length });
     }
 
     if (sql.includes("FROM events WHERE id")) {

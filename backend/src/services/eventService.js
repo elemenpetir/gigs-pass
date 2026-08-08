@@ -1,4 +1,5 @@
 const eventModel = require("../models/eventModel");
+const orderModel = require("../models/orderModel");
 const cloudinaryService = require("./cloudinaryService");
 
 const isFutureDate = (date) => {
@@ -178,6 +179,38 @@ const suspendEvent = async (eventId) => {
   return eventModel.updateStatus(eventId, "suspended");
 };
 
+const cancelEvent = async ({ userId, role }, eventId) => {
+  const event = await eventModel.findById(eventId);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (role === "organizer" && event.organizer_id !== userId) {
+    const error = new Error("Forbidden: only event owner can cancel");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (!isFutureDate(event.event_date)) {
+    const error = new Error("Cannot cancel an event that has already taken place");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (event.status !== "published" && event.status !== "suspended") {
+    const error = new Error("Only published or suspended events can be cancelled");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const cancelled = await eventModel.updateStatus(eventId, "cancelled");
+  await orderModel.markRefundTriggeredByEventId(eventId);
+
+  return cancelled;
+};
+
 module.exports = {
   createEvent,
   updateEvent,
@@ -186,4 +219,5 @@ module.exports = {
   uploadEventImage,
   publishEvent,
   suspendEvent,
+  cancelEvent,
 };
