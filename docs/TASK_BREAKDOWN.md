@@ -5,8 +5,8 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** Fase 3 — Ticket Categories (backend) complete
-- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync), 150 tests pass. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
+- **Terakhir Dikerjakan:** Integration test infra (real DB Neon + real Redis Upstash)
+- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync). Tambahan: lapisan integration test DB nyata — `npm run test:integration` (jest.config.integration.js, globalSetup migrate ke DATABASE_URL_TEST=Neon, cleanup truncate+re-seed platform_revenue). Unit test mock tetap 150, integration 20 (auth/events/categories/models), total 170. `db.js` kini pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
 - **Task Selanjutnya:** Fase 4 — Virtual Queue (Redis)
 
 ## Ringkasan per Minggu
