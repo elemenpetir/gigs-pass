@@ -155,6 +155,29 @@ const publishEvent = async (userId, eventId) => {
   return eventModel.updateStatus(eventId, "published");
 };
 
+const suspendEvent = async (eventId) => {
+  const event = await eventModel.findById(eventId);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!isFutureDate(event.event_date)) {
+    const error = new Error("Cannot suspend an event that has already taken place");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (event.status !== "published") {
+    const error = new Error("Only published events can be suspended");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return eventModel.updateStatus(eventId, "suspended");
+};
+
 module.exports = {
   createEvent,
   updateEvent,
@@ -162,4 +185,5 @@ module.exports = {
   getEventById,
   uploadEventImage,
   publishEvent,
+  suspendEvent,
 };

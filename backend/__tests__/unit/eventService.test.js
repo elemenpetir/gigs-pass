@@ -321,4 +321,49 @@ describe("Event Service", () => {
       ).rejects.toThrow("Only draft events can be published");
     });
   });
+
+  describe("suspendEvent", () => {
+    test("should suspend published event before it takes place", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Suspension Test",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateStatus(created.id, "published");
+
+      const suspended = await eventService.suspendEvent(created.id);
+
+      expect(suspended).toBeDefined();
+      expect(suspended.status).toBe("suspended");
+    });
+
+    test("should reject suspend of non-existent event", async () => {
+      await expect(
+        eventService.suspendEvent(9999),
+      ).rejects.toThrow("Event not found");
+    });
+
+    test("should reject suspend of an event that already took place", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Past Event",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateEvent(created.id, "Past Event", null, PAST_DATE);
+      await eventModel.updateStatus(created.id, "published");
+
+      await expect(
+        eventService.suspendEvent(created.id),
+      ).rejects.toThrow("has already taken place");
+    });
+
+    test("should reject suspend if event is not published", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Draft Event",
+        event_date: FUTURE_DATE,
+      });
+
+      await expect(
+        eventService.suspendEvent(created.id),
+      ).rejects.toThrow("Only published events can be suspended");
+    });
+  });
 });

@@ -7,6 +7,7 @@ jest.mock("../../src/services/cloudinaryService", () => ({
 }));
 
 const eventController = require("../../src/controllers/eventController");
+const eventModel = require("../../src/models/eventModel");
 const cloudinaryService = require("../../src/services/cloudinaryService");
 
 const createMockReqRes = () => {
@@ -340,6 +341,70 @@ describe("Event Controller", () => {
       const res = createMockReqRes();
 
       await eventController.publish(req, res);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toBe("Event not found");
+    });
+  });
+
+  describe("suspend", () => {
+    test("should suspend published event and return 200", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Suspend Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      const publishReq = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: eventId },
+      };
+      await eventController.publish(publishReq, createMockReqRes());
+
+      const req = { params: { id: eventId } };
+      const res = createMockReqRes();
+
+      await eventController.suspend(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.status).toBe("success");
+      expect(res.body.message).toBe("Event suspended");
+      expect(res.body.data.event.status).toBe("suspended");
+    });
+
+    test("should return 400 when suspending a past event", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Past Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      await eventModel.updateEvent(eventId, "Past Event", null, PAST_DATE);
+      await eventController.publish(
+        { user: { id: "org-1", role: "organizer" }, params: { id: eventId } },
+        createMockReqRes(),
+      );
+
+      const req = { params: { id: eventId } };
+      const res = createMockReqRes();
+
+      await eventController.suspend(req, res);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toContain("has already taken place");
+    });
+
+    test("should return 404 for suspending non-existent event", async () => {
+      const req = { params: { id: 9999 } };
+      const res = createMockReqRes();
+
+      await eventController.suspend(req, res);
 
       expect(res.statusCode).toBe(404);
       expect(res.body.status).toBe("error");

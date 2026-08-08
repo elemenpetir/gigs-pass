@@ -107,6 +107,23 @@ const publish = async (req, res) => {
   }
 };
 
+const suspend = async (req, res) => {
+  try {
+    const event = await eventService.suspendEvent(req.params.id);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Event suspended",
+      data: { event },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
+
 module.exports = {
   create,
   update,
@@ -114,4 +131,5 @@ module.exports = {
   getById,
   uploadImage,
   publish,
+  suspend,
 };

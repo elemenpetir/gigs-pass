@@ -43,4 +43,11 @@ router.put(
   eventController.publish,
 );
 
+router.put(
+  "/:id/suspend",
+  authenticate,
+  authorize(["admin"]),
+  eventController.suspend,
+);
+
 module.exports = router;

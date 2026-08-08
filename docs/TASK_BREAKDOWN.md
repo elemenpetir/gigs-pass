@@ -7,7 +7,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 ## Status Terkini (Active Context)
 - **Terakhir Dikerjakan:** Fase 2 — Event Management (backend) partial
 - **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 progress: migration events diubah (hapus `pending_approval`, tambah `suspended`, di-re-run bersih di Supabase), CRUD event + upload gambar (Cloudinary + multer) selesai, 102 tests pass. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
-- **Task Selanjutnya:** Fase 2 lanjutan — endpoint suspend/cancel event (unit kerja #7-8), lalu Fase 3
+- **Task Selanjutnya:** Fase 2 lanjutan — endpoint cancel event (unit kerja #8), lalu Fase 3
 
 ## Ringkasan per Minggu
 
@@ -61,7 +61,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 - [x] Endpoint `POST /api/events/:id/image` (organizer, hanya pemilik) — upload gambar
 - [ ] Endpoint `PUT /api/events/:id/unpublish` (organizer, hanya pemilik) — optional, jika ingin drawer pulang dari published ke draft (tidak wajib MVP)
 - [x] Endpoint `PUT /api/events/:id/publish` (organizer, hanya pemilik — status `draft` to `published`)
-- [ ] Endpoint `PUT /api/events/:id/suspend` (admin) — status `published` to `suspended`, hanya jika belum digelar
+- [x] Endpoint `PUT /api/events/:id/suspend` (admin) — status `published` to `suspended`, hanya jika belum digelar
 - [ ] Endpoint `PUT /api/events/:id/cancel` (organizer/admin) — status `published`/`suspended` to `cancelled`, hanya jika belum digelar, trigger refund di orders
 - [x] Endpoint `GET /api/events` (public, tanpa login, hanya status `published`)
 - [x] Endpoint `GET /api/events/:id` (public, tanpa login)
