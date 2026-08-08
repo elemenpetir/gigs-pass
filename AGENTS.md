@@ -139,7 +139,7 @@ Follow `docs/TASK_BREAKDOWN.md` phase order — do not skip phases unless indepe
 Each checklist item = 1 unit of work = 1 commit.
 
 ### Before Committing
-1. Run tests (when available): `npm test`
+1. Run tests (when available): `npm test` (unit) dan `npm run test:integration` (real DB) — atau `npm run test:all` untuk keduanya
 2. Run lint (when available): `npm run lint`
 3. Verify no `.env` committed
 
@@ -203,6 +203,13 @@ Run against Supabase/Neon via `DATABASE_URL` env var.
 - Seat lock success/expired
 - Ledger balance (debit = kredit)
 - Refund flow on event cancel
+
+### Cara Menjalankan Test
+- `npm test` — unit test cepat (pakai `mockDb`, tanpa DB asli)
+- `npm run test:integration` — integration test terhadap **DB & Redis nyata** (`jest.config.integration.js`, `--runInBand`); migration dijalankan otomatis ke test DB oleh `globalSetup`
+- `npm run test:all` — keduanya berurutan
+- Prasyarat integration test (dari `backend/.env`): `DATABASE_URL_TEST` (test DB terpisah, mis. Neon branch), `DATABASE_SSL=true`, `REDIS_URL` (Upstash)
+- Kalau `DATABASE_URL_TEST` kosong, `test:integration` gagal dengan pesan jelas — jangan dianggap bug aplikasi
 
 ### Stress Testing (k6)
 Must prove:

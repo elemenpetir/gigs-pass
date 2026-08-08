@@ -169,7 +169,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 ### Fase 12 — Unit Test Lanjutan & CI
 
 - [ ] Lengkapi test coverage untuk semua service kritikal (ledger, queue, lock)
-- [ ] Setup GitHub Actions: jalankan test (`--runInBand`) setiap push
+- [ ] Setup GitHub Actions: jalankan `npm test` **dan** `npm run test:integration` (`--runInBand`) setiap push — pakai `services: postgres:latest` untuk integration test (tanpa Docker lokal)
 - [ ] Matikan auto-deploy, deploy hanya lewat GitHub Actions setelah test lolos (pola sama seperti AssetShield)
 
 ---
