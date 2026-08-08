@@ -278,4 +278,47 @@ describe("Event Service", () => {
       expect(cloudinaryService.deleteImage).toHaveBeenCalledWith("old-image");
     });
   });
+
+  describe("publishEvent", () => {
+    test("should publish event when owner and status is draft", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Draft Event",
+        event_date: FUTURE_DATE,
+      });
+
+      const published = await eventService.publishEvent("org-1", created.id);
+
+      expect(published).toBeDefined();
+      expect(published.status).toBe("published");
+    });
+
+    test("should reject publish by non-owner", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Draft Event",
+        event_date: FUTURE_DATE,
+      });
+
+      await expect(
+        eventService.publishEvent("org-2", created.id),
+      ).rejects.toThrow("only event owner can publish");
+    });
+
+    test("should reject publish of non-existent event", async () => {
+      await expect(
+        eventService.publishEvent("org-1", 9999),
+      ).rejects.toThrow("Event not found");
+    });
+
+    test("should reject publish if event is not in draft status", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Draft Event",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateStatus(created.id, "published");
+
+      await expect(
+        eventService.publishEvent("org-1", created.id),
+      ).rejects.toThrow("Only draft events can be published");
+    });
+  });
 });

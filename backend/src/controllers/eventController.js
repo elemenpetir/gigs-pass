@@ -90,10 +90,28 @@ const uploadImage = async (req, res) => {
   }
 };
 
+const publish = async (req, res) => {
+  try {
+    const event = await eventService.publishEvent(req.user.id, req.params.id);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Event published",
+      data: { event },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
+
 module.exports = {
   create,
   update,
   list,
   getById,
   uploadImage,
+  publish,
 };

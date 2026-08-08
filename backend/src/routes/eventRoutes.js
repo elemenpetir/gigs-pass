@@ -36,4 +36,11 @@ router.post(
   eventController.uploadImage,
 );
 
+router.put(
+  "/:id/publish",
+  authenticate,
+  authorize(["organizer"]),
+  eventController.publish,
+);
+
 module.exports = router;

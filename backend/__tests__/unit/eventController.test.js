@@ -285,4 +285,65 @@ describe("Event Controller", () => {
       expect(res.body.message).toBe("Event not found");
     });
   });
+
+  describe("publish", () => {
+    test("should publish event and return 200", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Draft Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: eventId },
+      };
+      const res = createMockReqRes();
+
+      await eventController.publish(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.status).toBe("success");
+      expect(res.body.message).toBe("Event published");
+      expect(res.body.data.event.status).toBe("published");
+    });
+
+    test("should return 403 when non-owner publishes", async () => {
+      const createReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Draft Event", event_date: FUTURE_DATE },
+      };
+      const createRes = createMockReqRes();
+      await eventController.create(createReq, createRes);
+      const eventId = createRes.body.data.event.id;
+
+      const req = {
+        user: { id: "org-2", role: "organizer" },
+        params: { id: eventId },
+      };
+      const res = createMockReqRes();
+
+      await eventController.publish(req, res);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toContain("only event owner");
+    });
+
+    test("should return 404 for publishing non-existent event", async () => {
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: 9999 },
+      };
+      const res = createMockReqRes();
+
+      await eventController.publish(req, res);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toBe("Event not found");
+    });
+  });
 });

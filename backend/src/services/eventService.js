@@ -132,10 +132,34 @@ const uploadEventImage = async (userId, eventId, file) => {
   return updated;
 };
 
+const publishEvent = async (userId, eventId) => {
+  const event = await eventModel.findById(eventId);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (event.organizer_id !== userId) {
+    const error = new Error("Forbidden: only event owner can publish");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (event.status !== "draft") {
+    const error = new Error("Only draft events can be published");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return eventModel.updateStatus(eventId, "published");
+};
+
 module.exports = {
   createEvent,
   updateEvent,
   listPublishedEvents,
   getEventById,
   uploadEventImage,
+  publishEvent,
 };
