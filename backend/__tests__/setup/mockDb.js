@@ -133,6 +133,19 @@ const mockDb = {
       return Promise.resolve({ rows: [category], rowCount: 1 });
     }
 
+    if (sql.includes("UPDATE ticket_categories")) {
+      const [id, name, price, quota] = params;
+      const category = this.categories.find((c) => c.id === id);
+      if (!category) {
+        return Promise.resolve({ rows: [], rowCount: 0 });
+      }
+      category.name = name;
+      category.price = price;
+      category.quota = quota;
+      category.updated_at = new Date();
+      return Promise.resolve({ rows: [category], rowCount: 1 });
+    }
+
     if (sql.includes("INSERT INTO orders")) {
       const [buyerId, categoryId, status] = params;
       const id = orderIdCounter++;
@@ -149,17 +162,31 @@ const mockDb = {
       return Promise.resolve({ rows: [order], rowCount: 1 });
     }
 
-    if (sql.includes("UPDATE orders") && sql.includes("refund_triggered")) {
+    if (sql.includes("UPDATE orders")) {
       const [eventId] = params;
-      const matching = this.orders.filter((order) => {
-        const category = this.categories.find((c) => c.id === order.category_id);
-        return category && category.event_id === eventId;
+      const matching = (this.orders || []).filter((order) => {
+        const category = (this.categories || []).find(
+          (c) => String(c.id) === String(order.category_id),
+        );
+        return category && String(category.event_id) === String(eventId);
       });
       matching.forEach((order) => {
         order.status = "refund_triggered";
         order.updated_at = new Date();
       });
       return Promise.resolve({ rows: matching, rowCount: matching.length });
+    }
+
+    if (sql.includes("FROM ticket_categories WHERE id")) {
+      const [id] = params;
+      const category = this.categories.find((c) => c.id === id);
+      return Promise.resolve({ rows: category ? [category] : [], rowCount: category ? 1 : 0 });
+    }
+
+    if (sql.includes("FROM ticket_categories WHERE event_id")) {
+      const [eventId] = params;
+      const cats = this.categories.filter((c) => c.event_id === eventId);
+      return Promise.resolve({ rows: cats, rowCount: cats.length });
     }
 
     if (sql.includes("FROM events WHERE id")) {

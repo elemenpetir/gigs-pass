@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const eventController = require("../controllers/eventController");
+const categoryController = require("../controllers/categoryController");
 const authenticate = require("../middlewares/authenticate");
 const authorize = require("../middlewares/authorize");
 
@@ -55,6 +56,13 @@ router.put(
   authenticate,
   authorize(["organizer", "admin"]),
   eventController.cancel,
+);
+
+router.post(
+  "/:id/categories",
+  authenticate,
+  authorize(["organizer"]),
+  categoryController.create,
 );
 
 module.exports = router;
