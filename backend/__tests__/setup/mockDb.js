@@ -177,13 +177,13 @@ const mockDb = {
       return Promise.resolve({ rows: matching, rowCount: matching.length });
     }
 
-    if (sql.includes("FROM ticket_categories WHERE id")) {
+    if (sql.includes("FROM ticket_categories") && sql.includes("WHERE id = $1")) {
       const [id] = params;
       const category = this.categories.find((c) => c.id === id);
       return Promise.resolve({ rows: category ? [category] : [], rowCount: category ? 1 : 0 });
     }
 
-    if (sql.includes("FROM ticket_categories WHERE event_id")) {
+    if (sql.includes("FROM ticket_categories") && sql.includes("WHERE event_id = $1")) {
       const [eventId] = params;
       const cats = this.categories.filter((c) => c.event_id === eventId);
       return Promise.resolve({ rows: cats, rowCount: cats.length });

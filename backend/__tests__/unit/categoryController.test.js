@@ -81,4 +81,86 @@ describe("Category Controller", () => {
       expect(res.body.message).toContain("only event owner");
     });
   });
+
+  describe("update", () => {
+    test("should update category and return 200", async () => {
+      const createEventReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Festival", event_date: FUTURE_DATE },
+      };
+      const createEventRes = createMockReqRes();
+      await eventController.create(createEventReq, createEventRes);
+      const eventId = createEventRes.body.data.event.id;
+
+      const createCatReq = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: eventId },
+        body: { name: "Early Bird", price: 150000, quota: 50 },
+      };
+      const createCatRes = createMockReqRes();
+      await categoryController.create(createCatReq, createCatRes);
+      const categoryId = createCatRes.body.data.category.id;
+
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: categoryId },
+        body: { name: "Regular", price: 200000, quota: 100 },
+      };
+      const res = createMockReqRes();
+
+      await categoryController.update(req, res);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.status).toBe("success");
+      expect(res.body.message).toBe("Ticket category updated");
+      expect(res.body.data.category.name).toBe("Regular");
+    });
+
+    test("should return 403 when non-owner updates category", async () => {
+      const createEventReq = {
+        user: { id: "org-1", role: "organizer" },
+        body: { title: "Festival", event_date: FUTURE_DATE },
+      };
+      const createEventRes = createMockReqRes();
+      await eventController.create(createEventReq, createEventRes);
+      const eventId = createEventRes.body.data.event.id;
+
+      const createCatReq = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: eventId },
+        body: { name: "Early Bird", price: 150000, quota: 50 },
+      };
+      const createCatRes = createMockReqRes();
+      await categoryController.create(createCatReq, createCatRes);
+      const categoryId = createCatRes.body.data.category.id;
+
+      const req = {
+        user: { id: "org-2", role: "organizer" },
+        params: { id: categoryId },
+        body: { name: "Hijacked" },
+      };
+      const res = createMockReqRes();
+
+      await categoryController.update(req, res);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toContain("only event owner");
+    });
+
+    test("should return 404 for updating non-existent category", async () => {
+      const req = {
+        user: { id: "org-1", role: "organizer" },
+        params: { id: 9999 },
+        body: { name: "Ghost" },
+      };
+      const res = createMockReqRes();
+
+      await categoryController.update(req, res);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body.status).toBe("error");
+      expect(res.body.message).toBe("Category not found");
+    });
+  });
 });
