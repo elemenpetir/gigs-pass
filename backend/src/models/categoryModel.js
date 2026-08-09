@@ -10,6 +10,16 @@ const createCategory = async (eventId, name, price, quota) => {
   return result.rows[0];
 };
 
+const findAll = async () => {
+  const query = `
+    SELECT id, event_id, name, price, quota, created_at, updated_at
+    FROM ticket_categories
+    ORDER BY id ASC;
+  `;
+  const result = await pool.query(query);
+  return result.rows;
+};
+
 const findById = async (id) => {
   const query = `
     SELECT id, event_id, name, price, quota, created_at, updated_at
@@ -44,6 +54,7 @@ const updateCategory = async (id, name, price, quota) => {
 
 module.exports = {
   createCategory,
+  findAll,
   findById,
   findByEventId,
   updateCategory,
