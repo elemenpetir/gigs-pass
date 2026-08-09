@@ -5,9 +5,10 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** Integration test infra (real DB Neon + real Redis Upstash)
+- **Terakhir Dikerjakan:** Fase 4 complete — Virtual Queue (Redis). 6 commit: queue service (join/position/dequeue), scheduler job, join endpoint, SSE stream endpoint, unit test FIFO.
 - **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync). Tambahan: lapisan integration test DB nyata — `npm run test:integration` (jest.config.integration.js, globalSetup migrate ke DATABASE_URL_TEST=Neon, cleanup truncate+re-seed platform_revenue). Unit test mock tetap 150, integration 20 (auth/events/categories/models), total 170. `db.js` kini pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
-- **Task Selanjutnya:** Fase 4 — Virtual Queue (Redis)
+- **Fase 4 (Queue) design decision:** score ZADD pakai **monotonic INCR `queue:seq`** (bukan Date.now) agar FIFO ketat. SSE `GET /api/queue/:categoryId/stream` pakai **auth Bearer header** (bukan token di URL) — frontend nanti pakai `@microsoft/fetch-event-source`; tidak ada SSE token terpisah. Scheduler `src/jobs/queueDequeuer.js` batch 50 / interval 5s (constant, bisa override env).
+- **Task Selanjutnya:** Fase 5 — Seat Lock & Checkout
 
 ## Ringkasan per Minggu
 
@@ -83,13 +84,13 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 4 — Virtual Queue (Redis)
 
-- [ ] Service `joinQueue` — `ZADD` buyer ke Sorted Set dengan timestamp
-- [ ] Service `getQueuePosition` — `ZRANK` posisi buyer
-- [ ] Service `dequeueBatch` — `ZPOPMIN` N buyer per interval (throttled entry)
-- [ ] Scheduler/interval job di backend yang manggil `dequeueBatch` tiap X detik
-- [ ] Endpoint `POST /api/queue/:categoryId/join`
-- [ ] Endpoint SSE `GET /api/queue/:categoryId/stream` — push posisi antrian ke buyer
-- [ ] Unit test: join queue, cek urutan FIFO dengan multiple buyer
+- [x] Service `joinQueue` — `ZADD` buyer ke Sorted Set dengan timestamp
+- [x] Service `getQueuePosition` — `ZRANK` posisi buyer
+- [x] Service `dequeueBatch` — `ZPOPMIN` N buyer per interval (throttled entry)
+- [x] Scheduler/interval job di backend yang manggil `dequeueBatch` tiap X detik
+- [x] Endpoint `POST /api/queue/:categoryId/join`
+- [x] Endpoint SSE `GET /api/queue/:categoryId/stream` — push posisi antrian ke buyer
+- [x] Unit test: join queue, cek urutan FIFO dengan multiple buyer
 
 ---
 

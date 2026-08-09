@@ -39,10 +39,16 @@ frontend/
 
 ### Redis Usage — ONLY for:
 - Virtual queue (Sorted Set): `queue:event:{event_id}:{category_id}`
+- Queue sequence counter: `queue:seq` (monotonic INCR — dipakai sebagai score ZADD agar FIFO ketat, bukan Date.now)
 - Seat lock with TTL: `lock:category:{category_id}:seat:{seat_no}`
 - Atomic stock counter: `stock:category:{category_id}`
 
 **NOT used for:** general cache, session storage, or anything else.
+
+### Queue & SSE Design (Fase 4)
+- `joinQueue` — `ZADD` member `userId`, score dari `INCR queue:seq`. Re-join idempotent (jika sudah ada, tidak ZADD ulang).
+- `dequeueBatch` — `ZPOPMIN` N buyer, cap batch dengan sisa `stock:category:{id}`. Dipanggil scheduler `src/jobs/queueDequeuer.js` (batch 50, interval 5s, override via env).
+- SSE `GET /api/queue/:categoryId/stream` — **auth via Bearer header** (`authenticate` biasa), BUKAN token di URL. Tidak ada SSE token terpisah — cukup session JWT. Frontend memakai `@microsoft/fetch-event-source` (header custom + auto-reconnect). Event: `position` (perubahan posisi) lalu `granted` (user keluar antrian) lalu koneksi ditutup.
 
 ### Ledger System
 - Double-entry bookkeeping — every transaction touches min 2 accounts
