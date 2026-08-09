@@ -5,5 +5,6 @@ const authenticate = require("../middlewares/authenticate");
 const router = express.Router();
 
 router.post("/:categoryId/join", authenticate, queueController.join);
+router.get("/:categoryId/stream", authenticate, queueController.stream);
 
 module.exports = router;
