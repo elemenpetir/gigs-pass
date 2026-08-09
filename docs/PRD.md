@@ -106,7 +106,7 @@ Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dyna
 
 ### 5.3 Virtual Queue
 
-- Buyer masuk antrian virtual saat traffic tinggi (Redis Sorted Set, FIFO berdasarkan timestamp).
+- Buyer masuk antrian virtual saat traffic tinggi (Redis Sorted Set, FIFO ketat via score monotonic counter `queue:seq` — bukan timestamp).
 - Throttled entry — sejumlah buyer per interval waktu ditarik masuk ke tahap checkout.
 - Posisi antrian ditampilkan real-time ke buyer via SSE.
 
@@ -167,11 +167,11 @@ Setelah `released`, dana di luar kendali sistem — sengketa lanjutan menjadi ra
 ```
 Key    : queue:event:{event_id}:{category_id}
 Member : buyer_id (atau session_id)
-Score  : timestamp masuk antrian (ms)
+Score  : monotonic counter dari INCR queue:seq (FIFO ketat, bukan timestamp)
 
-ZADD queue:event:123:cat:1 <timestamp> <buyer_id>   → masuk antrian
-ZRANK queue:event:123:cat:1 <buyer_id>               → cek posisi
-ZPOPMIN queue:event:123:cat:1 <N>                    → tarik N buyer ke checkout (throttled entry)
+ZADD queue:event:123:cat:1 <score_dari_INCR> <buyer_id> → masuk antrian
+ZRANK queue:event:123:cat:1 <buyer_id>                   → cek posisi
+ZPOPMIN queue:event:123:cat:1 <N>                        → tarik N buyer ke checkout (throttled entry)
 ```
 
 ### 6.2 Seat Lock — String + TTL
@@ -296,9 +296,9 @@ PUT    /api/categories/:id         (organizer)
 
 ### 8.4 Virtual Queue
 ```txt
-POST /api/queue/:categoryId/join       (buyer masuk antrian, wajib login)
-GET  /api/queue/:categoryId/status     (cek posisi, atau via SSE)
-GET  /api/queue/:categoryId/stream     (SSE endpoint, update real-time)
+POST /api/queue/:categoryId/join (buyer masuk antrian, wajib login)
+GET /api/queue/:categoryId/stream (SSE endpoint, update real-time; auth via Bearer header)
+# GET /api/queue/:categoryId/status TIDAK dibuat — cek posisi cukup via SSE stream
 ```
 
 ### 8.5 Checkout & Order
