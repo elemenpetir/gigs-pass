@@ -4,6 +4,7 @@ const authRoutes = require("./routes/authRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const queueRoutes = require("./routes/queueRoutes");
+const checkoutRoutes = require("./routes/checkoutRoutes");
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/queue", queueRoutes);
+app.use("/api/checkout", checkoutRoutes);
 
 module.exports = app;
