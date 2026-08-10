@@ -41,6 +41,7 @@ frontend/
 - Virtual queue (Sorted Set): `queue:event:{event_id}:{category_id}`
 - Queue sequence counter: `queue:seq` (monotonic INCR — dipakai sebagai score ZADD agar FIFO ketat, bukan Date.now)
 - Seat lock with TTL: `lock:category:{category_id}:buyer:{user_id}` (general admission — lock per buyer, bukan per seat; TTL 300s)
+- Lock expiry tracker (Sorted Set, untuk cleanup lock yang ditinggalkan): `lockexpiry:category:{category_id}` (member `user_id`, score = epoch ms saat lock akan kedaluwarsa)
 - Granted marker (bukti buyer lolos dequeue): `granted:category:{category_id}:buyer:{user_id}` (TTL 300s)
 - Atomic stock counter: `stock:category:{category_id}`
 
@@ -50,7 +51,8 @@ frontend/
 - `joinQueue` — `ZADD` member `userId`, score dari `INCR queue:seq`. Re-join idempotent (jika sudah ada, tidak ZADD ulang).
 - `dequeueBatch` — `ZPOPMIN` N buyer, cap batch dengan sisa `stock:category:{id}`. Setiap buyer yang di-admit langsung ditandai `granted:category:{id}:buyer:{uid}` (SET EX 300) sebagai bukti lolos antrian. Dipanggil scheduler `src/jobs/queueDequeuer.js` (batch 50, interval 5s, override via env).
 - SSE `GET /api/queue/:categoryId/stream` — **auth via Bearer header** (`authenticate` biasa), BUKAN token di URL. Tidak ada SSE token terpisah — cukup session JWT. Frontend memakai `@microsoft/fetch-event-source` (header custom + auto-reconnect). Event: `position` (perubahan posisi) lalu `granted` (user keluar antrian) lalu koneksi ditutup.
-- Checkout (general admission, Fase 5): `reserveSlot` — cek `granted` ada → `SET lock:category:{id}:buyer:{uid} EX 300 NX` → `DECR stock`. Bayar sukses → `confirmSlot` (hapus lock, stock TETAP turun). Gagal/TTL habis → `releaseSlot` (hapus lock + `INCR stock`). One-shot admission: buyer yang gagal bayar harus join antrian lagi.
+- Checkout (general admission, Fase 5): `reserveSlot` — cek `granted` ada → `SET lock:category:{id}:buyer:{uid} EX 300 NX` → `DECR stock` → `ZADD lockexpiry:category:{id}` (score = now + 300s). Bayar sukses → `confirmSlot` (hapus lock + ZREM, stock TETAP turun). Gagal/TTL → `releaseSlot` (hapus lock + `INCR stock` + ZREM). One-shot admission: buyer yang gagal bayar harus join antrian lagi.
+- Lock cleanup (Fase 6): `src/jobs/lockCleaner.js` — tiap interval (default 30s) `ZRANGEBYSCORE lockexpiry:category:{id} 0 <now>` → tiap buyer yang lock-nya kedaluwarsa di-`DEL` lock + `INCR stock` + `ZREM`, dan order `awaiting_payment`-nya di-mark `expired`.
 
 ### Ledger System
 - Double-entry bookkeeping — every transaction touches min 2 accounts

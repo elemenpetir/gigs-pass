@@ -114,7 +114,7 @@ Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dyna
 
 - Tidak ada kursi bernomor — "slot" = satu unit kuota (general admission). Buyer yang lolos dequeue (ditandai `granted:category:{id}:buyer:{uid}` EX 300) berhak mengunci slot.
 - Begitu buyer masuk checkout, slot/kuota tiket dikunci sementara atas nama buyer (`lock:category:{id}:buyer:{uid}` EX 300 NX), stok di-`DECR`.
-- Jika tidak dibayar dalam waktu tersebut, lock otomatis lepas (Redis expiry), kuota kembali tersedia (`INCR`).
+- Jika tidak dibayar dalam waktu tersebut, lock otomatis lepas (Redis expiry), kuota kembali tersedia (`INCR`) — dipastikan oleh job `src/jobs/lockCleaner.js` (scan `lockexpiry:category:{id}`, interval 30s) yang melepas lock kadaluwarsa + mengembalikan stock + menandai order `awaiting_payment` → `expired`.
 - Order dibuat di PostgreSQL berstatus `awaiting_payment` saat lock berhasil; tercatat final (status `pending`) hanya setelah pembayaran berhasil.
 - One-shot admission: buyer yang gagal bayar / lock-nya expired harus join antrian lagi dari belakang.
 
@@ -191,6 +191,12 @@ DEL lock:category:1:buyer:789 + INCR stock  → bayar gagal / TTL habis (slot ba
 Granted marker (bukti lolos dequeue, TTL 300):
   Key   : granted:category:{category_id}:buyer:{user_id}
   Di-set oleh dequeueBatch; wajib ada sebelum reserveSlot.
+
+Lock expiry tracker (Sorted Set, untuk cleanup lock yang ditinggalkan):
+  Key   : lockexpiry:category:{category_id}   (member user_id, score = epoch ms expiry)
+  ZADD  : saat reserveSlot; ZREM saat confirmSlot/releaseSlot
+  Job   : src/jobs/lockCleaner.js tiap 30s → ZRANGEBYSCORE 0 <now> → DEL lock + INCR stock
+          + ZREM + order awaiting_payment di-mark expired
 ```
 
 ### 6.3 Sisa Kuota — Atomic Counter
@@ -201,7 +207,7 @@ DECR stock:category:1   → saat lock berhasil
 INCR stock:category:1   → saat lock expired/dibatalkan
 ```
 
-Redis **hanya** dipakai untuk tiga hal di atas (antrian, lock, counter) — tidak dipakai untuk cache umum atau session, untuk menjaga scope tetap terkendali.
+Redis **hanya** dipakai untuk: antrian, lock + lock expiry tracker, granted marker, dan stock counter — tidak dipakai untuk cache umum atau session, untuk menjaga scope tetap terkendali.
 
 ---
 

@@ -5,10 +5,11 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** Fase 5 complete — Seat Lock & Checkout (general admission). 7 commit: migration status order (`awaiting_payment`/`expired` + `paid_at`), granted marker saat dequeue, lock service (reserve/confirm/release), endpoint lock, endpoint create order, unit test (179 total), docs alignment.
-- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync). Fase 4 complete (queue). Tambahan: lapisan integration test DB nyata — `npm run test:integration` (jest.config.integration.js, globalSetup migrate ke DATABASE_URL_TEST=Neon, cleanup truncate+re-seed platform_revenue). Unit test mock tetap 179, integration 20 (auth/events/categories/models), total 199. `db.js` kini pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
+- **Terakhir Dikerjakan:** Fase 6 complete — Mock Payment + lock cleanup. 5 commit: lock expiry tracking (sorted set `lockexpiry:category:{id}`), job `src/jobs/lockCleaner.js` (release lock expired + `INCR stock` + order `expired`), endpoint `POST /api/orders/:id/pay`, unit test pay (188 total), docs alignment.
+- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync). Fase 4 complete (queue). Fase 5 complete (checkout general admission). Tambahan: lapisan integration test DB nyata — `npm run test:integration` (jest.config.integration.js, globalSetup migrate ke DATABASE_URL_TEST=Neon, cleanup truncate+re-seed platform_revenue). Unit test mock tetap 188, integration 20 (auth/events/categories/models), total 208. `db.js` kini pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
 - **Fase 5 design decision:** **General admission** — tidak ada `seat_no`/kursi bernomor; "slot" = 1 unit kuota. Lock per buyer (`lock:category:{id}:buyer:{uid}`, EX 300 NX), bukan per seat. Granted marker (`granted:category:{id}:buyer:{uid}`, EX 300) di-set dequeueBatch sebagai bukti lolos antrian. One-shot admission: buyer gagal bayar harus join antrian lagi. Status order dipecah: `awaiting_payment` (saat lock) → `pending` (dibayar) → dst.; `expired` untuk yang gagal bayar; `paid_at` (nullable) mencatat waktu bayar sukses. Bayar sukses → `confirmSlot` (hapus lock, stock TETAP turun); gagal/TTL → `releaseSlot` (hapus lock + `INCR stock`).
-- **Task Selanjutnya:** Fase 6 — Mock Payment
+- **Fase 6 design decision:** lock yang ditinggalkan (buyer lock lalu pergi tanpa bayar) dipulihkan oleh job `src/jobs/lockCleaner.js` — TTL Redis menghapus key lock tapi tidak otomatis `INCR stock`, jadi perlu tracker `lockexpiry:category:{id}` (Sorted Set, score = epoch expiry) yang di-scan job tiap 30s → `DEL lock` + `INCR stock` + order `awaiting_payment` di-mark `expired`. Pay mock `POST /api/orders/:id/pay` body `{ success: true|false }` — sukses → `confirmSlot` + order `pending` + `paid_at`; gagal → `releaseSlot` + order `expired`.
+- **Task Selanjutnya:** Fase 7 — Ledger System
 
 ## Ringkasan per Minggu
 
@@ -108,10 +109,11 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 6 — Mock Payment
 
-- [ ] Endpoint `POST /api/orders/:id/pay` — simulasi pembayaran berhasil/gagal
-- [ ] Saat pembayaran sukses: hapus seat lock, order tetap `pending` (menunggu event_date lewat)
-- [ ] Saat pembayaran gagal/timeout: release lock, increment stock balik
-- [ ] Unit test: pay sukses mengubah state dengan benar, pay gagal melepas lock
+- [x] Endpoint `POST /api/orders/:id/pay` — simulasi pembayaran berhasil/gagal (body `{ success: true|false }`)
+- [x] Saat pembayaran sukses: `confirmSlot` (hapus lock, stock TETAP turun), order → `pending` (menunggu event_date lewat), set `paid_at`
+- [x] Saat pembayaran gagal/timeout: `releaseSlot` (release lock + increment stock balik), order → `expired`
+- [x] Lock cleanup job `src/jobs/lockCleaner.js` — lock yang ditinggalkan (buyer tidak bayar / tidak create order) dipulihkan: tracking `lockexpiry:category:{id}` (Sorted Set) di-scan tiap 30s → `DEL lock` + `INCR stock` + order `awaiting_payment` → `expired`
+- [x] Unit test: pay sukses mengubah state dengan benar, pay gagal melepas lock, pay saat lock expired → 409, lock cleanup job (188 total)
 
 ---
 
