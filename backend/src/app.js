@@ -5,6 +5,7 @@ const eventRoutes = require("./routes/eventRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const queueRoutes = require("./routes/queueRoutes");
 const checkoutRoutes = require("./routes/checkoutRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -25,5 +26,6 @@ app.use("/api/events", eventRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/queue", queueRoutes);
 app.use("/api/checkout", checkoutRoutes);
+app.use("/api/orders", orderRoutes);
 
 module.exports = app;

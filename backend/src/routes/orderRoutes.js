@@ -1,0 +1,15 @@
+const express = require("express");
+const orderController = require("../controllers/orderController");
+const authenticate = require("../middlewares/authenticate");
+const authorize = require("../middlewares/authorize");
+
+const router = express.Router();
+
+router.post(
+  "/",
+  authenticate,
+  authorize(["buyer"]),
+  orderController.create,
+);
+
+module.exports = router;
