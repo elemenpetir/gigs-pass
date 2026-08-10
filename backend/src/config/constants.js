@@ -8,6 +8,8 @@ const QUEUE_STREAM_HEARTBEAT_MS =
 const QUEUE_SEQ_KEY = "queue:seq";
 const GRANTED_TTL_SECONDS = parseInt(process.env.GRANTED_TTL_SECONDS, 10) || 300;
 const LOCK_TTL_SECONDS = parseInt(process.env.LOCK_TTL_SECONDS, 10) || 300;
+const LOCK_CLEANUP_INTERVAL_MS =
+  parseInt(process.env.LOCK_CLEANUP_INTERVAL_MS, 10) || 30000;
 
 module.exports = {
   QUEUE_BATCH_SIZE,
@@ -17,4 +19,5 @@ module.exports = {
   QUEUE_SEQ_KEY,
   GRANTED_TTL_SECONDS,
   LOCK_TTL_SECONDS,
+  LOCK_CLEANUP_INTERVAL_MS,
 };
