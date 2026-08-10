@@ -12,4 +12,11 @@ router.post(
   orderController.create,
 );
 
+router.post(
+  "/:id/pay",
+  authenticate,
+  authorize(["buyer"]),
+  orderController.pay,
+);
+
 module.exports = router;

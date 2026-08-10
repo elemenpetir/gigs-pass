@@ -10,6 +10,38 @@ const createOrder = async (buyerId, categoryId) => {
   return result.rows[0];
 };
 
+const findById = async (id) => {
+  const query = `
+    SELECT id, buyer_id, category_id, status, paid_at, created_at, updated_at
+    FROM orders
+    WHERE id = $1;
+  `;
+  const result = await pool.query(query, [id]);
+  return result.rows[0] || null;
+};
+
+const markPaid = async (id) => {
+  const query = `
+    UPDATE orders
+    SET status = 'pending', paid_at = NOW()
+    WHERE id = $1 AND status = 'awaiting_payment'
+    RETURNING id, buyer_id, category_id, status, paid_at, created_at, updated_at;
+  `;
+  const result = await pool.query(query, [id]);
+  return result.rows[0] || null;
+};
+
+const markExpired = async (id) => {
+  const query = `
+    UPDATE orders
+    SET status = 'expired'
+    WHERE id = $1 AND status = 'awaiting_payment'
+    RETURNING id, buyer_id, category_id, status, paid_at, created_at, updated_at;
+  `;
+  const result = await pool.query(query, [id]);
+  return result.rows[0] || null;
+};
+
 const findActiveByBuyerAndCategory = async (buyerId, categoryId) => {
   const query = `
     SELECT id, buyer_id, category_id, status, paid_at, created_at, updated_at
@@ -46,6 +78,9 @@ const markRefundTriggeredByEventId = async (eventId) => {
 
 module.exports = {
   createOrder,
+  findById,
+  markPaid,
+  markExpired,
   findActiveByBuyerAndCategory,
   markExpiredByBuyerAndCategory,
   markRefundTriggeredByEventId,
