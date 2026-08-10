@@ -1,8 +1,14 @@
 const categoryModel = require("../models/categoryModel");
 const redis = require("../config/redis");
-const { QUEUE_BATCH_SIZE, QUEUE_SEQ_KEY } = require("../config/constants");
+const {
+  QUEUE_BATCH_SIZE,
+  QUEUE_SEQ_KEY,
+  GRANTED_TTL_SECONDS,
+} = require("../config/constants");
 
 const queueKey = (eventId, categoryId) => `queue:event:${eventId}:${categoryId}`;
+const grantedKey = (categoryId, userId) =>
+  `granted:category:${categoryId}:buyer:${userId}`;
 
 const parseZpopResult = (flat) => {
   const dequeued = [];
@@ -72,7 +78,22 @@ const dequeueBatch = async (categoryId, count = QUEUE_BATCH_SIZE) => {
   }
 
   const popped = await redis.zpopmin(key, batchSize);
-  return parseZpopResult(popped);
+  const dequeued = parseZpopResult(popped);
+
+  if (dequeued.length > 0) {
+    const pipeline = redis.pipeline();
+    for (const buyer of dequeued) {
+      pipeline.set(
+        grantedKey(category.id, buyer.userId),
+        "1",
+        "EX",
+        GRANTED_TTL_SECONDS,
+      );
+    }
+    await pipeline.exec();
+  }
+
+  return dequeued;
 };
 
 module.exports = {
@@ -80,4 +101,5 @@ module.exports = {
   getQueuePosition,
   dequeueBatch,
   queueKey,
+  grantedKey,
 };

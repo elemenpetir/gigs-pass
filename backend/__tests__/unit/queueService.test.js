@@ -7,11 +7,15 @@ jest.mock("../../src/config/redis", () => ({
   zrank: jest.fn(),
   get: jest.fn(),
   zpopmin: jest.fn(),
+  pipeline: jest.fn(),
 }));
 
 const queueService = require("../../src/services/queueService");
 const redis = require("../../src/config/redis");
-const { QUEUE_SEQ_KEY } = require("../../src/config/constants");
+const {
+  QUEUE_SEQ_KEY,
+  GRANTED_TTL_SECONDS,
+} = require("../../src/config/constants");
 
 const createCategory = async () => {
   const result = await mockDb.query("INSERT INTO ticket_categories", [
@@ -23,6 +27,15 @@ const createCategory = async () => {
   return result.rows[0];
 };
 
+const mockPipeline = () => {
+  const pipeline = {
+    set: jest.fn().mockReturnThis(),
+    exec: jest.fn().mockResolvedValue([]),
+  };
+  redis.pipeline.mockReturnValue(pipeline);
+  return pipeline;
+};
+
 describe("Queue Service", () => {
   beforeEach(() => {
     mockDb.reset();
@@ -31,6 +44,7 @@ describe("Queue Service", () => {
     redis.zrank.mockReset();
     redis.get.mockReset();
     redis.zpopmin.mockReset();
+    redis.pipeline.mockReset();
   });
 
   describe("joinQueue", () => {
@@ -121,6 +135,7 @@ describe("Queue Service", () => {
         "buyer-3",
         "3",
       ]);
+      const pipeline = mockPipeline();
 
       const dequeued = await queueService.dequeueBatch(category.id, 50);
 
@@ -130,6 +145,42 @@ describe("Queue Service", () => {
         { userId: "buyer-2", score: 2 },
         { userId: "buyer-3", score: 3 },
       ]);
+    });
+
+    test("marks granted marker with TTL for each admitted buyer", async () => {
+      const category = await createCategory();
+      redis.get.mockResolvedValue("5");
+      redis.zpopmin.mockResolvedValue(["buyer-1", "1", "buyer-2", "2"]);
+      const pipeline = mockPipeline();
+
+      await queueService.dequeueBatch(category.id, 50);
+
+      expect(pipeline.set.mock.calls).toEqual([
+        [
+          `granted:category:${category.id}:buyer:buyer-1`,
+          "1",
+          "EX",
+          GRANTED_TTL_SECONDS,
+        ],
+        [
+          `granted:category:${category.id}:buyer:buyer-2`,
+          "1",
+          "EX",
+          GRANTED_TTL_SECONDS,
+        ],
+      ]);
+      expect(pipeline.exec).toHaveBeenCalledTimes(1);
+    });
+
+    test("does not set granted marker when no buyers admitted", async () => {
+      const category = await createCategory();
+      redis.get.mockResolvedValue("5");
+      redis.zpopmin.mockResolvedValue([]);
+
+      const dequeued = await queueService.dequeueBatch(category.id, 50);
+
+      expect(dequeued).toEqual([]);
+      expect(redis.pipeline).not.toHaveBeenCalled();
     });
 
     test("returns empty when stock is zero", async () => {
@@ -147,6 +198,7 @@ describe("Queue Service", () => {
       const key = queueService.queueKey(category.event_id, category.id);
       redis.get.mockResolvedValue(null);
       redis.zpopmin.mockResolvedValue(["buyer-1", "1"]);
+      mockPipeline();
 
       const dequeued = await queueService.dequeueBatch(category.id, 5);
 

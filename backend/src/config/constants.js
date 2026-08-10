@@ -6,6 +6,8 @@ const QUEUE_STREAM_POLL_INTERVAL_MS =
 const QUEUE_STREAM_HEARTBEAT_MS =
   parseInt(process.env.QUEUE_STREAM_HEARTBEAT_MS, 10) || 15000;
 const QUEUE_SEQ_KEY = "queue:seq";
+const GRANTED_TTL_SECONDS = parseInt(process.env.GRANTED_TTL_SECONDS, 10) || 300;
+const LOCK_TTL_SECONDS = parseInt(process.env.LOCK_TTL_SECONDS, 10) || 300;
 
 module.exports = {
   QUEUE_BATCH_SIZE,
@@ -13,4 +15,6 @@ module.exports = {
   QUEUE_STREAM_POLL_INTERVAL_MS,
   QUEUE_STREAM_HEARTBEAT_MS,
   QUEUE_SEQ_KEY,
+  GRANTED_TTL_SECONDS,
+  LOCK_TTL_SECONDS,
 };
