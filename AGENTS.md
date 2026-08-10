@@ -40,15 +40,17 @@ frontend/
 ### Redis Usage — ONLY for:
 - Virtual queue (Sorted Set): `queue:event:{event_id}:{category_id}`
 - Queue sequence counter: `queue:seq` (monotonic INCR — dipakai sebagai score ZADD agar FIFO ketat, bukan Date.now)
-- Seat lock with TTL: `lock:category:{category_id}:seat:{seat_no}`
+- Seat lock with TTL: `lock:category:{category_id}:buyer:{user_id}` (general admission — lock per buyer, bukan per seat; TTL 300s)
+- Granted marker (bukti buyer lolos dequeue): `granted:category:{category_id}:buyer:{user_id}` (TTL 300s)
 - Atomic stock counter: `stock:category:{category_id}`
 
 **NOT used for:** general cache, session storage, or anything else.
 
 ### Queue & SSE Design (Fase 4)
 - `joinQueue` — `ZADD` member `userId`, score dari `INCR queue:seq`. Re-join idempotent (jika sudah ada, tidak ZADD ulang).
-- `dequeueBatch` — `ZPOPMIN` N buyer, cap batch dengan sisa `stock:category:{id}`. Dipanggil scheduler `src/jobs/queueDequeuer.js` (batch 50, interval 5s, override via env).
+- `dequeueBatch` — `ZPOPMIN` N buyer, cap batch dengan sisa `stock:category:{id}`. Setiap buyer yang di-admit langsung ditandai `granted:category:{id}:buyer:{uid}` (SET EX 300) sebagai bukti lolos antrian. Dipanggil scheduler `src/jobs/queueDequeuer.js` (batch 50, interval 5s, override via env).
 - SSE `GET /api/queue/:categoryId/stream` — **auth via Bearer header** (`authenticate` biasa), BUKAN token di URL. Tidak ada SSE token terpisah — cukup session JWT. Frontend memakai `@microsoft/fetch-event-source` (header custom + auto-reconnect). Event: `position` (perubahan posisi) lalu `granted` (user keluar antrian) lalu koneksi ditutup.
+- Checkout (general admission, Fase 5): `reserveSlot` — cek `granted` ada → `SET lock:category:{id}:buyer:{uid} EX 300 NX` → `DECR stock`. Bayar sukses → `confirmSlot` (hapus lock, stock TETAP turun). Gagal/TTL habis → `releaseSlot` (hapus lock + `INCR stock`). One-shot admission: buyer yang gagal bayar harus join antrian lagi.
 
 ### Ledger System
 - Double-entry bookkeeping — every transaction touches min 2 accounts
@@ -63,11 +65,15 @@ frontend/
 
 ### Order Status Flow
 ```
+awaiting_payment (dibuat saat lock berhasil, BELUM bayar)
+   ├── bayar sukses   → pending (dana masuk, menunggu event_date)
+   └── gagal / TTL    → expired (lock lepas, stock balik ke pool)
 pending → holding_period (after event_date)
               ├── released (after 7 days, no issue)
               ├── refund_triggered (organizer cancels event officially)
               └── held / refunded (admin manual override — ONLY valid while status = holding_period)
 ```
+`pending` = sudah dibayar (PRD: "dana masuk") — order yang belum bayar memakai `awaiting_payment`, bukan `pending`. `paid_at` (nullable) mencatat kapan pembayaran berhasil.
 
 ### Event Status Flow (Limited Lifecycle)
 Event status hanya dapat diintervensi **SEBELUM event_date**. Setelah event digelar, intervensi pindah ke order flow:

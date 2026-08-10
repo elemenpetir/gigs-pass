@@ -5,10 +5,10 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** Fase 4 complete — Virtual Queue (Redis). 6 commit: queue service (join/position/dequeue), scheduler job, join endpoint, SSE stream endpoint, unit test FIFO.
-- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync). Tambahan: lapisan integration test DB nyata — `npm run test:integration` (jest.config.integration.js, globalSetup migrate ke DATABASE_URL_TEST=Neon, cleanup truncate+re-seed platform_revenue). Unit test mock tetap 150, integration 20 (auth/events/categories/models), total 170. `db.js` kini pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
-- **Fase 4 (Queue) design decision:** score ZADD pakai **monotonic INCR `queue:seq`** (bukan Date.now) agar FIFO ketat. SSE `GET /api/queue/:categoryId/stream` pakai **auth Bearer header** (bukan token di URL) — frontend nanti pakai `@microsoft/fetch-event-source`; tidak ada SSE token terpisah. Scheduler `src/jobs/queueDequeuer.js` batch 50 / interval 5s (constant, bisa override env).
-- **Task Selanjutnya:** Fase 5 — Seat Lock & Checkout
+- **Terakhir Dikerjakan:** Fase 5 complete — Seat Lock & Checkout (general admission). 7 commit: migration status order (`awaiting_payment`/`expired` + `paid_at`), granted marker saat dequeue, lock service (reserve/confirm/release), endpoint lock, endpoint create order, unit test (179 total), docs alignment.
+- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync). Fase 4 complete (queue). Tambahan: lapisan integration test DB nyata — `npm run test:integration` (jest.config.integration.js, globalSetup migrate ke DATABASE_URL_TEST=Neon, cleanup truncate+re-seed platform_revenue). Unit test mock tetap 179, integration 20 (auth/events/categories/models), total 199. `db.js` kini pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
+- **Fase 5 design decision:** **General admission** — tidak ada `seat_no`/kursi bernomor; "slot" = 1 unit kuota. Lock per buyer (`lock:category:{id}:buyer:{uid}`, EX 300 NX), bukan per seat. Granted marker (`granted:category:{id}:buyer:{uid}`, EX 300) di-set dequeueBatch sebagai bukti lolos antrian. One-shot admission: buyer gagal bayar harus join antrian lagi. Status order dipecah: `awaiting_payment` (saat lock) → `pending` (dibayar) → dst.; `expired` untuk yang gagal bayar; `paid_at` (nullable) mencatat waktu bayar sukses. Bayar sukses → `confirmSlot` (hapus lock, stock TETAP turun); gagal/TTL → `releaseSlot` (hapus lock + `INCR stock`).
+- **Task Selanjutnya:** Fase 6 — Mock Payment
 
 ## Ringkasan per Minggu
 
@@ -94,14 +94,15 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ---
 
-### Fase 5 — Seat Lock & Checkout
+### Fase 5 — Seat Lock & Checkout (General Admission)
 
-- [ ] Service `lockSeat` — `SET ... EX 300 NX` di Redis
-- [ ] Service `releaseSeat` — hapus lock manual (dipanggil saat bayar sukses atau batal)
-- [ ] Service `decrementStock` / `incrementStock` — atomic counter Redis
-- [ ] Endpoint `POST /api/checkout/:categoryId/lock` — hanya bisa diakses buyer yang sudah giliran (lolos dequeue)
-- [ ] Endpoint `POST /api/orders` — buat order status `pending` di PostgreSQL setelah lock berhasil
-- [ ] Unit test: lock berhasil, lock gagal karena slot sudah terkunci, lock expired otomatis balik ke stock
+- [x] Migration `orders.status`: tambah `awaiting_payment` & `expired`, kolom `paid_at` nullable — pecah ambiguitas `pending` (belum vs sudah bayar)
+- [x] Granted marker saat dequeue — `dequeueBatch` menandai buyer yang di-admit dengan `granted:category:{id}:buyer:{uid}` (SET EX 300) sebagai bukti lolos antrian
+- [x] Service `reserveSlot` — cek `granted` → `SET lock:category:{id}:buyer:{uid} EX 300 NX` + `DECR stock` (general admission, per buyer bukan per seat)
+- [x] Service `confirmSlot` — hapus lock saat bayar sukses (stock TETAP berkurang); `releaseSlot` — hapus lock + `INCR stock` saat batal/gagal/TTL
+- [x] Endpoint `POST /api/checkout/:categoryId/lock` — hanya buyer yang lolos dequeue (granted marker) & belum punya lock
+- [x] Endpoint `POST /api/orders` — buat order status `awaiting_payment` di PostgreSQL setelah lock berhasil (validasi lock aktif + anti-duplikat)
+- [x] Unit test: reserve sukses, reserve gagal (belum granted / double reserve / stock habis), confirm tanpa INCR, release balik ke stock, create order butuh lock
 
 ---
 

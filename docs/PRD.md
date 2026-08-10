@@ -110,12 +110,13 @@ Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dyna
 - Throttled entry — sejumlah buyer per interval waktu ditarik masuk ke tahap checkout.
 - Posisi antrian ditampilkan real-time ke buyer via SSE.
 
-### 5.4 Checkout & Seat Locking
+### 5.4 Checkout & Reservation (General Admission)
 
-- Begitu buyer masuk checkout, slot/kuota tiket dikunci sementara (Redis, TTL contoh 5 menit).
-- Jika tidak dibayar dalam waktu tersebut, lock otomatis lepas (Redis expiry), kuota kembali tersedia.
-- Atomic counter (Redis `INCR`/`DECR`) untuk sisa kuota real-time, mencegah race condition.
-- Order tercatat final di PostgreSQL hanya setelah pembayaran berhasil.
+- Tidak ada kursi bernomor — "slot" = satu unit kuota (general admission). Buyer yang lolos dequeue (ditandai `granted:category:{id}:buyer:{uid}` EX 300) berhak mengunci slot.
+- Begitu buyer masuk checkout, slot/kuota tiket dikunci sementara atas nama buyer (`lock:category:{id}:buyer:{uid}` EX 300 NX), stok di-`DECR`.
+- Jika tidak dibayar dalam waktu tersebut, lock otomatis lepas (Redis expiry), kuota kembali tersedia (`INCR`).
+- Order dibuat di PostgreSQL berstatus `awaiting_payment` saat lock berhasil; tercatat final (status `pending`) hanya setelah pembayaran berhasil.
+- One-shot admission: buyer yang gagal bayar / lock-nya expired harus join antrian lagi dari belakang.
 
 ### 5.5 Payment (MVP)
 
@@ -135,6 +136,8 @@ Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dyna
 Status disimpan di `orders.status`, bukan di `ledger_entries`:
 
 ```
+awaiting_payment (order dibuat saat lock, belum bayar)
+   ↓
 pending (dana masuk, event belum terjadi)
    ↓
 holding_period (event selesai, dana ditahan contoh 7 hari)
@@ -174,14 +177,20 @@ ZRANK queue:event:123:cat:1 <buyer_id>                   → cek posisi
 ZPOPMIN queue:event:123:cat:1 <N>                        → tarik N buyer ke checkout (throttled entry)
 ```
 
-### 6.2 Seat Lock — String + TTL
+### 6.2 Reservation Lock (General Admission) — String + TTL
 
 ```
-Key   : lock:category:{category_id}:seat:{seat_no}
-Value : buyer_id
+Key   : lock:category:{category_id}:buyer:{user_id}
+Value : "1" (NX menjamin satu buyer max satu lock per kategori)
 TTL   : 300 detik (5 menit)
 
-SET lock:category:1:seat:45 buyer_789 EX 300 NX
+SET lock:category:1:buyer:789 1 EX 300 NX   → reserve slot (gagal = buyer sudah punya lock)
+DEL lock:category:1:buyer:789               → bayar sukses (stock TETAP berkurang)
+DEL lock:category:1:buyer:789 + INCR stock  → bayar gagal / TTL habis (slot balik ke pool)
+
+Granted marker (bukti lolos dequeue, TTL 300):
+  Key   : granted:category:{category_id}:buyer:{user_id}
+  Di-set oleh dequeueBatch; wajib ada sebelum reserveSlot.
 ```
 
 ### 6.3 Sisa Kuota — Atomic Counter
@@ -303,7 +312,7 @@ GET /api/queue/:categoryId/stream (SSE endpoint, update real-time; auth via Bear
 
 ### 8.5 Checkout & Order
 ```txt
-POST /api/checkout/:categoryId/lock    (kunci seat, mulai TTL)
+POST /api/checkout/:categoryId/lock    (kunci slot/reservasi, mulai TTL)
 POST /api/orders                       (buat order setelah lock berhasil)
 POST /api/orders/:id/pay               (mock/simulate payment)
 GET  /api/orders                       (riwayat order buyer)
