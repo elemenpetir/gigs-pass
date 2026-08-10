@@ -5,6 +5,7 @@ const { LOCK_TTL_SECONDS } = require("../config/constants");
 
 const lockKey = (categoryId, userId) =>
   `lock:category:${categoryId}:buyer:${userId}`;
+const lockExpiryKey = (categoryId) => `lockexpiry:category:${categoryId}`;
 
 const findCategory = async (categoryId) => {
   const category = await categoryModel.findById(categoryId);
@@ -48,6 +49,12 @@ const reserveSlot = async (userId, categoryId) => {
     throw error;
   }
 
+  await redis.zadd(
+    lockExpiryKey(category.id),
+    Date.now() + LOCK_TTL_SECONDS * 1000,
+    String(userId),
+  );
+
   return {
     locked: true,
     expiresInSeconds: LOCK_TTL_SECONDS,
@@ -64,7 +71,10 @@ const confirmSlot = async (userId, categoryId) => {
     return { confirmed: false };
   }
 
-  await redis.del(key);
+  const pipeline = redis.pipeline();
+  pipeline.del(key);
+  pipeline.zrem(lockExpiryKey(category.id), String(userId));
+  await pipeline.exec();
 
   return { confirmed: true };
 };
@@ -81,6 +91,7 @@ const releaseSlot = async (userId, categoryId) => {
   const pipeline = redis.pipeline();
   pipeline.del(key);
   pipeline.incr(`stock:category:${category.id}`);
+  pipeline.zrem(lockExpiryKey(category.id), String(userId));
   await pipeline.exec();
 
   return { released: true };
@@ -100,4 +111,5 @@ module.exports = {
   releaseSlot,
   getReservation,
   lockKey,
+  lockExpiryKey,
 };

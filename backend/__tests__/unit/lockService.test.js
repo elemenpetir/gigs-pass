@@ -9,6 +9,8 @@ jest.mock("../../src/config/redis", () => ({
   del: jest.fn(),
   exists: jest.fn(),
   pipeline: jest.fn(),
+  zadd: jest.fn(),
+  zrem: jest.fn(),
 }));
 
 const lockService = require("../../src/services/lockService");
@@ -35,6 +37,8 @@ describe("Lock Service", () => {
     redis.del.mockReset();
     redis.exists.mockReset();
     redis.pipeline.mockReset();
+    redis.zadd.mockReset();
+    redis.zrem.mockReset();
   });
 
   describe("reserveSlot", () => {
@@ -54,6 +58,11 @@ describe("Lock Service", () => {
         "NX",
       );
       expect(redis.decr).toHaveBeenCalledWith(`stock:category:${category.id}`);
+      expect(redis.zadd).toHaveBeenCalledWith(
+        `lockexpiry:category:${category.id}`,
+        expect.any(Number),
+        "buyer-1",
+      );
       expect(result).toEqual({
         locked: true,
         expiresInSeconds: LOCK_TTL_SECONDS,
@@ -112,12 +121,22 @@ describe("Lock Service", () => {
     test("removes lock without incrementing stock", async () => {
       const category = await createCategory();
       redis.exists.mockResolvedValue(1);
+      const pipeline = {
+        del: jest.fn().mockReturnThis(),
+        zrem: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([]),
+      };
+      redis.pipeline.mockReturnValue(pipeline);
 
       const result = await lockService.confirmSlot("buyer-1", category.id);
 
       expect(result).toEqual({ confirmed: true });
-      expect(redis.del).toHaveBeenCalledWith(
+      expect(pipeline.del).toHaveBeenCalledWith(
         `lock:category:${category.id}:buyer:buyer-1`,
+      );
+      expect(pipeline.zrem).toHaveBeenCalledWith(
+        `lockexpiry:category:${category.id}`,
+        "buyer-1",
       );
       expect(redis.incr).not.toHaveBeenCalled();
     });
@@ -140,6 +159,7 @@ describe("Lock Service", () => {
       const pipeline = {
         del: jest.fn().mockReturnThis(),
         incr: jest.fn().mockReturnThis(),
+        zrem: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue([]),
       };
       redis.pipeline.mockReturnValue(pipeline);
@@ -152,6 +172,10 @@ describe("Lock Service", () => {
       );
       expect(pipeline.incr).toHaveBeenCalledWith(
         `stock:category:${category.id}`,
+      );
+      expect(pipeline.zrem).toHaveBeenCalledWith(
+        `lockexpiry:category:${category.id}`,
+        "buyer-1",
       );
     });
 
