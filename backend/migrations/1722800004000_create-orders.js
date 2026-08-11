@@ -40,6 +40,18 @@ exports.up = (pgm) => {
       check:
         "status IN ('pending', 'holding_period', 'released', 'refund_triggered', 'held', 'refunded', 'awaiting_payment', 'expired')",
     },
+    /**
+     * Harga tiket (integer, dalam rupiah) yang disnap dari
+     * ticket_categories.price saat order dibuat (Fase 7). Ledger entries
+     * memakai nilai snapshot ini, jadi aman walau harga kategori diubah
+     * organizer setelah order dibuat. Komisi platform dihitung dari sini.
+     */
+    amount: {
+      type: "integer",
+      notNull: true,
+      default: 0,
+      check: "amount >= 0",
+    },
     holding_until: { type: "timestamptz" },
     /**
      * Mencatat kapan pembayaran berhasil (nullable) -- jawaban eksplisit

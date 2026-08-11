@@ -1,18 +1,22 @@
 const pool = require("../config/db");
 
-const createOrder = async (buyerId, categoryId) => {
+const ORDER_COLUMNS = `
+  id, buyer_id, category_id, status, amount, paid_at, created_at, updated_at
+`;
+
+const createOrder = async (buyerId, categoryId, amount) => {
   const query = `
-    INSERT INTO orders (buyer_id, category_id, status)
-    VALUES ($1, $2, 'awaiting_payment')
-    RETURNING id, buyer_id, category_id, status, paid_at, created_at, updated_at;
+    INSERT INTO orders (buyer_id, category_id, status, amount)
+    VALUES ($1, $2, 'awaiting_payment', $3)
+    RETURNING ${ORDER_COLUMNS};
   `;
-  const result = await pool.query(query, [buyerId, categoryId]);
+  const result = await pool.query(query, [buyerId, categoryId, amount]);
   return result.rows[0];
 };
 
 const findById = async (id) => {
   const query = `
-    SELECT id, buyer_id, category_id, status, paid_at, created_at, updated_at
+    SELECT ${ORDER_COLUMNS}
     FROM orders
     WHERE id = $1;
   `;
@@ -20,14 +24,14 @@ const findById = async (id) => {
   return result.rows[0] || null;
 };
 
-const markPaid = async (id) => {
+const markPaid = async (id, client = pool) => {
   const query = `
     UPDATE orders
     SET status = 'pending', paid_at = NOW()
     WHERE id = $1 AND status = 'awaiting_payment'
-    RETURNING id, buyer_id, category_id, status, paid_at, created_at, updated_at;
+    RETURNING ${ORDER_COLUMNS};
   `;
-  const result = await pool.query(query, [id]);
+  const result = await client.query(query, [id]);
   return result.rows[0] || null;
 };
 
@@ -36,7 +40,7 @@ const markExpired = async (id) => {
     UPDATE orders
     SET status = 'expired'
     WHERE id = $1 AND status = 'awaiting_payment'
-    RETURNING id, buyer_id, category_id, status, paid_at, created_at, updated_at;
+    RETURNING ${ORDER_COLUMNS};
   `;
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
@@ -44,7 +48,7 @@ const markExpired = async (id) => {
 
 const findActiveByBuyerAndCategory = async (buyerId, categoryId) => {
   const query = `
-    SELECT id, buyer_id, category_id, status, paid_at, created_at, updated_at
+    SELECT ${ORDER_COLUMNS}
     FROM orders
     WHERE buyer_id = $1 AND category_id = $2
       AND status IN ('awaiting_payment', 'pending')
@@ -59,7 +63,7 @@ const markExpiredByBuyerAndCategory = async (buyerId, categoryId) => {
     UPDATE orders
     SET status = 'expired'
     WHERE buyer_id = $1 AND category_id = $2 AND status = 'awaiting_payment'
-    RETURNING id, buyer_id, category_id, status, paid_at, created_at, updated_at;
+    RETURNING ${ORDER_COLUMNS};
   `;
   const result = await pool.query(query, [buyerId, categoryId]);
   return result.rows;
@@ -70,7 +74,7 @@ const markRefundTriggeredByEventId = async (eventId) => {
     UPDATE orders
     SET status = 'refund_triggered'
     WHERE category_id IN (SELECT id FROM ticket_categories WHERE event_id = $1)
-    RETURNING id, buyer_id, category_id, status, holding_until, created_at, updated_at;
+    RETURNING id, buyer_id, category_id, status, amount, holding_until, created_at, updated_at;
   `;
   const result = await pool.query(query, [eventId]);
   return result.rows;
