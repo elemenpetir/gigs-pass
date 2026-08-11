@@ -150,10 +150,11 @@ describe("Events (integration, real DB)", () => {
     );
     const category = await categoryModel.createCategory(eventId, "GA", 100, 10);
     const orderRes = await db.query(
-      "INSERT INTO orders (buyer_id, category_id) VALUES ($1, $2) RETURNING id, status",
-      [buyer.id, category.id],
+      "INSERT INTO orders (buyer_id, category_id, amount) VALUES ($1, $2, $3) RETURNING id, status, amount",
+      [buyer.id, category.id, 100],
     );
     expect(orderRes.rows[0].status).toBe("pending");
+    expect(orderRes.rows[0].amount).toBe(100);
     const orderId = orderRes.rows[0].id;
 
     const res = await request(app)
