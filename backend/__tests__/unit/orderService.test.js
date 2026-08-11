@@ -1,9 +1,17 @@
 jest.mock("../../src/models/orderModel");
+jest.mock("../../src/models/categoryModel");
 jest.mock("../../src/services/lockService");
+jest.mock("../../src/services/ledgerService");
+jest.mock("../../src/config/db", () => ({
+  withTransaction: jest.fn((fn) => fn({})),
+}));
 
 const orderService = require("../../src/services/orderService");
 const orderModel = require("../../src/models/orderModel");
+const categoryModel = require("../../src/models/categoryModel");
 const lockService = require("../../src/services/lockService");
+const ledgerService = require("../../src/services/ledgerService");
+const db = require("../../src/config/db");
 
 describe("Order Service", () => {
   beforeEach(() => {
@@ -14,17 +22,24 @@ describe("Order Service", () => {
     test("creates awaiting_payment order when reservation is active", async () => {
       lockService.getReservation.mockResolvedValue({ reserved: true });
       orderModel.findActiveByBuyerAndCategory.mockResolvedValue(null);
+      categoryModel.findById.mockResolvedValue({ id: "cat-1", price: 150000 });
       const order = {
         id: "o-1",
         buyer_id: "buyer-1",
         category_id: "cat-1",
         status: "awaiting_payment",
+        amount: 150000,
       };
       orderModel.createOrder.mockResolvedValue(order);
 
       const result = await orderService.createOrder("buyer-1", "cat-1");
 
-      expect(orderModel.createOrder).toHaveBeenCalledWith("buyer-1", "cat-1");
+      expect(categoryModel.findById).toHaveBeenCalledWith("cat-1");
+      expect(orderModel.createOrder).toHaveBeenCalledWith(
+        "buyer-1",
+        "cat-1",
+        150000,
+      );
       expect(result).toEqual(order);
     });
 
@@ -48,6 +63,16 @@ describe("Order Service", () => {
 
       expect(orderModel.createOrder).not.toHaveBeenCalled();
     });
+
+    test("throws 404 when category not found", async () => {
+      lockService.getReservation.mockResolvedValue({ reserved: true });
+      orderModel.findActiveByBuyerAndCategory.mockResolvedValue(null);
+      categoryModel.findById.mockResolvedValue(null);
+
+      await expect(
+        orderService.createOrder("buyer-1", "cat-1"),
+      ).rejects.toThrow("Category not found");
+    });
   });
 
   describe("payOrder", () => {
@@ -56,18 +81,25 @@ describe("Order Service", () => {
       buyer_id: "buyer-1",
       category_id: "cat-1",
       status: "awaiting_payment",
+      amount: 150000,
     };
 
-    test("marks order paid and confirms slot on success", async () => {
+    test("marks order paid, records ledger split and confirms slot on success", async () => {
       orderModel.findById.mockResolvedValue(baseOrder);
       lockService.confirmSlot.mockResolvedValue({ confirmed: true });
-      const paid = { ...baseOrder, status: "pending", paid_at: new Date() };
+      const paid = {
+        ...baseOrder,
+        status: "pending",
+        paid_at: new Date(),
+      };
       orderModel.markPaid.mockResolvedValue(paid);
 
       const result = await orderService.payOrder("buyer-1", "o-1", true);
 
       expect(lockService.confirmSlot).toHaveBeenCalledWith("buyer-1", "cat-1");
-      expect(orderModel.markPaid).toHaveBeenCalledWith("o-1");
+      expect(db.withTransaction).toHaveBeenCalled();
+      expect(orderModel.markPaid).toHaveBeenCalledWith("o-1", {});
+      expect(ledgerService.recordPaymentSplit).toHaveBeenCalledWith({}, paid);
       expect(orderModel.markExpired).not.toHaveBeenCalled();
       expect(result).toEqual(paid);
     });
@@ -81,6 +113,16 @@ describe("Order Service", () => {
       ).rejects.toThrow("Reservation expired");
 
       expect(orderModel.markPaid).not.toHaveBeenCalled();
+    });
+
+    test("rolls back when order is no longer awaiting payment inside transaction", async () => {
+      orderModel.findById.mockResolvedValue(baseOrder);
+      lockService.confirmSlot.mockResolvedValue({ confirmed: true });
+      orderModel.markPaid.mockResolvedValue(null);
+
+      await expect(
+        orderService.payOrder("buyer-1", "o-1", true),
+      ).rejects.toThrow("Order is not awaiting payment");
     });
 
     test("releases slot and marks order expired on failure", async () => {
