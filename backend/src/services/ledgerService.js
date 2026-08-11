@@ -145,7 +145,20 @@ const recordRelease = async (client, order) => {
   });
 };
 
-const recordRefund = async (client, order, organizerId) => {
+const recordRefund = async (client, order) => {
+  const category = await categoryModel.findById(order.category_id);
+  if (!category) {
+    const error = new Error("Category not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  const event = await eventModel.findById(category.event_id);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
   const buyerWallet = await ledgerModel.getOrCreateAccount(
     client,
     order.buyer_id,
@@ -153,7 +166,7 @@ const recordRefund = async (client, order, organizerId) => {
   );
   const organizerPending = await ledgerModel.getOrCreateAccount(
     client,
-    organizerId,
+    event.organizer_id,
     "organizer_pending",
   );
   const platformRevenue = await ledgerModel.getPlatformRevenueAccount(client);

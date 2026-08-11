@@ -6,6 +6,7 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const queueRoutes = require("./routes/queueRoutes");
 const checkoutRoutes = require("./routes/checkoutRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/queue", queueRoutes);
 app.use("/api/checkout", checkoutRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/admin", adminRoutes);
 
 module.exports = app;

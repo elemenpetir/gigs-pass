@@ -214,7 +214,7 @@ const cancelEvent = async ({ userId, role }, eventId) => {
       client,
     );
     for (const order of refundedOrders) {
-      await ledgerService.recordRefund(client, order, event.organizer_id);
+      await ledgerService.recordRefund(client, order);
     }
     return cancelled;
   });

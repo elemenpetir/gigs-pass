@@ -134,14 +134,14 @@ const markReleased = async (orderId, client = pool) => {
   return result.rows[0] || null;
 };
 
-const overrideStatus = async (orderId, status) => {
+const overrideStatus = async (orderId, status, client = pool) => {
   const query = `
     UPDATE orders
     SET status = $2
     WHERE id = $1 AND status = 'holding_period'
     RETURNING ${ORDER_COLUMNS}, holding_until;
   `;
-  const result = await pool.query(query, [orderId, status]);
+  const result = await client.query(query, [orderId, status]);
   return result.rows[0] || null;
 };
 

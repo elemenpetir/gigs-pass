@@ -77,7 +77,58 @@ const payOrder = async (userId, orderId, success) => {
   return orderModel.markExpired(orderId);
 };
 
+const overrideOrder = async ({ role }, orderId, status) => {
+  if (role !== "admin") {
+    const error = new Error("Forbidden: only admin can override");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (status !== "held" && status !== "refunded") {
+    const error = new Error("Invalid status. Only 'held' or 'refunded' allowed");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const order = await orderModel.findById(orderId);
+  if (!order) {
+    const error = new Error("Order not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (order.status !== "holding_period") {
+    const error = new Error(
+      "Override only valid while order is in holding_period",
+    );
+    error.statusCode = 409;
+    throw error;
+  }
+
+  if (status === "held") {
+    return orderModel.overrideStatus(orderId, "held");
+  }
+
+  return db.withTransaction(async (client) => {
+    const overridden = await orderModel.overrideStatus(
+      orderId,
+      "refunded",
+      client,
+    );
+    if (!overridden) {
+      const error = new Error(
+        "Override only valid while order is in holding_period",
+      );
+      error.statusCode = 409;
+      throw error;
+    }
+    await ledgerService.recordRefund(client, order);
+    return overridden;
+  });
+};
+
 module.exports = {
   createOrder,
   payOrder,
+  overrideOrder,
 };
