@@ -39,14 +39,14 @@ const updateEvent = async (id, title, description, eventDate) => {
   return result.rows[0] || null;
 };
 
-const updateStatus = async (id, status) => {
+const updateStatus = async (id, status, client = pool) => {
   const query = `
     UPDATE events
     SET status = $2
     WHERE id = $1
     RETURNING id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at;
   `;
-  const result = await pool.query(query, [id, status]);
+  const result = await client.query(query, [id, status]);
   return result.rows[0] || null;
 };
 

@@ -1,5 +1,7 @@
 const eventModel = require("../models/eventModel");
 const orderModel = require("../models/orderModel");
+const ledgerService = require("./ledgerService");
+const db = require("../config/db");
 const cloudinaryService = require("./cloudinaryService");
 
 const isFutureDate = (date) => {
@@ -205,10 +207,17 @@ const cancelEvent = async ({ userId, role }, eventId) => {
     throw error;
   }
 
-  const cancelled = await eventModel.updateStatus(eventId, "cancelled");
-  await orderModel.markRefundTriggeredByEventId(eventId);
-
-  return cancelled;
+  return db.withTransaction(async (client) => {
+    const cancelled = await eventModel.updateStatus(eventId, "cancelled", client);
+    const refundedOrders = await orderModel.markRefundTriggeredByEventId(
+      eventId,
+      client,
+    );
+    for (const order of refundedOrders) {
+      await ledgerService.recordRefund(client, order, event.organizer_id);
+    }
+    return cancelled;
+  });
 };
 
 module.exports = {

@@ -6,9 +6,14 @@ jest.mock("../../src/services/cloudinaryService", () => ({
   deleteImage: jest.fn(),
 }));
 
+jest.mock("../../src/services/ledgerService", () => ({
+  recordRefund: jest.fn(),
+}));
+
 const eventService = require("../../src/services/eventService");
 const eventModel = require("../../src/models/eventModel");
 const cloudinaryService = require("../../src/services/cloudinaryService");
+const ledgerService = require("../../src/services/ledgerService");
 
 const FUTURE_DATE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 const PAST_DATE = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

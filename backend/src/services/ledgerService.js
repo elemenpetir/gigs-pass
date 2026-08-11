@@ -145,6 +145,52 @@ const recordRelease = async (client, order) => {
   });
 };
 
+const recordRefund = async (client, order, organizerId) => {
+  const buyerWallet = await ledgerModel.getOrCreateAccount(
+    client,
+    order.buyer_id,
+    "buyer_wallet",
+  );
+  const organizerPending = await ledgerModel.getOrCreateAccount(
+    client,
+    organizerId,
+    "organizer_pending",
+  );
+  const platformRevenue = await ledgerModel.getPlatformRevenueAccount(client);
+  if (!buyerWallet || !organizerPending || !platformRevenue) {
+    const error = new Error("Ledger accounts not found for refund");
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const amount = order.amount;
+  const { commission, organizerShare } = computeSplit(amount);
+
+  return createLedgerEntries(client, {
+    orderId: order.id,
+    entries: [
+      {
+        accountId: buyerWallet.id,
+        entryType: "credit",
+        amount,
+        description: `Refund order ${order.id} (event dibatalkan)`,
+      },
+      {
+        accountId: organizerPending.id,
+        entryType: "debit",
+        amount: organizerShare,
+        description: `Batalkan bagian organizer untuk order ${order.id}`,
+      },
+      {
+        accountId: platformRevenue.id,
+        entryType: "debit",
+        amount: commission,
+        description: `Batalkan komisi untuk order ${order.id}`,
+      },
+    ],
+  });
+};
+
 const getAccountBalance = async (accountId) => {
   return ledgerModel.getBalance(accountId);
 };
@@ -153,5 +199,6 @@ module.exports = {
   createLedgerEntries,
   recordPaymentSplit,
   recordRelease,
+  recordRefund,
   getAccountBalance,
 };

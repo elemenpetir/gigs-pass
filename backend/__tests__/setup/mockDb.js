@@ -168,7 +168,12 @@ const mockDb = {
         const category = (this.categories || []).find(
           (c) => String(c.id) === String(order.category_id),
         );
-        return category && String(category.event_id) === String(eventId);
+        const belongsToEvent =
+          category && String(category.event_id) === String(eventId);
+        const paidStatus =
+          sql.includes("status IN ('pending', 'holding_period')") &&
+          ["pending", "holding_period"].includes(order.status);
+        return belongsToEvent && (sql.includes("status IN") ? paidStatus : true);
       });
       matching.forEach((order) => {
         order.status = "refund_triggered";
@@ -197,6 +202,8 @@ const mockDb = {
 
     return Promise.resolve({ rows: [], rowCount: 0 });
   },
+
+  withTransaction: (fn) => fn(mockDb),
 };
 
 module.exports = mockDb;

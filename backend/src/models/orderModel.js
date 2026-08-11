@@ -74,14 +74,15 @@ const markExpiredByBuyerAndCategory = async (buyerId, categoryId) => {
   return result.rows;
 };
 
-const markRefundTriggeredByEventId = async (eventId) => {
+const markRefundTriggeredByEventId = async (eventId, client = pool) => {
   const query = `
     UPDATE orders
     SET status = 'refund_triggered'
     WHERE category_id IN (SELECT id FROM ticket_categories WHERE event_id = $1)
+      AND status IN ('pending', 'holding_period')
     RETURNING id, buyer_id, category_id, status, amount, holding_until, created_at, updated_at;
   `;
-  const result = await pool.query(query, [eventId]);
+  const result = await client.query(query, [eventId]);
   return result.rows;
 };
 
