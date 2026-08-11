@@ -1,5 +1,8 @@
 const mockDb = require("../setup/mockDb");
 jest.mock("../../src/config/db", () => mockDb);
+jest.mock("../../src/models/orderModel", () => ({
+  markExpiredByBuyerAndCategory: jest.fn(),
+}));
 
 jest.mock("../../src/config/redis", () => ({
   get: jest.fn(),
@@ -11,10 +14,12 @@ jest.mock("../../src/config/redis", () => ({
   pipeline: jest.fn(),
   zadd: jest.fn(),
   zrem: jest.fn(),
+  zrangebyscore: jest.fn(),
 }));
 
 const lockService = require("../../src/services/lockService");
 const redis = require("../../src/config/redis");
+const orderModel = require("../../src/models/orderModel");
 const { LOCK_TTL_SECONDS } = require("../../src/config/constants");
 
 const createCategory = async () => {
@@ -39,6 +44,8 @@ describe("Lock Service", () => {
     redis.pipeline.mockReset();
     redis.zadd.mockReset();
     redis.zrem.mockReset();
+    redis.zrangebyscore.mockReset();
+    orderModel.markExpiredByBuyerAndCategory.mockReset();
   });
 
   describe("reserveSlot", () => {
@@ -216,6 +223,54 @@ describe("Lock Service", () => {
       await expect(
         lockService.getReservation("buyer-1", 9999),
       ).rejects.toThrow("Category not found");
+    });
+  });
+
+  describe("cleanupExpiredLocks", () => {
+    test("releases expired locks and marks orders expired", async () => {
+      redis.zrangebyscore.mockResolvedValue(["buyer-1", "buyer-2"]);
+      const pipeline = {
+        del: jest.fn().mockReturnThis(),
+        incr: jest.fn().mockReturnThis(),
+        zrem: jest.fn().mockReturnThis(),
+        exec: jest.fn().mockResolvedValue([]),
+      };
+      redis.pipeline.mockReturnValue(pipeline);
+
+      const released = await lockService.cleanupExpiredLocks("cat-1");
+
+      expect(redis.zrangebyscore).toHaveBeenCalledWith(
+        "lockexpiry:category:cat-1",
+        0,
+        expect.any(Number),
+      );
+      expect(pipeline.del).toHaveBeenCalledWith(
+        "lock:category:cat-1:buyer:buyer-1",
+      );
+      expect(pipeline.incr).toHaveBeenCalledWith("stock:category:cat-1");
+      expect(pipeline.zrem).toHaveBeenCalledWith(
+        "lockexpiry:category:cat-1",
+        "buyer-1",
+      );
+      expect(orderModel.markExpiredByBuyerAndCategory).toHaveBeenCalledWith(
+        "buyer-1",
+        "cat-1",
+      );
+      expect(orderModel.markExpiredByBuyerAndCategory).toHaveBeenCalledWith(
+        "buyer-2",
+        "cat-1",
+      );
+      expect(released).toBe(2);
+    });
+
+    test("returns 0 when no locks expired", async () => {
+      redis.zrangebyscore.mockResolvedValue([]);
+
+      const released = await lockService.cleanupExpiredLocks("cat-1");
+
+      expect(released).toBe(0);
+      expect(redis.pipeline).not.toHaveBeenCalled();
+      expect(orderModel.markExpiredByBuyerAndCategory).not.toHaveBeenCalled();
     });
   });
 });

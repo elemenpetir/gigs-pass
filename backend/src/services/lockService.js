@@ -1,4 +1,5 @@
 const categoryModel = require("../models/categoryModel");
+const orderModel = require("../models/orderModel");
 const redis = require("../config/redis");
 const { grantedKey } = require("./queueService");
 const { LOCK_TTL_SECONDS } = require("../config/constants");
@@ -105,11 +106,33 @@ const getReservation = async (userId, categoryId) => {
     : { reserved: true, expiresInSeconds: LOCK_TTL_SECONDS };
 };
 
+const cleanupExpiredLocks = async (categoryId) => {
+  const now = Date.now();
+  const expiredBuyers = await redis.zrangebyscore(
+    lockExpiryKey(categoryId),
+    0,
+    now,
+  );
+
+  for (const userId of expiredBuyers) {
+    const pipeline = redis.pipeline();
+    pipeline.del(lockKey(categoryId, userId));
+    pipeline.incr(`stock:category:${categoryId}`);
+    pipeline.zrem(lockExpiryKey(categoryId), userId);
+    await pipeline.exec();
+
+    await orderModel.markExpiredByBuyerAndCategory(userId, categoryId);
+  }
+
+  return expiredBuyers.length;
+};
+
 module.exports = {
   reserveSlot,
   confirmSlot,
   releaseSlot,
   getReservation,
+  cleanupExpiredLocks,
   lockKey,
   lockExpiryKey,
 };

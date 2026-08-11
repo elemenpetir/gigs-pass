@@ -1,11 +1,14 @@
 const queueService = require("../services/queueService");
+const lockService = require("../services/lockService");
 const categoryModel = require("../models/categoryModel");
 const { QUEUE_BATCH_SIZE, QUEUE_DEQUEUE_INTERVAL_MS } = require("../config/constants");
 
 let timer = null;
+let running = false;
 
 const processQueueForCategory = async (categoryId) => {
   try {
+    await lockService.cleanupExpiredLocks(categoryId);
     const dequeued = await queueService.dequeueBatch(categoryId, QUEUE_BATCH_SIZE);
     if (dequeued.length > 0) {
       console.log(
@@ -22,6 +25,10 @@ const processQueueForCategory = async (categoryId) => {
 };
 
 const run = async () => {
+  if (running) {
+    return;
+  }
+  running = true;
   try {
     const categories = await categoryModel.findAll();
     for (const category of categories) {
@@ -29,6 +36,8 @@ const run = async () => {
     }
   } catch (error) {
     console.error(`[queueDequeuer] error listing categories: ${error.message}`);
+  } finally {
+    running = false;
   }
 };
 
@@ -48,4 +57,4 @@ const stop = () => {
   }
 };
 
-module.exports = { start, stop, run };
+module.exports = { start, stop, run, processQueueForCategory };

@@ -114,7 +114,7 @@ Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dyna
 
 - Tidak ada kursi bernomor — "slot" = satu unit kuota (general admission). Buyer yang lolos dequeue (ditandai `granted:category:{id}:buyer:{uid}` EX 300) berhak mengunci slot.
 - Begitu buyer masuk checkout, slot/kuota tiket dikunci sementara atas nama buyer (`lock:category:{id}:buyer:{uid}` EX 300 NX), stok di-`DECR`.
-- Jika tidak dibayar dalam waktu tersebut, lock otomatis lepas (Redis expiry), kuota kembali tersedia (`INCR`) — dipastikan oleh job `src/jobs/lockCleaner.js` (scan `lockexpiry:category:{id}`, interval 30s) yang melepas lock kadaluwarsa + mengembalikan stock + menandai order `awaiting_payment` → `expired`.
+- Jika tidak dibayar dalam waktu tersebut, lock otomatis lepas (Redis expiry), kuota kembali tersedia (`INCR`) — dipastikan oleh cleanup di awal tiap tick `queueDequeuer` (interval 5s, scan `lockexpiry:category:{id}`) yang melepas lock kadaluwarsa + mengembalikan stock + menandai order `awaiting_payment` → `expired`.
 - Order dibuat di PostgreSQL berstatus `awaiting_payment` saat lock berhasil; tercatat final (status `pending`) hanya setelah pembayaran berhasil.
 - One-shot admission: buyer yang gagal bayar / lock-nya expired harus join antrian lagi dari belakang.
 
@@ -195,7 +195,7 @@ Granted marker (bukti lolos dequeue, TTL 300):
 Lock expiry tracker (Sorted Set, untuk cleanup lock yang ditinggalkan):
   Key   : lockexpiry:category:{category_id}   (member user_id, score = epoch ms expiry)
   ZADD  : saat reserveSlot; ZREM saat confirmSlot/releaseSlot
-  Job   : src/jobs/lockCleaner.js tiap 30s → ZRANGEBYSCORE 0 <now> → DEL lock + INCR stock
+  Job   : dipanggil di awal processQueueForCategory (queueDequeuer, tiap 5s) → ZRANGEBYSCORE 0 <now> → DEL lock + INCR stock
           + ZREM + order awaiting_payment di-mark expired
 ```
 
