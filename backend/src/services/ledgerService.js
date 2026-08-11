@@ -40,6 +40,14 @@ const createLedgerEntries = async (client, { orderId, entries }) => {
   return inserted;
 };
 
+const computeSplit = (amount) => {
+  const commission = Math.round((amount * PLATFORM_COMMISSION_PERCENT) / 100);
+  return {
+    commission,
+    organizerShare: amount - commission,
+  };
+};
+
 const recordPaymentSplit = async (client, order) => {
   const category = await categoryModel.findById(order.category_id);
   if (!category) {
@@ -72,8 +80,7 @@ const recordPaymentSplit = async (client, order) => {
   }
 
   const amount = order.amount;
-  const commission = Math.round((amount * PLATFORM_COMMISSION_PERCENT) / 100);
-  const organizerShare = amount - commission;
+  const { commission, organizerShare } = computeSplit(amount);
 
   return createLedgerEntries(client, {
     orderId: order.id,
@@ -100,6 +107,44 @@ const recordPaymentSplit = async (client, order) => {
   });
 };
 
+const recordRelease = async (client, order) => {
+  const organizerPending = await ledgerModel.getOrCreateAccount(
+    client,
+    order.organizer_id,
+    "organizer_pending",
+  );
+  const organizerAvailable = await ledgerModel.getOrCreateAccount(
+    client,
+    order.organizer_id,
+    "organizer_available",
+  );
+  if (!organizerPending || !organizerAvailable) {
+    const error = new Error("Organizer accounts not found");
+    error.statusCode = 500;
+    throw error;
+  }
+
+  const { organizerShare } = computeSplit(order.amount);
+
+  return createLedgerEntries(client, {
+    orderId: order.id,
+    entries: [
+      {
+        accountId: organizerPending.id,
+        entryType: "debit",
+        amount: organizerShare,
+        description: `Release dana order ${order.id}`,
+      },
+      {
+        accountId: organizerAvailable.id,
+        entryType: "credit",
+        amount: organizerShare,
+        description: `Dana tersedia untuk order ${order.id}`,
+      },
+    ],
+  });
+};
+
 const getAccountBalance = async (accountId) => {
   return ledgerModel.getBalance(accountId);
 };
@@ -107,5 +152,6 @@ const getAccountBalance = async (accountId) => {
 module.exports = {
   createLedgerEntries,
   recordPaymentSplit,
+  recordRelease,
   getAccountBalance,
 };
