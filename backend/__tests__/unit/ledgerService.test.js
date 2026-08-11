@@ -196,6 +196,127 @@ describe("Ledger Service", () => {
     });
   });
 
+  describe("recordRelease", () => {
+    test("moves organizer share from pending to available (balanced)", async () => {
+      ledgerModel.getOrCreateAccount.mockImplementation(async (client, ownerId, type) => {
+        if (type === "organizer_pending") return { id: "acc-pending" };
+        if (type === "organizer_available") return { id: "acc-available" };
+        return null;
+      });
+      const inserted = [
+        { id: "e1", amount: 135000 },
+        { id: "e2", amount: 135000 },
+      ];
+      ledgerModel.insertEntry.mockImplementation(async (client, entry) => {
+        const next = inserted.shift();
+        return { ...next, ...entry };
+      });
+
+      const order = {
+        id: "o-1",
+        category_id: "cat-1",
+        amount: 150000,
+        organizer_id: "org-1",
+      };
+
+      const result = await ledgerService.recordRelease(fakeClient, order);
+
+      expect(ledgerModel.getOrCreateAccount).toHaveBeenCalledWith(
+        fakeClient,
+        "org-1",
+        "organizer_pending",
+      );
+      expect(ledgerModel.getOrCreateAccount).toHaveBeenCalledWith(
+        fakeClient,
+        "org-1",
+        "organizer_available",
+      );
+      expect(ledgerModel.insertEntry).toHaveBeenCalledTimes(2);
+
+      const debits = result.filter((e) => e.entryType === "debit");
+      const credits = result.filter((e) => e.entryType === "credit");
+      const totalDebit = debits.reduce((sum, e) => sum + e.amount, 0);
+      const totalCredit = credits.reduce((sum, e) => sum + e.amount, 0);
+
+      expect(totalDebit).toBe(135000);
+      expect(totalCredit).toBe(135000);
+      expect(totalDebit).toBe(totalCredit);
+      expect(debits[0].accountId).toBe("acc-pending");
+      expect(credits[0].accountId).toBe("acc-available");
+    });
+  });
+
+  describe("recordRefund", () => {
+    test("reverses payment split back to buyer (balanced)", async () => {
+      categoryModel.findById.mockResolvedValue({
+        id: "cat-1",
+        event_id: "ev-1",
+      });
+      eventModel.findById.mockResolvedValue({
+        id: "ev-1",
+        organizer_id: "org-1",
+      });
+      ledgerModel.getOrCreateAccount.mockImplementation(async (client, ownerId, type) => {
+        if (type === "buyer_wallet") return { id: "acc-buyer" };
+        if (type === "organizer_pending") return { id: "acc-organizer" };
+        return null;
+      });
+      ledgerModel.getPlatformRevenueAccount.mockResolvedValue({
+        id: "acc-platform",
+      });
+      const inserted = [
+        { id: "e1", amount: 150000 },
+        { id: "e2", amount: 135000 },
+        { id: "e3", amount: 15000 },
+      ];
+      ledgerModel.insertEntry.mockImplementation(async (client, entry) => {
+        const next = inserted.shift();
+        return { ...next, ...entry };
+      });
+
+      const order = {
+        id: "o-1",
+        buyer_id: "buyer-1",
+        category_id: "cat-1",
+        amount: 150000,
+      };
+
+      const result = await ledgerService.recordRefund(fakeClient, order);
+
+      expect(categoryModel.findById).toHaveBeenCalledWith("cat-1");
+      expect(eventModel.findById).toHaveBeenCalledWith("ev-1");
+      expect(ledgerModel.insertEntry).toHaveBeenCalledTimes(3);
+
+      const totalDebit = result
+        .filter((e) => e.entryType === "debit")
+        .reduce((sum, e) => sum + e.amount, 0);
+      const totalCredit = result
+        .filter((e) => e.entryType === "credit")
+        .reduce((sum, e) => sum + e.amount, 0);
+
+      expect(totalCredit).toBe(150000);
+      expect(totalDebit).toBe(150000);
+      expect(totalDebit).toBe(totalCredit);
+
+      const credits = result.filter((e) => e.entryType === "credit");
+      expect(credits[0].accountId).toBe("acc-buyer");
+      expect(credits[0].amount).toBe(150000);
+    });
+
+    test("throws 404 when category not found", async () => {
+      categoryModel.findById.mockResolvedValue(null);
+
+      await expect(
+        ledgerService.recordRefund(fakeClient, {
+          id: "o-1",
+          buyer_id: "buyer-1",
+          category_id: "cat-1",
+          amount: 150000,
+        }),
+      ).rejects.toThrow("Category not found");
+    });
+  });
+
   describe("getAccountBalance", () => {
     test("returns balance from ledger model", async () => {
       ledgerModel.getBalance.mockResolvedValue(120000);

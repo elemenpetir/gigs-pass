@@ -42,6 +42,7 @@ const seedCategoryAndOrder = (eventId, buyerId, status = "pending") => {
     buyer_id: buyerId,
     category_id: category.id,
     status,
+    amount: 100,
     holding_until: null,
     created_at: new Date(),
     updated_at: new Date(),
@@ -54,6 +55,7 @@ const seedCategoryAndOrder = (eventId, buyerId, status = "pending") => {
 describe("Event Service", () => {
   beforeEach(() => {
     mockDb.reset();
+    ledgerService.recordRefund.mockClear();
   });
 
   describe("createEvent", () => {
@@ -415,6 +417,43 @@ describe("Event Service", () => {
       expect(cancelled).toBeDefined();
       expect(cancelled.status).toBe("cancelled");
       expect(order.status).toBe("refund_triggered");
+      expect(ledgerService.recordRefund).toHaveBeenCalledTimes(1);
+      expect(ledgerService.recordRefund).toHaveBeenCalledWith(mockDb, order);
+    });
+
+    test("should create refund entry for every paid order of the event", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Cancel Test",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateStatus(created.id, "published");
+      seedCategoryAndOrder(created.id, "buyer-1");
+      seedCategoryAndOrder(created.id, "buyer-2");
+      seedCategoryAndOrder(created.id, "buyer-3");
+
+      await eventService.cancelEvent(
+        { userId: "org-1", role: "organizer" },
+        created.id,
+      );
+
+      expect(ledgerService.recordRefund).toHaveBeenCalledTimes(3);
+    });
+
+    test("should not create refund entry for unpaid orders", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Cancel Test",
+        event_date: FUTURE_DATE,
+      });
+      await eventModel.updateStatus(created.id, "published");
+      seedCategoryAndOrder(created.id, "buyer-1", "pending");
+      seedCategoryAndOrder(created.id, "buyer-2", "awaiting_payment");
+
+      await eventService.cancelEvent(
+        { userId: "org-1", role: "organizer" },
+        created.id,
+      );
+
+      expect(ledgerService.recordRefund).toHaveBeenCalledTimes(1);
     });
 
     test("should cancel suspended event by admin", async () => {

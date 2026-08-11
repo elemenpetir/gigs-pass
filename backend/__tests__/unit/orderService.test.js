@@ -166,4 +166,87 @@ describe("Order Service", () => {
       ).rejects.toThrow("Order is not awaiting payment");
     });
   });
+
+  describe("overrideOrder", () => {
+    const holdingOrder = {
+      id: "o-1",
+      buyer_id: "buyer-1",
+      category_id: "cat-1",
+      status: "holding_period",
+      amount: 150000,
+    };
+
+    test("holds an order without moving funds", async () => {
+      orderModel.findById.mockResolvedValue(holdingOrder);
+      const held = { ...holdingOrder, status: "held" };
+      orderModel.overrideStatus.mockResolvedValue(held);
+
+      const result = await orderService.overrideOrder(
+        { role: "admin" },
+        "o-1",
+        "held",
+      );
+
+      expect(orderModel.overrideStatus).toHaveBeenCalledWith("o-1", "held");
+      expect(ledgerService.recordRefund).not.toHaveBeenCalled();
+      expect(result).toEqual(held);
+    });
+
+    test("refunds an order with reversing ledger entries", async () => {
+      orderModel.findById.mockResolvedValue(holdingOrder);
+      const refunded = { ...holdingOrder, status: "refunded" };
+      orderModel.overrideStatus.mockResolvedValue(refunded);
+
+      const result = await orderService.overrideOrder(
+        { role: "admin" },
+        "o-1",
+        "refunded",
+      );
+
+      expect(db.withTransaction).toHaveBeenCalled();
+      expect(orderModel.overrideStatus).toHaveBeenCalledWith("o-1", "refunded", {});
+      expect(ledgerService.recordRefund).toHaveBeenCalledWith({}, holdingOrder);
+      expect(result).toEqual(refunded);
+    });
+
+    test("throws 403 for non-admin", async () => {
+      await expect(
+        orderService.overrideOrder({ role: "organizer" }, "o-1", "held"),
+      ).rejects.toThrow("Forbidden: only admin can override");
+    });
+
+    test("throws 400 for invalid status", async () => {
+      await expect(
+        orderService.overrideOrder({ role: "admin" }, "o-1", "pending"),
+      ).rejects.toThrow("Invalid status");
+    });
+
+    test("throws 404 when order not found", async () => {
+      orderModel.findById.mockResolvedValue(null);
+
+      await expect(
+        orderService.overrideOrder({ role: "admin" }, "o-missing", "held"),
+      ).rejects.toThrow("Order not found");
+    });
+
+    test("throws 409 when order is not in holding period", async () => {
+      orderModel.findById.mockResolvedValue({
+        ...holdingOrder,
+        status: "released",
+      });
+
+      await expect(
+        orderService.overrideOrder({ role: "admin" }, "o-1", "held"),
+      ).rejects.toThrow("Override only valid while order is in holding_period");
+    });
+
+    test("throws 409 inside transaction when order is no longer in holding period", async () => {
+      orderModel.findById.mockResolvedValue(holdingOrder);
+      orderModel.overrideStatus.mockResolvedValue(null);
+
+      await expect(
+        orderService.overrideOrder({ role: "admin" }, "o-1", "refunded"),
+      ).rejects.toThrow("Override only valid while order is in holding_period");
+    });
+  });
 });
