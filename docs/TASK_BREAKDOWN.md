@@ -130,12 +130,12 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 8 — Alur Dana (Holding Period, Refund, Override)
 
-- [ ] Scheduled job harian: cek order yang `event_date`-nya sudah lewat → ubah status `pending` jadi `holding_period`, set `holding_until` (+7 hari)
-- [ ] Scheduled job harian: cek order `holding_period` yang `holding_until` sudah lewat → ubah status jadi `released`, buat ledger entry pindah saldo `organizer_pending` → `organizer_available`
-- [ ] Endpoint `POST /api/organizer/events/:id/cancel` — organizer lapor batal resmi, ubah semua order terkait jadi `refund_triggered`, buat reversing entry ke `buyer_wallet`
-- [ ] Endpoint `POST /api/admin/orders/:id/override` (admin) — ubah status jadi `held`/`refunded`, hanya valid kalau order masih `holding_period`
-- [ ] Unit test: skenario cancel event menghasilkan refund entry yang benar untuk semua order terkait
-- [ ] Unit test: admin override ditolak kalau order sudah `released`
+- [x] Scheduled job harian (`orderLifecycle`): cek order yang `event_date`-nya sudah lewat → ubah status `pending` jadi `holding_period`, set `holding_until` (+7 hari, konstanta `HOLDING_PERIOD_DAYS`)
+- [x] Scheduled job harian: cek order `holding_period` yang `holding_until` sudah lewat → ubah status jadi `released`, buat ledger entry pindah saldo `organizer_pending` → `organizer_available` (`recordRelease`)
+- [x] Endpoint `PUT /api/events/:id/cancel` (organizer/admin) — satu transaksi penuh: event → `cancelled`, order dibayar → `refund_triggered`, reversing entry ke `buyer_wallet` (`recordRefund`); order belum-bayar TIDAK di-refund
+- [x] Endpoint `POST /api/admin/orders/:id/override` (admin) — ubah status jadi `held`/`refunded`, hanya valid kalau order masih `holding_period`; `refunded` ikut membuat reversing entry
+- [x] Unit test: skenario cancel event menghasilkan refund entry yang benar untuk semua order terkait (hanya yang dibayar)
+- [x] Unit test: admin override ditolak kalau order sudah `released` — 220 total
 
 ---
 

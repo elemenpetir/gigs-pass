@@ -147,6 +147,10 @@ holding_period (event selesai, dana ditahan contoh 7 hari)
    └── holding period habis tanpa masalah → released → dana cair ke organizer
 ```
 
+- Transisi `pending → holding_period` dan `holding_period → released` dijalankan scheduled job `orderLifecycle` (default tiap 24 jam). Saat `released`, ledger memindahkan saldo `organizer_pending` → `organizer_available` (reversing-adjacent entry, bukan UPDATE baris lama).
+- Refund (event batal resmi atau admin override `refunded`) membuat reversing entry: kredit `buyer_wallet` = amount, debit `organizer_pending` (bagian organizer), debit `platform_revenue` (komisi) — menyeimbangkan transaksi pembayaran asli.
+- Hanya order yang **sudah dibayar** (`pending`/`holding_period`) yang ikut refund saat event di-cancel; order `awaiting_payment` dibiarkan expire melalui lock cleanup.
+
 Setelah `released`, dana di luar kendali sistem — sengketa lanjutan menjadi ranah organizer-customer atau pihak berwenang, bukan tanggung jawab platform.
 
 **Catatan desain penting:** sengaja **tidak ada** dispute window otomatis yang dipicu customer (misal tombol "report scam" yang otomatis menahan dana). Ini dikonfirmasi bukan pola nyata platform ticketing — trigger refund hanya dari organizer yang membatalkan resmi, atau intervensi manual admin.

@@ -62,6 +62,8 @@ frontend/
 - `orders.amount` = snapshot `ticket_categories.price` saat create order (Fase 7) — ledger pakai nilai ini, aman walau harga kategori diubah organizer
 - Komisi platform: `PLATFORM_COMMISSION_PERCENT` (default 10%) di `src/config/constants.js`
 - Pembayaran sukses → `withTransaction` (helper di `src/config/db.js`): `markPaid` + `ledgerService.recordPaymentSplit` (debit `buyer_wallet` = amount, kredit `organizer_pending` = amount − komisi, kredit `platform_revenue` = komisi) — semua dalam 1 `BEGIN...COMMIT`
+- Release dana (Fase 8) → `recordRelease` saat holding_period habis: debit `organizer_pending` + kredit `organizer_available` (jumlah = bagian organizer)
+- Refund (Fase 8) → `recordRefund` saat event di-cancel atau admin override `refunded`: kredit `buyer_wallet` (= amount), debit `organizer_pending` (bagian organizer), debit `platform_revenue` (komisi) — reversing entry yang menyeimbangkan transaksi pembayaran asli
 - `ledgerModel` TIDAK mengekspos fungsi update/delete — enforce immutability di service layer juga (assert desain, bukan cuma DB constraint)
 
 ### Roles (hardcoded, not dynamic RBAC)
@@ -74,12 +76,12 @@ frontend/
 awaiting_payment (dibuat saat lock berhasil, BELUM bayar)
    ├── bayar sukses   → pending (dana masuk, menunggu event_date)
    └── gagal / TTL    → expired (lock lepas, stock balik ke pool)
-pending → holding_period (after event_date)
-              ├── released (after 7 days, no issue)
-              ├── refund_triggered (organizer cancels event officially)
-              └── held / refunded (admin manual override — ONLY valid while status = holding_period)
+pending → holding_period (after event_date, via job orderLifecycle, holding_until = +7 hari)
+              ├── released (after 7 days, no issue, + recordRelease ledger)
+              ├── refund_triggered (event cancelled resmi — HANYA order yang sudah dibayar, + recordRefund)
+              └── held / refunded (admin manual override POST /api/admin/orders/:id/override — ONLY valid while status = holding_period)
 ```
-`pending` = sudah dibayar (PRD: "dana masuk") — order yang belum bayar memakai `awaiting_payment`, bukan `pending`. `paid_at` (nullable) mencatat kapan pembayaran berhasil.
+`pending` = sudah dibayar (PRD: "dana masuk") — order yang belum bayar memakai `awaiting_payment`, bukan `pending`. `paid_at` (nullable) mencatat kapan pembayaran berhasil. Transisi `pending→holding_period` dan `holding_period→released` dijalankan `src/jobs/orderLifecycle.js` (interval `ORDER_LIFECYCLE_INTERVAL_MS`, default 24 jam).
 
 ### Event Status Flow (Limited Lifecycle)
 Event status hanya dapat diintervensi **SEBELUM event_date**. Setelah event digelar, intervensi pindah ke order flow:
