@@ -119,12 +119,12 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 7 — Ledger System (Inti)
 
-- [ ] Service `createLedgerEntry` — insert baris ke `ledger_entries`, validasi debit=kredit dalam 1 transaksi
-- [ ] Service `getAccountBalance` — `SUM` entries per `account_id`
-- [ ] Saat order dibayar: buat entri split otomatis (kredit `organizer_pending`, kredit `platform_revenue`, sesuai persentase komisi)
-- [ ] Pastikan proses create order + create ledger entries dibungkus 1 database transaction (`BEGIN...COMMIT`)
-- [ ] Unit test: setiap transaksi menghasilkan entri balance (total debit = total kredit)
-- [ ] Unit test: ledger_entries tidak bisa di-UPDATE dari service layer (assert desain, bukan cuma DB constraint)
+- [x] Service `createLedgerEntry` — insert baris ke `ledger_entries`, validasi debit=kredit dalam 1 transaksi
+- [x] Service `getAccountBalance` — `SUM` entries per `account_id`
+- [x] Saat order dibayar: buat entri split otomatis (kredit `organizer_pending`, kredit `platform_revenue`, sesuai persentase komisi — `PLATFORM_COMMISSION_PERCENT` default 10%)
+- [x] Kolom `orders.amount` (snapshot dari `ticket_categories.price` saat create order) + `payOrder` sukses dibungkus 1 database transaction (`withTransaction`: markPaid + split ledger)
+- [x] Unit test: setiap transaksi menghasilkan entri balance (total debit = total kredit)
+- [x] Unit test: ledger_entries tidak bisa di-UPDATE dari service layer (assert desain, bukan cuma DB constraint) — 203 total
 
 ---
 

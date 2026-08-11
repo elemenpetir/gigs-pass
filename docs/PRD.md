@@ -127,7 +127,8 @@ Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dyna
 
 - Double-entry bookkeeping — setiap transaksi menyentuh minimal 2 akun (debit & kredit), selalu balance.
 - 4 jenis akun: `buyer_wallet`, `organizer_pending`, `organizer_available`, `platform_revenue`.
-- Split otomatis: pembayaran buyer → sebagian ke `organizer_pending`, sebagian ke `platform_revenue` (komisi platform).
+- Split otomatis: pembayaran buyer → sebagian ke `organizer_pending`, sebagian ke `platform_revenue` (komisi platform, persentase = konstanta `PLATFORM_COMMISSION_PERCENT`, default 10%).
+- Jumlah transaksi memakai `orders.amount` — snapshot `ticket_categories.price` saat order dibuat, jadi harga yang dipakai ledger tidak berubah walau kategori diedit organizer.
 - `ledger_entries` bersifat **immutable** — koreksi dilakukan lewat entri baru (reversing entry), bukan edit entri lama.
 - Saldo dihitung dari `SUM` seluruh entri terkait, bukan kolom balance yang di-update langsung.
 

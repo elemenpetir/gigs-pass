@@ -59,6 +59,10 @@ frontend/
 - 4 account types: `buyer_wallet`, `organizer_pending`, `organizer_available`, `platform_revenue`
 - `ledger_entries` table is **immutable** — no UPDATE/DELETE, corrections via reversing entries
 - Order/fund status lives in `orders.status`, NOT in `ledger_entries` — ledger only records financial events
+- `orders.amount` = snapshot `ticket_categories.price` saat create order (Fase 7) — ledger pakai nilai ini, aman walau harga kategori diubah organizer
+- Komisi platform: `PLATFORM_COMMISSION_PERCENT` (default 10%) di `src/config/constants.js`
+- Pembayaran sukses → `withTransaction` (helper di `src/config/db.js`): `markPaid` + `ledgerService.recordPaymentSplit` (debit `buyer_wallet` = amount, kredit `organizer_pending` = amount − komisi, kredit `platform_revenue` = komisi) — semua dalam 1 `BEGIN...COMMIT`
+- `ledgerModel` TIDAK mengekspos fungsi update/delete — enforce immutability di service layer juga (assert desain, bukan cuma DB constraint)
 
 ### Roles (hardcoded, not dynamic RBAC)
 - `buyer` — browse events (public), checkout (auth required)
