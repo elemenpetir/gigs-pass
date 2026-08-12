@@ -66,6 +66,19 @@ const getEventOverview = async (userId, eventId) => {
   };
 };
 
+const getPlatformOverview = async (role) => {
+  if (role !== "admin") {
+    const error = new Error(
+      "Forbidden: only admin can view platform analytics",
+    );
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return analyticsModel.getPlatformOverview();
+};
+
 module.exports = {
   getEventOverview,
+  getPlatformOverview,
 };

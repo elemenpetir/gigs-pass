@@ -12,4 +12,11 @@ router.get(
   analyticsController.eventOverview,
 );
 
+router.get(
+  "/platform/overview",
+  authenticate,
+  authorize(["admin"]),
+  analyticsController.platformOverview,
+);
+
 module.exports = router;

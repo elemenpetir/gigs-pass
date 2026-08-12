@@ -20,6 +20,24 @@ const eventOverview = async (req, res) => {
   }
 };
 
+const platformOverview = async (req, res) => {
+  try {
+    const data = await analyticsService.getPlatformOverview(req.user.role);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Platform overview retrieved",
+      data,
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
+
 module.exports = {
   eventOverview,
+  platformOverview,
 };

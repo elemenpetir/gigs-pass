@@ -41,7 +41,69 @@ const getOrganizerFundBalance = async (organizerId, accountType) => {
   return parseInt(result.rows[0].balance, 10);
 };
 
+const getPlatformOverview = async () => {
+  const [revenue, refunded, byStatus, events, buyers, platformBalance] =
+    await Promise.all([
+      pool.query(`
+        SELECT COALESCE(SUM(amount), 0)::int AS gross,
+               COUNT(*)::int AS count
+        FROM orders
+        WHERE status IN ${PAID_STATUSES};
+      `),
+      pool.query(`
+        SELECT COALESCE(SUM(amount), 0)::int AS amount,
+               COUNT(*)::int AS count,
+               COALESCE(COUNT(*) FILTER (WHERE refund_reason = 'event_cancelled'), 0)::int AS event_cancelled,
+               COALESCE(COUNT(*) FILTER (WHERE refund_reason = 'admin_override'), 0)::int AS admin_override
+        FROM orders
+        WHERE status = 'refunded';
+      `),
+      pool.query(`
+        SELECT status, COUNT(*)::int AS count
+        FROM orders
+        GROUP BY status;
+      `),
+      pool.query(`
+        SELECT COUNT(*)::int AS total,
+               COUNT(*) FILTER (WHERE status = 'published')::int AS published,
+               COUNT(*) FILTER (WHERE status = 'cancelled')::int AS cancelled
+        FROM events;
+      `),
+      pool.query(`
+        SELECT COUNT(DISTINCT buyer_id)::int AS total
+        FROM orders;
+      `),
+      pool.query(`
+        SELECT COALESCE(
+          SUM(CASE WHEN entry_type = 'credit' THEN amount ELSE -amount END),
+          0
+        )::int AS balance
+        FROM ledger_entries le
+        JOIN ledger_accounts a ON a.id = le.account_id
+        WHERE a.account_type = 'platform_revenue';
+      `),
+    ]);
+
+  return {
+    revenue: {
+      gross: revenue.rows[0].gross,
+      count: revenue.rows[0].count,
+    },
+    refunded: {
+      amount: refunded.rows[0].amount,
+      count: refunded.rows[0].count,
+      eventCancelled: refunded.rows[0].event_cancelled,
+      adminOverride: refunded.rows[0].admin_override,
+    },
+    byStatus: byStatus.rows,
+    events: events.rows[0],
+    buyers: buyers.rows[0].total,
+    platformRevenueBalance: platformBalance.rows[0].balance,
+  };
+};
+
 module.exports = {
   getEventOverview,
   getOrganizerFundBalance,
+  getPlatformOverview,
 };
