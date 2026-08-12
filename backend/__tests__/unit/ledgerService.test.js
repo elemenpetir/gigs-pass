@@ -315,6 +315,78 @@ describe("Ledger Service", () => {
         }),
       ).rejects.toThrow("Category not found");
     });
+
+    test("defaults reason to event_cancelled in entry description", async () => {
+      categoryModel.findById.mockResolvedValue({
+        id: "cat-1",
+        event_id: "ev-1",
+      });
+      eventModel.findById.mockResolvedValue({
+        id: "ev-1",
+        organizer_id: "org-1",
+      });
+      ledgerModel.getOrCreateAccount.mockImplementation(
+        async (client, ownerId, type) => ({
+          id: `acc-${type}`,
+        }),
+      );
+      ledgerModel.getPlatformRevenueAccount.mockResolvedValue({
+        id: "acc-platform",
+      });
+      ledgerModel.insertEntry.mockResolvedValue({ id: "e1" });
+
+      await ledgerService.recordRefund(fakeClient, {
+        id: "o-1",
+        buyer_id: "buyer-1",
+        category_id: "cat-1",
+        amount: 150000,
+      });
+
+      expect(ledgerModel.insertEntry).toHaveBeenCalledWith(
+        fakeClient,
+        expect.objectContaining({
+          description: expect.stringContaining("event dibatalkan"),
+        }),
+      );
+    });
+
+    test("uses admin_override in entry description when reason provided", async () => {
+      categoryModel.findById.mockResolvedValue({
+        id: "cat-1",
+        event_id: "ev-1",
+      });
+      eventModel.findById.mockResolvedValue({
+        id: "ev-1",
+        organizer_id: "org-1",
+      });
+      ledgerModel.getOrCreateAccount.mockImplementation(
+        async (client, ownerId, type) => ({
+          id: `acc-${type}`,
+        }),
+      );
+      ledgerModel.getPlatformRevenueAccount.mockResolvedValue({
+        id: "acc-platform",
+      });
+      ledgerModel.insertEntry.mockResolvedValue({ id: "e1" });
+
+      await ledgerService.recordRefund(
+        fakeClient,
+        {
+          id: "o-1",
+          buyer_id: "buyer-1",
+          category_id: "cat-1",
+          amount: 150000,
+        },
+        "admin_override",
+      );
+
+      expect(ledgerModel.insertEntry).toHaveBeenCalledWith(
+        fakeClient,
+        expect.objectContaining({
+          description: expect.stringContaining("admin override"),
+        }),
+      );
+    });
   });
 
   describe("getAccountBalance", () => {

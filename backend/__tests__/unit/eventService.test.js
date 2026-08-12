@@ -401,7 +401,7 @@ describe("Event Service", () => {
   });
 
   describe("cancelEvent", () => {
-    test("should cancel published event by owner and trigger refund_triggered on related orders", async () => {
+    test("should cancel published event by owner and refund related orders with event_cancelled reason", async () => {
       const created = await eventService.createEvent("org-1", {
         title: "Cancel Test",
         event_date: FUTURE_DATE,
@@ -416,9 +416,14 @@ describe("Event Service", () => {
 
       expect(cancelled).toBeDefined();
       expect(cancelled.status).toBe("cancelled");
-      expect(order.status).toBe("refund_triggered");
+      expect(order.status).toBe("refunded");
+      expect(order.refund_reason).toBe("event_cancelled");
       expect(ledgerService.recordRefund).toHaveBeenCalledTimes(1);
-      expect(ledgerService.recordRefund).toHaveBeenCalledWith(mockDb, order);
+      expect(ledgerService.recordRefund).toHaveBeenCalledWith(
+        mockDb,
+        order,
+        "event_cancelled",
+      );
     });
 
     test("should create refund entry for every paid order of the event", async () => {

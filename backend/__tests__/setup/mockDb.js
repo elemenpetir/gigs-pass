@@ -176,7 +176,8 @@ const mockDb = {
         return belongsToEvent && (sql.includes("status IN") ? paidStatus : true);
       });
       matching.forEach((order) => {
-        order.status = "refund_triggered";
+        order.status = "refunded";
+        order.refund_reason = "event_cancelled";
         order.updated_at = new Date();
       });
       return Promise.resolve({ rows: matching, rowCount: matching.length });

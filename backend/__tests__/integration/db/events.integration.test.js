@@ -135,7 +135,7 @@ describe("Events (integration, real DB)", () => {
     expect(res.body.message).toContain("already taken place");
   });
 
-  test("cancel published event triggers refund_triggered on related orders", async () => {
+  test("cancel published event refunds related orders with refund_reason event_cancelled", async () => {
     const { token } = await registerAndLogin(app, {
       role: "organizer",
       name: "Org",
@@ -164,9 +164,11 @@ describe("Events (integration, real DB)", () => {
     expect(res.status).toBe(200);
     expect(res.body.data.event.status).toBe("cancelled");
 
-    const updated = await db.query("SELECT status FROM orders WHERE id = $1", [
-      orderId,
-    ]);
-    expect(updated.rows[0].status).toBe("refund_triggered");
+    const updated = await db.query(
+      "SELECT status, refund_reason FROM orders WHERE id = $1",
+      [orderId],
+    );
+    expect(updated.rows[0].status).toBe("refunded");
+    expect(updated.rows[0].refund_reason).toBe("event_cancelled");
   });
 });

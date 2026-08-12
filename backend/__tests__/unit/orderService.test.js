@@ -205,7 +205,11 @@ describe("Order Service", () => {
 
       expect(db.withTransaction).toHaveBeenCalled();
       expect(orderModel.overrideStatus).toHaveBeenCalledWith("o-1", "refunded", {});
-      expect(ledgerService.recordRefund).toHaveBeenCalledWith({}, holdingOrder);
+      expect(ledgerService.recordRefund).toHaveBeenCalledWith(
+        {},
+        holdingOrder,
+        "admin_override",
+      );
       expect(result).toEqual(refunded);
     });
 
