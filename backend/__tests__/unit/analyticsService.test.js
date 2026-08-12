@@ -105,3 +105,40 @@ describe("Analytics Service — getEventOverview", () => {
     ).rejects.toThrow("Event not found");
   });
 });
+
+describe("Analytics Service — getPlatformOverview", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("returns platform overview for admin", async () => {
+    analyticsModel.getPlatformOverview.mockResolvedValue({
+      revenue: { gross: 1000000, count: 8 },
+      refunded: {
+        amount: 100000,
+        count: 1,
+        eventCancelled: 1,
+        adminOverride: 0,
+      },
+      byStatus: [{ status: "pending", count: 8 }],
+      events: { total: 2, published: 1, cancelled: 0 },
+      buyers: 6,
+      platformRevenueBalance: 100000,
+    });
+
+    const result = await analyticsService.getPlatformOverview("admin");
+
+    expect(analyticsModel.getPlatformOverview).toHaveBeenCalled();
+    expect(result.revenue).toEqual({ gross: 1000000, count: 8 });
+    expect(result.refunded.eventCancelled).toBe(1);
+    expect(result.buyers).toBe(6);
+  });
+
+  test("throws 403 for non-admin role", async () => {
+    await expect(
+      analyticsService.getPlatformOverview("organizer"),
+    ).rejects.toThrow("only admin");
+
+    expect(analyticsModel.getPlatformOverview).not.toHaveBeenCalled();
+  });
+});

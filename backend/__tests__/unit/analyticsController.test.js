@@ -1,5 +1,6 @@
 jest.mock("../../src/services/analyticsService", () => ({
   getEventOverview: jest.fn(),
+  getPlatformOverview: jest.fn(),
 }));
 
 const analyticsController = require("../../src/controllers/analyticsController");
@@ -86,5 +87,56 @@ describe("Analytics Controller — eventOverview", () => {
     expect(res.statusCode).toBe(500);
     expect(res.body.status).toBe("error");
     expect(res.body.message).toBe("Internal server error");
+  });
+});
+
+describe("Analytics Controller — platformOverview", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test("returns success envelope with platform overview data", async () => {
+    const data = {
+      revenue: { gross: 1000000, count: 8 },
+      refunded: {
+        amount: 100000,
+        count: 1,
+        eventCancelled: 1,
+        adminOverride: 0,
+      },
+      byStatus: [],
+      events: { total: 2, published: 1, cancelled: 0 },
+      buyers: 6,
+      platformRevenueBalance: 100000,
+    };
+    analyticsService.getPlatformOverview.mockResolvedValue(data);
+
+    const req = { user: { id: "adm-1", role: "admin" } };
+    const res = createMockReqRes();
+
+    await analyticsController.platformOverview(req, res);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.status).toBe("success");
+    expect(res.body.message).toBe("Platform overview retrieved");
+    expect(res.body.data).toEqual(data);
+    expect(analyticsService.getPlatformOverview).toHaveBeenCalledWith("admin");
+  });
+
+  test("returns 403 envelope for non-admin", async () => {
+    const error = new Error(
+      "Forbidden: only admin can view platform analytics",
+    );
+    error.statusCode = 403;
+    analyticsService.getPlatformOverview.mockRejectedValue(error);
+
+    const req = { user: { id: "org-1", role: "organizer" } };
+    const res = createMockReqRes();
+
+    await analyticsController.platformOverview(req, res);
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.status).toBe("error");
+    expect(res.body.message).toContain("only admin");
   });
 });
