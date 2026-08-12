@@ -142,13 +142,13 @@ awaiting_payment (order dibuat saat lock, belum bayar)
 pending (dana masuk, event belum terjadi)
    ↓
 holding_period (event selesai, dana ditahan contoh 7 hari)
-   ├── organizer lapor batal resmi → refund_triggered → dana balik ke buyer
-   ├── admin manual override (dari laporan eksternal/investigasi manual) → held / refunded
+   ├── organizer/admin lapor batal resmi → refunded (refund_reason='event_cancelled') → dana balik ke buyer
+   ├── admin manual override (dari laporan eksternal/investigasi manual) → held / refunded (refund_reason='admin_override')
    └── holding period habis tanpa masalah → released → dana cair ke organizer
 ```
 
 - Transisi `pending → holding_period` dan `holding_period → released` dijalankan scheduled job `orderLifecycle` (default tiap 24 jam). Saat `released`, ledger memindahkan saldo `organizer_pending` → `organizer_available` (reversing-adjacent entry, bukan UPDATE baris lama).
-- Refund (event batal resmi atau admin override `refunded`) membuat reversing entry: kredit `buyer_wallet` = amount, debit `organizer_pending` (bagian organizer), debit `platform_revenue` (komisi) — menyeimbangkan transaksi pembayaran asli.
+- Refund memakai **satu status terminal `refunded`** + kolom `orders.refund_reason` yang mencatat penyebabnya (`event_cancelled` untuk pembatalan resmi event, `admin_override` untuk putusan admin). Keduanya membuat reversing entry yang sama se-transaksi: kredit `buyer_wallet` = amount, debit `organizer_pending` (bagian organizer), debit `platform_revenue` (komisi) — menyeimbangkan transaksi pembayaran asli.
 - Hanya order yang **sudah dibayar** (`pending`/`holding_period`) yang ikut refund saat event di-cancel; order `awaiting_payment` dibiarkan expire melalui lock cleanup.
 
 Setelah `released`, dana di luar kendali sistem — sengketa lanjutan menjadi ranah organizer-customer atau pihak berwenang, bukan tanggung jawab platform.
@@ -258,8 +258,10 @@ updated_at
 id (uuid)
 buyer_id (FK -> users)
 category_id (FK -> ticket_categories)
-status (pending / holding_period / released / refund_triggered / held / refunded)
-holding_until (timestamp)
+status (pending / holding_period / released / refunded / held / awaiting_payment / expired)
+amount (integer, snapshot harga kategori saat order dibuat)
+holding_until (timestamp, hanya order yang pernah masuk holding_period)
+refund_reason (event_cancelled / admin_override, nullable, hanya saat status refunded)
 created_at
 updated_at
 ```
@@ -332,7 +334,7 @@ GET  /api/orders                       (riwayat order buyer)
 ### 8.6 Ledger & Payout
 ```txt
 GET  /api/organizer/:id/ledger-summary
-POST /api/organizer/events/:id/cancel        (organizer lapor batal resmi -> refund_triggered)
+POST /api/organizer/events/:id/cancel        (organizer lapor batal resmi -> refunded, refund_reason='event_cancelled')
 POST /api/admin/orders/:id/override          (admin manual override status)
 GET  /api/admin/ledger/transactions
 ```
@@ -353,7 +355,7 @@ GET /api/analytics/platform/overview   (admin)
 - Virtual queue join & posisi.
 - Seat lock berhasil & expired.
 - Ledger entry balance (debit = kredit) untuk setiap transaksi.
-- Alur refund_triggered saat organizer cancel event.
+- Alur refunded (refund_reason='event_cancelled' saat organizer cancel event; 'admin_override' saat admin override).
 
 ### 9.2 Stress Testing (k6)
 
@@ -435,7 +437,7 @@ Project dianggap selesai untuk MVP jika:
 - Virtual queue & throttled entry berjalan, posisi antrian update real-time (SSE).
 - Seat lock TTL berjalan, terbukti tidak ada overselling lewat stress test k6.
 - Ledger double-entry tercatat presisi untuk setiap transaksi (debit = kredit).
-- Alur dana (pending → holding_period → released/refund_triggered) berjalan sesuai desain.
+- Alur dana (pending → holding_period → released/refunded) berjalan sesuai desain.
 - Admin manual override berfungsi.
 - Dashboard statistik menampilkan data dari ledger & queue.
 - Docker Compose menjalankan seluruh stack dengan benar.

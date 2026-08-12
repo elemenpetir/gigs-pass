@@ -63,7 +63,7 @@ frontend/
 - Komisi platform: `PLATFORM_COMMISSION_PERCENT` (default 10%) di `src/config/constants.js`
 - Pembayaran sukses → `withTransaction` (helper di `src/config/db.js`): `markPaid` + `ledgerService.recordPaymentSplit` (debit `buyer_wallet` = amount, kredit `organizer_pending` = amount − komisi, kredit `platform_revenue` = komisi) — semua dalam 1 `BEGIN...COMMIT`
 - Release dana (Fase 8) → `recordRelease` saat holding_period habis: debit `organizer_pending` + kredit `organizer_available` (jumlah = bagian organizer)
-- Refund (Fase 8) → `recordRefund` saat event di-cancel atau admin override `refunded`: kredit `buyer_wallet` (= amount), debit `organizer_pending` (bagian organizer), debit `platform_revenue` (komisi) — reversing entry yang menyeimbangkan transaksi pembayaran asli
+- Refund (Fase 8) → `recordRefund` saat event di-cancel atau admin override: kredit `buyer_wallet` (= amount), debit `organizer_pending` (bagian organizer), debit `platform_revenue` (komisi) — reversing entry yang menyeimbangkan transaksi pembayaran asli. Semua refund memakai **satu status terminal `refunded`**; penyebabnya disimpan di kolom `orders.refund_reason` (nullable, hanya terisi saat `refunded`): `event_cancelled` (event dibatalkan resmi sebelum digelar — bulk, semua order dibayar langsung di-reverse) atau `admin_override` (putusan admin per order selama holding_period). Order hasil cancel TIDAK pernah masuk holding_period (`holding_until` NULL); order hasil override pernah (`holding_until` terisi). Tidak ada tahap refund terpisah — entry reversal dibuat se-transaksi dengan perubahan status.
 - `ledgerModel` TIDAK mengekspos fungsi update/delete — enforce immutability di service layer juga (assert desain, bukan cuma DB constraint)
 
 ### Roles (hardcoded, not dynamic RBAC)
@@ -78,8 +78,8 @@ awaiting_payment (dibuat saat lock berhasil, BELUM bayar)
    └── gagal / TTL    → expired (lock lepas, stock balik ke pool)
 pending → holding_period (after event_date, via job orderLifecycle, holding_until = +7 hari)
               ├── released (after 7 days, no issue, + recordRelease ledger)
-              ├── refund_triggered (event cancelled resmi — HANYA order yang sudah dibayar, + recordRefund)
-              └── held / refunded (admin manual override POST /api/admin/orders/:id/override — ONLY valid while status = holding_period)
+              ├── held (admin manual override POST /api/admin/orders/:id/override — ONLY valid while status = holding_period; dana tetap escrow)
+              └── refunded (status TUNGGAL dana dikembalikan — via cancel event ATAU admin override, + recordRefund; see refund_reason)
 ```
 `pending` = sudah dibayar (PRD: "dana masuk") — order yang belum bayar memakai `awaiting_payment`, bukan `pending`. `paid_at` (nullable) mencatat kapan pembayaran berhasil. Transisi `pending→holding_period` dan `holding_period→released` dijalankan `src/jobs/orderLifecycle.js` (interval `ORDER_LIFECYCLE_INTERVAL_MS`, default 24 jam).
 
@@ -90,12 +90,12 @@ Event status hanya dapat diintervensi **SEBELUM event_date**. Setelah event dige
 draft → published (organizer)
               ├── suspended (admin — violation investigasi, belum digelar)
               │    ├── published (admin unsuspend, clear)
-              │    └── cancelled (admin confirmed batal) → trigger refund_triggered di semua orders
-              └── cancelled (organizer/admin langsung) → trigger refund_triggered di semua orders terkait
+              │    └── cancelled (admin confirmed batal) → trigger refunded (refund_reason='event_cancelled') di semua orders
+              └── cancelled (organizer/admin langsung) → trigger refunded (refund_reason='event_cancelled') di semua orders terkait
 
 SETELAH event_date LEWAT:
   Event status: TIDAK BERUBAH (biarkan as-is)
-  Yang berjalan: Order status flow (holding_period → released/refund_triggered/held/refunded)
+  Yang berjalan: Order status flow (holding_period → released/held/refunded)
   Violation/dispute: ditangani via admin override di orders
 ```
 
@@ -106,7 +106,7 @@ SETELAH event_date LEWAT:
 - `suspend` → hanya dari status `published`, hanya admin
 - `cancel` → hanya dari status `published`/`suspended`, hanya organizer/admin, dan hanya jika belum digelar
 - `suspended` **tidak** trigger refund (hanya review sementara)
-- `cancelled` **wajib** trigger refund_triggered di semua orders terkait
+- `cancelled` **wajib** trigger `refunded` (refund_reason='event_cancelled') di semua orders terkait
 
 ## API Response Convention (envelope format)
 

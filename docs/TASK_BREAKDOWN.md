@@ -5,11 +5,13 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** Fase 6 complete — Mock Payment + lock cleanup. 5 commit: lock expiry tracking (sorted set `lockexpiry:category:{id}`), lock cleanup (di-fold ke `queueDequeuer` — `lockService.cleanupExpiredLocks` dipanggil di awal tiap tick, `lockCleaner.js` dihapus), endpoint `POST /api/orders/:id/pay`, unit test pay + cleanup (191 total), docs alignment.
-- **Keputusan Teknis / Catatan:** Fase 1 complete (auth, 56 tests). Fase 2 complete (CRUD event, upload gambar, publish/suspend/cancel). Fase 3 complete (create/update/list kategori, Redis stock init & sync). Fase 4 complete (queue). Fase 5 complete (checkout general admission). Tambahan: lapisan integration test DB nyata — `npm run test:integration` (jest.config.integration.js, globalSetup migrate ke DATABASE_URL_TEST=Neon, cleanup truncate+re-seed platform_revenue). Unit test mock tetap 188, integration 20 (auth/events/categories/models), total 208. `db.js` kini pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
+- **Terakhir Dikerjakan:** Fase 7 & 8 complete (Ledger System + Alur Dana), dan **Fase 9 backend complete** (2 endpoint analytics). Commit terakhir: `test: add unit test for analytics platform overview`. 8 commit baru: ledger service + test, holding period/release job, cancel→refund reversing + test, admin override + test, merge status refund (refactor+test), analytics event overview (feat+test), analytics platform overview (feat+test).
+- **Keputusan Teknis / Catatan:** Fase 1-8 complete (auth, event CRUD, kategori, queue, checkout, mock payment, ledger, alur dana). Unit test mock sekarang **232**, integration 20, total 252. `db.js` pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
+- **Status refund (refactor, barusan):** `refund_triggered` DIHAPUS — semua refund memakai satu status `refunded` + kolom `orders.refund_reason` (`event_cancelled` | `admin_override`). Migration `1722800004000_create-orders.js` **di-edit in-place** (bukan file baru) karena masih MVP tanpa data penting; dev & test DB di-reset (`down count 999` → `up` — catatan: runner v9 abaikan `to: 0`, harus pakai `count`). Dua jalur refund tetap beda flow tapi bedanya disimpan di data: cancel pre-event (bulk, holding_until NULL) vs admin override post-event (per order, holding_until terisi).
 - **Fase 5 design decision:** **General admission** — tidak ada `seat_no`/kursi bernomor; "slot" = 1 unit kuota. Lock per buyer (`lock:category:{id}:buyer:{uid}`, EX 300 NX), bukan per seat. Granted marker (`granted:category:{id}:buyer:{uid}`, EX 300) di-set dequeueBatch sebagai bukti lolos antrian. One-shot admission: buyer gagal bayar harus join antrian lagi. Status order dipecah: `awaiting_payment` (saat lock) → `pending` (dibayar) → dst.; `expired` untuk yang gagal bayar; `paid_at` (nullable) mencatat waktu bayar sukses. Bayar sukses → `confirmSlot` (hapus lock, stock TETAP turun); gagal/TTL → `releaseSlot` (hapus lock + `INCR stock`).
 - **Fase 6 design decision:** lock yang ditinggalkan (buyer lock lalu pergi tanpa bayar) dipulihkan lewat cleanup yang di-fold ke `queueDequeuer` — TTL Redis menghapus key lock tapi tidak otomatis `INCR stock`, jadi perlu tracker `lockexpiry:category:{id}` (Sorted Set, score = epoch expiry) yang di-scan di awal tiap `processQueueForCategory` (interval 5s, sebelum `dequeueBatch` baca stock) → `DEL lock` + `INCR stock` + order `awaiting_payment` di-mark `expired`. `lockCleaner.js` dihapus (tidak ada job terpisah); `queueDequeuer.run()` punya anti-overlap guard. Pay mock `POST /api/orders/:id/pay` body `{ success: true|false }` — sukses → `confirmSlot` + order `pending` + `paid_at`; gagal → `releaseSlot` + order `expired`.
-- **Task Selanjutnya:** Fase 7 — Ledger System
+- **Fase 9 design decision:** paid statuses untuk revenue hanya 4 (`pending`, `holding_period`, `released`, `held`). `refunded` dihitung TERPISAH (`refundedAmount`), `netRevenue = revenue − refundedAmount`. `held` tetap masuk revenue (dana sudah masuk, hanya ditahan) tapi di-breakdown eksplisit (`heldAmount`/`heldCount`) supaya dana sengketa transparan. Fund status organizer diambil dari balance ledger account (`organizer_pending`/`organizer_available`), bukan SUM orders. Endpoint: `GET /api/analytics/event/:id/overview` (organizer, validasi owner + 403) & `GET /api/analytics/platform/overview` (admin, 403 non-admin).
+- **Task Selanjutnya:** Frontend Fase 9 (dashboard organizer + admin) — sengaja ditunda, digarap bersama Fase 10-11 setelah infra router/auth/API client dibangun. Urutan berikutnya: Fase 10 Frontend Buyer Flow.
 
 ## Ringkasan per Minggu
 
@@ -132,7 +134,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 - [x] Scheduled job harian (`orderLifecycle`): cek order yang `event_date`-nya sudah lewat → ubah status `pending` jadi `holding_period`, set `holding_until` (+7 hari, konstanta `HOLDING_PERIOD_DAYS`)
 - [x] Scheduled job harian: cek order `holding_period` yang `holding_until` sudah lewat → ubah status jadi `released`, buat ledger entry pindah saldo `organizer_pending` → `organizer_available` (`recordRelease`)
-- [x] Endpoint `PUT /api/events/:id/cancel` (organizer/admin) — satu transaksi penuh: event → `cancelled`, order dibayar → `refund_triggered`, reversing entry ke `buyer_wallet` (`recordRefund`); order belum-bayar TIDAK di-refund
+- [x] Endpoint `PUT /api/events/:id/cancel` (organizer/admin) — satu transaksi penuh: event → `cancelled`, order dibayar → `refunded` (refund_reason='event_cancelled'), reversing entry ke `buyer_wallet` (`recordRefund`); order belum-bayar TIDAK di-refund
 - [x] Endpoint `POST /api/admin/orders/:id/override` (admin) — ubah status jadi `held`/`refunded`, hanya valid kalau order masih `holding_period`; `refunded` ikut membuat reversing entry
 - [x] Unit test: skenario cancel event menghasilkan refund entry yang benar untuk semua order terkait (hanya yang dibayar)
 - [x] Unit test: admin override ditolak kalau order sudah `released` — 220 total
@@ -141,8 +143,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 9 — Dashboard Statistik
 
-- [ ] Endpoint `GET /api/analytics/event/:id/overview` (organizer) — revenue, tiket terjual per kategori, status dana
-- [ ] Endpoint `GET /api/analytics/platform/overview` (admin) — ringkasan lintas event
+- [x] Endpoint `GET /api/analytics/event/:id/overview` (organizer) — revenue, tiket terjual per kategori, status dana
+- [x] Endpoint `GET /api/analytics/platform/overview` (admin) — ringkasan lintas event
 - [ ] Frontend: halaman dashboard organizer (chart sederhana, Recharts)
 - [ ] Frontend: halaman dashboard admin
 
