@@ -1,12 +1,12 @@
 const pool = require("../config/db");
 
 const ORDER_COLUMNS = `
-  id, buyer_id, category_id, status, amount, paid_at, created_at, updated_at
+  id, buyer_id, category_id, status, amount, paid_at, refund_reason, created_at, updated_at
 `;
 
 const LIFE_CYCLE_COLUMNS = `
   o.id, o.buyer_id, o.category_id, o.status, o.amount, o.paid_at,
-  o.holding_until, o.created_at, o.updated_at, e.organizer_id
+  o.holding_until, o.refund_reason, o.created_at, o.updated_at, e.organizer_id
 `;
 
 const createOrder = async (buyerId, categoryId, amount) => {
@@ -74,15 +74,15 @@ const markExpiredByBuyerAndCategory = async (buyerId, categoryId) => {
   return result.rows;
 };
 
-const markRefundTriggeredByEventId = async (eventId, client = pool) => {
+const markRefundedByEventId = async (eventId, reason, client = pool) => {
   const query = `
     UPDATE orders
-    SET status = 'refund_triggered'
+    SET status = 'refunded', refund_reason = $2
     WHERE category_id IN (SELECT id FROM ticket_categories WHERE event_id = $1)
       AND status IN ('pending', 'holding_period')
-    RETURNING id, buyer_id, category_id, status, amount, holding_until, created_at, updated_at;
+    RETURNING id, buyer_id, category_id, status, amount, holding_until, refund_reason, created_at, updated_at;
   `;
-  const result = await client.query(query, [eventId]);
+  const result = await client.query(query, [eventId, reason]);
   return result.rows;
 };
 
@@ -137,7 +137,8 @@ const markReleased = async (orderId, client = pool) => {
 const overrideStatus = async (orderId, status, client = pool) => {
   const query = `
     UPDATE orders
-    SET status = $2
+    SET status = $2,
+        refund_reason = CASE WHEN $2 = 'refunded' THEN 'admin_override' ELSE NULL END
     WHERE id = $1 AND status = 'holding_period'
     RETURNING ${ORDER_COLUMNS}, holding_until;
   `;
@@ -152,7 +153,7 @@ module.exports = {
   markExpired,
   findActiveByBuyerAndCategory,
   markExpiredByBuyerAndCategory,
-  markRefundTriggeredByEventId,
+  markRefundedByEventId,
   findPaidOrdersWithPastEvent,
   findHoldingPeriodExpired,
   markHoldingPeriod,

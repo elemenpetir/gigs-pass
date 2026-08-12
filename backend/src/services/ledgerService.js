@@ -145,7 +145,7 @@ const recordRelease = async (client, order) => {
   });
 };
 
-const recordRefund = async (client, order) => {
+const recordRefund = async (client, order, reason = "event_cancelled") => {
   const category = await categoryModel.findById(order.category_id);
   if (!category) {
     const error = new Error("Category not found");
@@ -178,6 +178,10 @@ const recordRefund = async (client, order) => {
 
   const amount = order.amount;
   const { commission, organizerShare } = computeSplit(amount);
+  const reasonLabel =
+    reason === "admin_override"
+      ? "admin override"
+      : "event dibatalkan";
 
   return createLedgerEntries(client, {
     orderId: order.id,
@@ -186,7 +190,7 @@ const recordRefund = async (client, order) => {
         accountId: buyerWallet.id,
         entryType: "credit",
         amount,
-        description: `Refund order ${order.id} (event dibatalkan)`,
+        description: `Refund order ${order.id} (${reasonLabel})`,
       },
       {
         accountId: organizerPending.id,

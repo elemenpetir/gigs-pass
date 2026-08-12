@@ -5,10 +5,19 @@
  * State machine:
  *   awaiting_payment (dibuat saat lock, belum bayar) -> pending (sudah dibayar)
  *     -> holding_period -> released
- *                        -> refund_triggered (organizer cancel resmi)
- *                        -> held / refunded (admin manual override,
- *                           hanya berlaku selama holding_period berjalan)
+ *                        -> refunded (status tunggal: uang sudah dikembalikan)
+ *                        -> held (admin manual override, holding ditahan)
  *   expired (order tidak terbayar: lock TTL habis / gagal bayar)
+ *
+ * `refunded` adalah status terminal satu-satunya untuk dana yang dikembalikan.
+ * Penyebab refund (jalur mana yang memicunya) dibedakan lewat kolom `refund_reason`:
+ *   event_cancelled -- event dibatalkan resmi sebelum digelar (bulk, semua
+ *                      order dibayar langsung di-reverse; order ini TIDAK pernah
+ *                      masuk holding_period, holding_until tetap NULL)
+ *   admin_override  -- admin memutuskan refund per order setelah event digelar
+ *                      (sendiri selama holding_period, holding_until terisi)
+ * Kedua jalur mengeksekusi reversing entry yang sama (recordRefund) se-transaksi
+ * dengan perubahan status -- tidak ada tahap refund terpisah.
  *
  * `pending` berarti "dana masuk" (sudah dibayar) sesuai PRD 5.7 -- order yang
  * belum dibayar memakai status `awaiting_payment`, bukan `pending`.
@@ -38,7 +47,17 @@ exports.up = (pgm) => {
       notNull: true,
       default: "pending",
       check:
-        "status IN ('pending', 'holding_period', 'released', 'refund_triggered', 'held', 'refunded', 'awaiting_payment', 'expired')",
+        "status IN ('pending', 'holding_period', 'released', 'refunded', 'held', 'awaiting_payment', 'expired')",
+    },
+    /**
+     * Penyebab refund (nullable -- hanya terisi saat status = 'refunded').
+     * event_cancelled: event dibatalkan resmi sebelum digelar (bulk).
+     * admin_override:  admin refund manual per order selama holding_period.
+     */
+    refund_reason: {
+      type: "varchar(20)",
+      notNull: false,
+      check: "refund_reason IN ('event_cancelled', 'admin_override')",
     },
     /**
      * Harga tiket (integer, dalam rupiah) yang disnap dari

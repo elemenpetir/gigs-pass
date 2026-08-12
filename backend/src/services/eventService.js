@@ -209,12 +209,13 @@ const cancelEvent = async ({ userId, role }, eventId) => {
 
   return db.withTransaction(async (client) => {
     const cancelled = await eventModel.updateStatus(eventId, "cancelled", client);
-    const refundedOrders = await orderModel.markRefundTriggeredByEventId(
+    const refundedOrders = await orderModel.markRefundedByEventId(
       eventId,
+      "event_cancelled",
       client,
     );
     for (const order of refundedOrders) {
-      await ledgerService.recordRefund(client, order);
+      await ledgerService.recordRefund(client, order, "event_cancelled");
     }
     return cancelled;
   });

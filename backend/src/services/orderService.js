@@ -122,7 +122,7 @@ const overrideOrder = async ({ role }, orderId, status) => {
       error.statusCode = 409;
       throw error;
     }
-    await ledgerService.recordRefund(client, order);
+    await ledgerService.recordRefund(client, order, "admin_override");
     return overridden;
   });
 };
