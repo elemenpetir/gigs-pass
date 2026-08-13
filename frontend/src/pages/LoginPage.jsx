@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 
 export default function LoginPage() {
   const { login, register, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
 
   useEffect(() => {
-    if (user) navigate("/");
-  }, [user, navigate]);
+    if (user) navigate(from, { replace: true });
+  }, [user, navigate, from]);
 
   const [mode, setMode] = useState("login");
   const [name, setName] = useState("");
@@ -29,7 +31,7 @@ export default function LoginPage() {
         await register({ email, password, role, name });
         await login(email, password);
       }
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (err) {
       setError(err.message || "Something went wrong");
     } finally {
