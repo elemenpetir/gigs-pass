@@ -33,6 +33,10 @@ const createOrder = async (userId, categoryId) => {
   return orderModel.createOrder(userId, categoryId, category.price);
 };
 
+const listBuyerOrders = async (userId) => {
+  return orderModel.findByBuyerId(userId);
+};
+
 const payOrder = async (userId, orderId, success) => {
   const order = await orderModel.findById(orderId);
   if (!order) {
@@ -129,6 +133,7 @@ const overrideOrder = async ({ role }, orderId, status) => {
 
 module.exports = {
   createOrder,
+  listBuyerOrders,
   payOrder,
   overrideOrder,
 };

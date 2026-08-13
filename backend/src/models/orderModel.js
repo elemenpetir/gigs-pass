@@ -29,6 +29,22 @@ const findById = async (id) => {
   return result.rows[0] || null;
 };
 
+const findByBuyerId = async (buyerId) => {
+  const query = `
+    SELECT o.id, o.buyer_id, o.category_id, o.status, o.amount, o.paid_at,
+           o.holding_until, o.refund_reason, o.created_at, o.updated_at,
+           c.name AS category_name, c.event_id,
+           e.title AS event_title, e.event_date, e.image_url
+    FROM orders o
+    JOIN ticket_categories c ON c.id = o.category_id
+    JOIN events e ON e.id = c.event_id
+    WHERE o.buyer_id = $1
+    ORDER BY o.created_at DESC;
+  `;
+  const result = await pool.query(query, [buyerId]);
+  return result.rows;
+};
+
 const markPaid = async (id, client = pool) => {
   const query = `
     UPDATE orders
@@ -149,6 +165,7 @@ const overrideStatus = async (orderId, status, client = pool) => {
 module.exports = {
   createOrder,
   findById,
+  findByBuyerId,
   markPaid,
   markExpired,
   findActiveByBuyerAndCategory,

@@ -5,6 +5,7 @@ import Home from "@/pages/Home";
 import EventDetailPage from "@/pages/EventDetailPage";
 import WaitingRoomPage from "@/pages/WaitingRoomPage";
 import CheckoutPage from "@/pages/CheckoutPage";
+import OrderHistoryPage from "@/pages/OrderHistoryPage";
 import LoginPage from "@/pages/LoginPage";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
             <Route path="/events/:id" element={<EventDetailPage />} />
             <Route path="/events/:eventId/join/:categoryId" element={<WaitingRoomPage />} />
             <Route path="/events/:eventId/checkout/:categoryId" element={<CheckoutPage />} />
+            <Route path="/orders" element={<OrderHistoryPage />} />
             <Route path="/login" element={<LoginPage />} />
           </Route>
         </Routes>

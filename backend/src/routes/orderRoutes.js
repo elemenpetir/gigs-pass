@@ -5,6 +5,13 @@ const authorize = require("../middlewares/authorize");
 
 const router = express.Router();
 
+router.get(
+  "/",
+  authenticate,
+  authorize(["buyer"]),
+  orderController.list,
+);
+
 router.post(
   "/",
   authenticate,

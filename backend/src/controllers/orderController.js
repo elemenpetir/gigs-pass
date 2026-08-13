@@ -1,5 +1,19 @@
 const orderService = require("../services/orderService");
 
+const list = async (req, res) => {
+  try {
+    const orders = await orderService.listBuyerOrders(req.user.id);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Orders retrieved",
+      data: { orders },
+    });
+  } catch (error) {
+    return res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
+
 const create = async (req, res) => {
   try {
     const order = await orderService.createOrder(
@@ -43,6 +57,7 @@ const pay = async (req, res) => {
 };
 
 module.exports = {
+  list,
   create,
   pay,
 };
