@@ -5,13 +5,15 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** Fase 7 & 8 complete (Ledger System + Alur Dana), dan **Fase 9 backend complete** (2 endpoint analytics). Commit terakhir: `test: add unit test for analytics platform overview`. 8 commit baru: ledger service + test, holding period/release job, cancel→refund reversing + test, admin override + test, merge status refund (refactor+test), analytics event overview (feat+test), analytics platform overview (feat+test).
-- **Keputusan Teknis / Catatan:** Fase 1-8 complete (auth, event CRUD, kategori, queue, checkout, mock payment, ledger, alur dana). Unit test mock sekarang **232**, integration 20, total 252. `db.js` pakai `DATABASE_SSL`. Envelope format & Event Status Flow (limited lifecycle) ada di AGENTS.md.
-- **Status refund (refactor, barusan):** `refund_triggered` DIHAPUS — semua refund memakai satu status `refunded` + kolom `orders.refund_reason` (`event_cancelled` | `admin_override`). Migration `1722800004000_create-orders.js` **di-edit in-place** (bukan file baru) karena masih MVP tanpa data penting; dev & test DB di-reset (`down count 999` → `up` — catatan: runner v9 abaikan `to: 0`, harus pakai `count`). Dua jalur refund tetap beda flow tapi bedanya disimpan di data: cancel pre-event (bulk, holding_until NULL) vs admin override post-event (per order, holding_until terisi).
-- **Fase 5 design decision:** **General admission** — tidak ada `seat_no`/kursi bernomor; "slot" = 1 unit kuota. Lock per buyer (`lock:category:{id}:buyer:{uid}`, EX 300 NX), bukan per seat. Granted marker (`granted:category:{id}:buyer:{uid}`, EX 300) di-set dequeueBatch sebagai bukti lolos antrian. One-shot admission: buyer gagal bayar harus join antrian lagi. Status order dipecah: `awaiting_payment` (saat lock) → `pending` (dibayar) → dst.; `expired` untuk yang gagal bayar; `paid_at` (nullable) mencatat waktu bayar sukses. Bayar sukses → `confirmSlot` (hapus lock, stock TETAP turun); gagal/TTL → `releaseSlot` (hapus lock + `INCR stock`).
-- **Fase 6 design decision:** lock yang ditinggalkan (buyer lock lalu pergi tanpa bayar) dipulihkan lewat cleanup yang di-fold ke `queueDequeuer` — TTL Redis menghapus key lock tapi tidak otomatis `INCR stock`, jadi perlu tracker `lockexpiry:category:{id}` (Sorted Set, score = epoch expiry) yang di-scan di awal tiap `processQueueForCategory` (interval 5s, sebelum `dequeueBatch` baca stock) → `DEL lock` + `INCR stock` + order `awaiting_payment` di-mark `expired`. `lockCleaner.js` dihapus (tidak ada job terpisah); `queueDequeuer.run()` punya anti-overlap guard. Pay mock `POST /api/orders/:id/pay` body `{ success: true|false }` — sukses → `confirmSlot` + order `pending` + `paid_at`; gagal → `releaseSlot` + order `expired`.
-- **Fase 9 design decision:** paid statuses untuk revenue hanya 4 (`pending`, `holding_period`, `released`, `held`). `refunded` dihitung TERPISAH (`refundedAmount`), `netRevenue = revenue − refundedAmount`. `held` tetap masuk revenue (dana sudah masuk, hanya ditahan) tapi di-breakdown eksplisit (`heldAmount`/`heldCount`) supaya dana sengketa transparan. Fund status organizer diambil dari balance ledger account (`organizer_pending`/`organizer_available`), bukan SUM orders. Endpoint: `GET /api/analytics/event/:id/overview` (organizer, validasi owner + 403) & `GET /api/analytics/platform/overview` (admin, 403 non-admin).
-- **Task Selanjutnya:** Frontend Fase 9 (dashboard organizer + admin) — sengaja ditunda, digarap bersama Fase 10-11 setelah infra router/auth/API client dibangun. Urutan berikutnya: Fase 10 Frontend Buyer Flow.
+- **Terakhir Dikerjakan:** **Fase 10 (Frontend Buyer Flow) complete** — 5 halaman buyer (discover, detail event, waiting room, checkout, riwayat order) + **migrasi desain total ke Neo-Brutalism**. Commit terakhir: `fix: espace apostrophe pada heading order history`. Frontend infra baru: router (`react-router-dom`), API client (`src/lib/api.js`), auth context (`src/lib/auth.jsx`), halaman login/register. Endpoint baru backend: `GET /api/orders` (riwayat order buyer, join kategori + event).
+- **Keputusan Teknis / Catatan:**
+  - **Desain final = Neo-Brutalism + anti-design + festival** — source of truth `docs/design/figma-export/` (hasil Figma Make, di-gitignore). `docs/design/design.md` di-rewrite penuh: cream `#FFFAF0` + hitam `#0A0A0A`, border tebal 2/3/4px, hard offset shadow, radius persegi, Inter 400–900 uppercase, marquee 20s, `brut-button`/`brut-card-hover`, pita diagonal, aturan 70/30.
+  - **Tailwind v4:** `tailwind.config.js` DIHAPUS (v4 tidak auto-detect config legacy — butuh `@config`; semua token hidup di `@theme` `src/index.css`). `max-w-[1280px]` → `max-w-7xl` (=80rem). `vite.config.js` pakai `import.meta.dirname` (hilangkan warning Vite).
+  - **Frontend buyer flow:** waiting room pakai `@microsoft/fetch-event-source` (Bearer header, auto-reconnect, abort saat granted). Checkout: lock 300s + countdown (denyut <60s), pay mock `{success}`, one-shot admission. Login redirect pakai `location.state.from`. `auth.jsx` pakai lazy-init `useState(() => Boolean(getToken()))` (tanpa setState sinkron dalam effect).
+  - **Ritme verifikasi frontend (AGENTS.md):** build wajib 1x di titik commit per unit kerja; lint di sela perubahan besar; docs-only tidak perlu build.
+  - **Fase 9 design decision (backend analytics):** paid statuses untuk revenue hanya 4 (`pending`, `holding_period`, `released`, `held`). `refunded` dihitung TERPISAH (`refundedAmount`), `netRevenue = revenue − refundedAmount`. `held` tetap masuk revenue tapi di-breakdown eksplisit (`heldAmount`/`heldCount`). Fund status organizer diambil dari balance ledger account (`organizer_pending`/`organizer_available`), bukan SUM orders. Endpoint: `GET /api/analytics/event/:id/overview` (organizer, owner check) & `GET /api/analytics/platform/overview` (admin).
+- **Status Fase lain:** Fase 1-9 backend complete (unit test mock **232**). Frontend Fase 9 (dashboard organizer + admin) tetap ditunda — digarap setelah Fase 11 infra halaman organizer.
+- **Task Selanjutnya:** **Fase 11 (Frontend Organizer & Admin Flow)** — form create/edit event + kategori, daftar order & status dana, admin approve/override.
 
 ## Ringkasan per Minggu
 
@@ -152,13 +154,13 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ## MINGGU 3 (15-21 Agustus)
 
-### Fase 10 — Frontend Buyer Flow
+### Fase 10 — Frontend Buyer Flow (complete)
 
-- [ ] Halaman list event (public)
-- [ ] Halaman detail event (gambar + deskripsi ala artikel)
-- [ ] Halaman waiting room (koneksi SSE, tampilkan posisi antrian real-time)
-- [ ] Halaman checkout (timer countdown sesuai TTL lock)
-- [ ] Halaman riwayat order buyer
+- [x] Halaman list event (public) — port dari desain Figma home/discover, data `GET /api/events` + harga min per kategori
+- [x] Halaman detail event (gambar + deskripsi ala artikel) — poster brutal, daftar kategori tiket, CTA join queue
+- [x] Halaman waiting room (koneksi SSE, tampilkan posisi antrian real-time) — `@microsoft/fetch-event-source`, Bearer header, event `position`/`granted`
+- [x] Halaman checkout (timer countdown sesuai TTL lock) — lock 300s, create order, pay mock, countdown denyut <60s
+- [x] Halaman riwayat order buyer — endpoint baru `GET /api/orders`, badge status + alasan refund
 
 ---
 

@@ -163,6 +163,8 @@ Each checklist item = 1 unit of work = 1 commit.
 2. Run lint (when available): `npm run lint`
 3. Verify no `.env` committed
 
+> **Ritme verifikasi frontend:** `npm run build` wajib **1x di titik commit** per unit kerja (bukan di sela sub-langkah); lint boleh di sela perubahan besar. Perubahan docs-only tidak perlu build. `npm run build` ~1–2 detik di project ini — cepat, jangan dilewati saat commit kode frontend (validasi utility Tailwind/`@theme` hanya muncul di build).
+
 ### Commit & Push Protocol (ABSOLUTE — NO EXCEPTIONS)
 
 **This protocol is persistent across all sessions. Follow strictly regardless of session memory.**
