@@ -26,3 +26,6 @@ coverage/
 
 #indexing
 .codegraph/
+
+#temp
+figma-export/

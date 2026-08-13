@@ -1,682 +1,160 @@
 ---
 version: alpha
-name: Gigs Pass - Pop Design System
-description: A vibrant, energetic pop design system for event ticketing platform. Tailored for Gen Z/millennial concert & festival attendees. Anchors on cream canvas (#fffaf0), saturated 6-color feature cards (hot pink, teal, lavender, peach, ochre, mint), rounded typography with negative letter-spacing, and generous border radius. Brand voltage comes from bold color contrast, playful animations, and tactile hover states that evoke excitement of live events. Not minimal or corporate — designed to feel energetic, trustworthy, and festival-forward.
-
-colors:
-  primary: "#0a0a0a"
-  primary-active: "#1f1f1f"
-  primary-disabled: "#e5e5e5"
-  ink: "#0a0a0a"
-  body: "#3a3a3a"
-  body-strong: "#1a1a1a"
-  muted: "#6a6a6a"
-  muted-soft: "#9a9a9a"
-  hairline: "#e5e5e5"
-  hairline-soft: "#f0f0f0"
-  canvas: "#fffaf0"
-  surface-soft: "#faf5e8"
-  surface-card: "#f5f0e0"
-  surface-strong: "#ebe6d6"
-  surface-dark: "#0a1a1a"
-  surface-dark-elevated: "#1a2a2a"
-  on-primary: "#ffffff"
-  on-dark: "#ffffff"
-  on-dark-soft: "#a0a0a0"
-  brand-pink: "#ff4d8b"
-  brand-teal: "#1a3a3a"
-  brand-lavender: "#b8a4ed"
-  brand-peach: "#ffb084"
-  brand-ochre: "#e8b94a"
-  brand-mint: "#a4d4c5"
-  brand-coral: "#ff6b5a"
-  success: "#22c55e"
-  warning: "#f59e0b"
-  error: "#ef4444"
-
-typography:
-  display-xl:
-    fontFamily: "Plain Black, Inter, sans-serif"
-    fontSize: 72px
-    fontWeight: 500
-    lineHeight: 1
-    letterSpacing: -2.5px
-  display-lg:
-    fontFamily: "Plain Black, Inter, sans-serif"
-    fontSize: 56px
-    fontWeight: 500
-    lineHeight: 1.05
-    letterSpacing: -2px
-  display-md:
-    fontFamily: "Plain Black, Inter, sans-serif"
-    fontSize: 40px
-    fontWeight: 500
-    lineHeight: 1.1
-    letterSpacing: -1px
-  display-sm:
-    fontFamily: "Plain Black, Inter, sans-serif"
-    fontSize: 32px
-    fontWeight: 500
-    lineHeight: 1.15
-    letterSpacing: -0.5px
-  title-lg:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 24px
-    fontWeight: 600
-    lineHeight: 1.3
-    letterSpacing: -0.3px
-  title-md:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 18px
-    fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: 0
-  title-sm:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 16px
-    fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: 0
-  body-md:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 16px
-    fontWeight: 400
-    lineHeight: 1.55
-    letterSpacing: 0
-  body-sm:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 14px
-    fontWeight: 400
-    lineHeight: 1.55
-    letterSpacing: 0
-  caption:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 13px
-    fontWeight: 500
-    lineHeight: 1.4
-    letterSpacing: 0
-  caption-uppercase:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 12px
-    fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: 1.5px
-  button:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 14px
-    fontWeight: 600
-    lineHeight: 1
-    letterSpacing: 0
-  nav-link:
-    fontFamily: "Inter, sans-serif"
-    fontSize: 14px
-    fontWeight: 500
-    lineHeight: 1.4
-    letterSpacing: 0
-
-rounded:
-  xs: 6px
-  sm: 8px
-  md: 12px
-  lg: 16px
-  xl: 24px
-  pill: 9999px
-  full: 9999px
-
-spacing:
-  xxs: 4px
-  xs: 8px
-  sm: 12px
-  md: 16px
-  lg: 24px
-  xl: 32px
-  xxl: 48px
-  section: 96px
-
-components:
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: 12px 20px
-    height: 44px
-  button-primary-active:
-    backgroundColor: "{colors.primary-active}"
-    textColor: "{colors.on-primary}"
-    rounded: "{rounded.md}"
-  button-primary-disabled:
-    backgroundColor: "{colors.primary-disabled}"
-    textColor: "{colors.muted}"
-    rounded: "{rounded.md}"
-  button-secondary:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: 12px 20px
-    height: 44px
-  button-on-color:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.button}"
-    rounded: "{rounded.md}"
-    padding: 12px 20px
-    height: 44px
-  button-text-link:
-    backgroundColor: transparent
-    textColor: "{colors.ink}"
-    typography: "{typography.button}"
-  text-link:
-    backgroundColor: transparent
-    textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
-  top-nav:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.nav-link}"
-    height: 64px
-  hero-band:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.display-xl}"
-    padding: 96px
-  hero-illustration-card:
-    backgroundColor: "{colors.surface-soft}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.xl}"
-  feature-card-pink:
-    backgroundColor: "{colors.brand-pink}"
-    textColor: "{colors.on-primary}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.xl}"
-    padding: 32px
-  feature-card-teal:
-    backgroundColor: "{colors.brand-teal}"
-    textColor: "{colors.on-dark}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.xl}"
-    padding: 32px
-  feature-card-lavender:
-    backgroundColor: "{colors.brand-lavender}"
-    textColor: "{colors.ink}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.xl}"
-    padding: 32px
-  feature-card-peach:
-    backgroundColor: "{colors.brand-peach}"
-    textColor: "{colors.ink}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.xl}"
-    padding: 32px
-  feature-card-ochre:
-    backgroundColor: "{colors.brand-ochre}"
-    textColor: "{colors.ink}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.xl}"
-    padding: 32px
-  feature-card-cream:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.xl}"
-    padding: 32px
-  product-mockup-card:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.lg}"
-    padding: 24px
-  testimonial-card:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: 24px
-  pricing-tier-card:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.title-lg}"
-    rounded: "{rounded.lg}"
-    padding: 32px
-  pricing-tier-card-featured:
-    backgroundColor: "{colors.brand-teal}"
-    textColor: "{colors.on-dark}"
-    typography: "{typography.title-lg}"
-    rounded: "{rounded.lg}"
-    padding: 32px
-  text-input:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.md}"
-    padding: 12px 16px
-    height: 44px
-  text-input-focused:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
-  category-tab:
-    backgroundColor: transparent
-    textColor: "{colors.muted}"
-    typography: "{typography.nav-link}"
-    rounded: "{rounded.pill}"
-    padding: 8px 16px
-  category-tab-active:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.nav-link}"
-    rounded: "{rounded.pill}"
-  badge-pill:
-    backgroundColor: "{colors.surface-card}"
-    textColor: "{colors.ink}"
-    typography: "{typography.caption}"
-    rounded: "{rounded.pill}"
-    padding: 4px 12px
-  expert-card:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.title-md}"
-    rounded: "{rounded.lg}"
-    padding: 24px
-  cta-band-illustrated:
-    backgroundColor: "{colors.surface-soft}"
-    textColor: "{colors.ink}"
-    typography: "{typography.display-md}"
-    rounded: "{rounded.xl}"
-    padding: 80px
-  footer:
-    backgroundColor: "{colors.surface-soft}"
-    textColor: "{colors.body}"
-    typography: "{typography.body-sm}"
-    padding: 80px
+name: Gigs Pass - Neo-Brutalism Design System
+description: A neo-brutalist, anti-design, festival-culture visual language for the Gigs Pass ticketing platform. Anchors on cream canvas (#FFFAF0), pure black (#0A0A0A), thick hard-edged black borders, offset solid shadows, oversized uppercase typography, rotation, overlap, and marquee strips. Intentionally loud and expressive on the surface, extremely intentional and usable underneath — "anti-design visually, extremely intentional UX". Source of truth: the Figma export under docs/design/figma-export/ (see src/index.css + src/App.tsx).
 ---
 
-## Overview
+# Gigs Pass — Neo-Brutalism Design System
 
-Clay.com is the most playful B2B SaaS interface in the GTM-data category. The base atmosphere is **cream-tinted white canvas** (`{colors.canvas}` — #fffaf0) holding dark-navy ink type and **3D-rendered claymation illustrations** (mountains, mascot characters, peach/ochre/lavender landscapes) as the dominant brand voltage. Where most data-platform brands play it cool with grids and gradients, Clay leans hard into hand-crafted-looking 3D illustrations and saturated single-color feature cards.
+## 1. Visual Identity
 
-Type voice runs **Plain Black** (or substituted with Inter weight 500-600) — a custom rounded display face used at very large sizes (72px hero) with negative letter-spacing. Body type uses Inter at standard weights. The display weight stays at 500, never bolder — the rounded character of the typeface gives it warmth without needing weight.
+Neo-brutalism + anti-design + festival culture.
 
-Component voltage comes from **saturated single-color feature cards** in a 6-color palette: hot pink, deep teal, lavender, peach, ochre, and cream-card. Each card shows product UI fragments at small scale — Claygent agent runs, sequencer flows, CRM enrichment outputs. The colored card IS the primary visual element on every long-scroll page.
+- Bold, rebellious, youthful, energetic, playful, slightly chaotic, memorable.
+- NOT a generic SaaS dashboard. Avoid: corporate SaaS aesthetics, gradients, glassmorphism, soft shadows, excessive rounded cards, symmetrical grids everywhere, empty whitespace with no purpose, polished minimalism.
+- Use instead: thick black borders, hard edges, offset positioning, asymmetric composition, oversized typography, intentionally awkward scale relationships, overlapping elements, unexpected alignment, occasional rotation, large solid color blocks, strong contrast, editorial poster-like compositions, playful UI interruptions.
+- **Critical balance (UX rule):** this is a real ticketing product. ~70% functional product UI / ~30% experimental visual expression. Still needs: clear hierarchy, obvious CTAs, readable information, predictable interaction, strong accessibility.
+- Composition should feel intentionally designed, never randomly generated — coherent system underneath the chaos.
 
-**Key Characteristics:**
-- Cream-tinted white canvas (`{colors.canvas}` — #fffaf0). The warmth differentiates Clay from cool-gray competitor sites.
-- Dark navy/black primary CTAs (`{colors.primary}` — #0a0a0a). Buttons rounded `{rounded.md}` (12px) — friendly modern but not pill.
-- 6-color saturated feature card palette: `{colors.brand-pink}`, `{colors.brand-teal}`, `{colors.brand-lavender}`, `{colors.brand-peach}`, `{colors.brand-ochre}`, `{colors.surface-card}` (cream).
-- 3D claymation illustrations (mountains, characters, abstract shapes) as full-bleed hero artifacts — the brand's most-recognized visual element.
-- Custom rounded Plain Black display typeface at 500 weight with -1 to -2.5px letter-spacing on display sizes.
-- Border radius is generous: `{rounded.md}` (12px) for buttons + inputs, `{rounded.lg}` (16px) for content cards, `{rounded.xl}` (24px) for feature cards. The bigger radius matches the rounded display type's character.
-- Product UI fragments embedded inside colored cards at small scale — agent run logs, sequencer flows, enrichment results.
-- Section rhythm `{spacing.section}` (96px) between major bands.
-- Footer is cream-tinted (`{colors.surface-soft}`) — Clay does NOT use a dark footer. Even the closing band stays warm-light.
+## 2. Color System
 
-## Design Philosophy
+Foundation:
+- **Background / canvas:** `#FFFAF0` (cream)
+- **Foreground / primary / border:** `#0A0A0A` (pure black)
 
-### Pop Design Principles for Event/Festival Platform
-
-**Core Aesthetic:**
-- **Vibrant & Energetic** — Not minimal or corporate. Event tickets should feel exciting, not sterile.
-- **Playful but Trustworthy** — Fun colors + rounded shapes, but clear hierarchy and readability. Users should feel confident buying tickets.
-- **Festival Energy** — Saturated colors evoke live music, concerts, and celebration. Every page should spark interest.
-- **Tactile & Interactive** — Hover states, animations, and micro-interactions create engagement and reward user interaction.
-
-**Color Strategy:**
-- Cream canvas (#fffaf0) as warm base — immediately differentiates from cool-white competitor sites (Ticketmaster, Eventbrite)
-- 6-color saturated palette cycles through feature cards — strict cycling prevents color overload while maintaining visual rhythm
-- Hot pink (#ff4d8b) + ochre (#e8b94a) are highest-energy colors — reserve for CTAs, urgency badges, and high-priority actions
-- Teal (#1a3a3a) for trust/premium features (featured event tier, organizer dashboard, admin sections)
-- Peach (#ffb084) + lavender (#b8a4ed) for approachable, secondary features
-- Mint (#a4d4c5) for success states and confirmation screens
-
-**Typography Strategy:**
-- Inter 500 display with negative letter-spacing — rounded, modern, friendly (not corporate)
-- Large display sizes (72px hero, 56px section heads) command attention — event discovery is visual
-- Never go below 14px for body text — small text = timid, we want confident communication
-- Inter 400 body remains clean and readable at all sizes
-
-**Shape Language:**
-- Generous border radius (12px buttons, 24px feature cards) — approachable, not sharp or minimalist
-- No pill-shaped CTAs — pills read as "soft" or "contained", we want confident rounded rectangles
-- Consistent radius creates visual rhythm and playful character
-
-**Animation Philosophy (Implementation Later):**
-- Bounce easing (cubic-bezier(0.68, -0.55, 0.265, 1.55)) for playful card interactions
-- Scale hover states (1.03–1.05) for tactile feedback and encouragement to click
-- Stagger animations for feature cards entrance — creates energy on page load
-- Pulse for urgency states (almost sold out, queue position updates, limited tickets)
-- Smooth count-up animations for queue position numbers
-- No linear easing — always use cubic-bezier curves for personality
-
-**Color Cycling Rule:**
-Feature cards cycle through 6-color palette in strict order: Pink → Teal → Lavender → Peach → Ochre → Mint → repeat
-NEVER repeat the same color twice consecutively. Example page flow:
-```
-Row 1: Pink card (featured event)
-Row 2: Teal card (premium tier)
-Row 3: Lavender card (unique category)
-Row 4: Peach card (general event)
-Row 5: Ochre card (popular)
-Row 6: Mint card (special offer or success state)
-```
-
-**Color Usage Hierarchy:**
-- **Hot Pink (#ff4d8b)** — Highest energy. Use for: primary CTAs, "Buy Now" buttons, urgency badges ("Almost Sold Out"), featured event highlights
-- **Ochre (#e8b94a)** — High energy. Use for: "Popular" badges, "Limited Tickets" warnings, secondary CTAs, featured organizer badges
-- **Teal (#1a3a3a)** — Trust & premium. Use for: featured pricing tier, organizer dashboard cards, admin interfaces, "VIP" badges
-- **Lavender (#b8a4ed)** — Creative & unique. Use for: special event categories (theater, art, comedy), artist highlights, creative content
-- **Peach (#ffb084)** — Warm & inviting. Use for: general content cards, testimonials, success confirmations, buyer reviews
-- **Mint (#a4d4c5)** — Fresh & calm. Use for: success states, confirmation screens, "Order Confirmed" badges, queue position improvements
-- **Coral (#ff6b5a)** — RESERVE for critical states: "SOLD OUT" badges, critical errors, cancellation warnings
-
-## Colors
-
-### Brand & Accent
-- **Primary** (`{colors.primary}` — #0a0a0a): All primary CTAs, h1/h2 ink type. Near-black with slight warmth.
-- **Brand Pink** (`{colors.brand-pink}` — #ff4d8b): Hot-pink feature card surface. Sequencer / outbound feature pages.
-- **Brand Teal** (`{colors.brand-teal}` — #1a3a3a): Deep teal-green feature card. Often the featured pricing tier.
-- **Brand Lavender** (`{colors.brand-lavender}` — #b8a4ed): Soft lavender feature card.
-- **Brand Peach** (`{colors.brand-peach}` — #ffb084): Warm peach feature card.
-- **Brand Ochre** (`{colors.brand-ochre}` — #e8b94a): Mustard / ochre feature card and illustration accents.
-- **Brand Mint** (`{colors.brand-mint}` — #a4d4c5): Mint accent on illustrations and small badges.
-- **Brand Coral** (`{colors.brand-coral}` — #ff6b5a): Coral accent for highlights.
-
-### Surface
-- **Canvas** (`{colors.canvas}` — #fffaf0): The default page floor. Cream-tinted white.
-- **Surface Soft** (`{colors.surface-soft}` — #faf5e8): Footer and CTA-band background.
-- **Surface Card** (`{colors.surface-card}` — #f5f0e0): Cream feature cards, testimonial cards.
-- **Surface Strong** (`{colors.surface-strong}` — #ebe6d6): Stronger cream for emphasized bands.
-- **Surface Dark** (`{colors.surface-dark}` — #0a1a1a): Dark teal-tinted near-black for occasional dark cards (rare).
-- **Surface Dark Elevated** (`{colors.surface-dark-elevated}` — #1a2a2a): Elevated dark cards.
-- **Hairline** (`{colors.hairline}` — #e5e5e5): 1px borders on cards and inputs.
-
-### Text
-- **Ink** (`{colors.ink}` — #0a0a0a): Headlines and primary text.
-- **Body Strong** (`{colors.body-strong}` — #1a1a1a): Emphasized body, lead paragraphs.
-- **Body** (`{colors.body}` — #3a3a3a): Default running-text.
-- **Muted** (`{colors.muted}` — #6a6a6a): Sub-headings, breadcrumbs, footer body.
-- **Muted Soft** (`{colors.muted-soft}` — #9a9a9a): Captions, fine-print.
-- **On Primary / On Dark** (`{colors.on-primary}` — #ffffff): Text on primary buttons + dark feature cards (teal).
-
-### Semantic
-- **Success** (`{colors.success}` — #22c55e): Success states.
-- **Warning** (`{colors.warning}` — #f59e0b): Warning callouts.
-- **Error** (`{colors.error}` — #ef4444): Validation errors.
-
-## Typography
-
-### Font Family
-The system runs **Plain Black** (a custom rounded display face) for headlines and **Inter** for body, navigation, and UI. Plain Black at weight 500 with negative letter-spacing handles every display headline; Inter handles the rest. The fallback stack walks `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` for both.
-
-### Hierarchy
-
-| Token | Size | Weight | Line Height | Letter Spacing | Use |
-|---|---|---|---|---|---|
-| `{typography.display-xl}` | 72px | 500 | 1.0 | -2.5px | Homepage h1 ("Go to market with unique data") — Plain Black |
-| `{typography.display-lg}` | 56px | 500 | 1.05 | -2px | Section heads — Plain Black |
-| `{typography.display-md}` | 40px | 500 | 1.1 | -1px | Sub-section heads, product names |
-| `{typography.display-sm}` | 32px | 500 | 1.15 | -0.5px | CTA-band heads, feature card titles |
-| `{typography.title-lg}` | 24px | 600 | 1.3 | -0.3px | Pricing plan names, larger feature titles |
-| `{typography.title-md}` | 18px | 600 | 1.4 | 0 | Card titles, intro paragraphs |
-| `{typography.title-sm}` | 16px | 600 | 1.4 | 0 | Small card titles, list labels |
-| `{typography.body-md}` | 16px | 400 | 1.55 | 0 | Default running-text |
-| `{typography.body-sm}` | 14px | 400 | 1.55 | 0 | Footer body, fine-print |
-| `{typography.caption}` | 13px | 500 | 1.4 | 0 | Badge labels, captions |
-| `{typography.caption-uppercase}` | 12px | 600 | 1.4 | 1.5px | Section labels, "FEATURED" badges |
-| `{typography.button}` | 14px | 600 | 1.0 | 0 | Standard button labels |
-| `{typography.nav-link}` | 14px | 500 | 1.4 | 0 | Top-nav menu items |
-
-### Principles
-Plain Black at weight 500 + negative letter-spacing IS the brand voice. Going to weight 700 reads as bombastic; the rounded character of the typeface adds warmth that bolder weight would flatten.
-
-The body-vs-display split is functional: Plain Black for Plain Black moments (headlines), Inter for everything else (running text, UI, buttons). Mixing them is a system violation.
-
-### Note on Font Substitutes
-If Plain Black is unavailable, **Inter** at weight 500 with -0.05em letter-spacing is a usable approximation. **Söhne Breit** at weight Buch is an alternative if licensed. **Recoleta** at weight 500 carries similar rounded-display warmth.
-
-## Layout
-
-### Spacing System
-- **Base unit:** 4px.
-- **Tokens:** `{spacing.xxs}` 4px · `{spacing.xs}` 8px · `{spacing.sm}` 12px · `{spacing.md}` 16px · `{spacing.lg}` 24px · `{spacing.xl}` 32px · `{spacing.xxl}` 48px · `{spacing.section}` 96px.
-- **Section padding:** `{spacing.section}` (96px) between major editorial bands.
-- **Card internal padding:** `{spacing.xl}` (32px) for feature cards and pricing tiers; `{spacing.lg}` (24px) for testimonial and product mockup cards.
-
-### Grid & Container
-- **Max content width:** ~1280px centered.
-- **Editorial body:** Single 12-column grid; hero often uses 7/5 split (h1 left, illustration right).
-- **Feature card grids:** 3-up at desktop, 2-up at tablet, 1-up at mobile.
-- **Pricing grid:** 3-4 up at desktop, 1-up at mobile.
-
-### Whitespace Philosophy
-Clay uses generous whitespace around big rounded display headlines and saturated feature cards. The cream canvas + colored cards + 3D illustrations create a playful warmth that competing data-platform sites lack.
-
-## Elevation & Depth
-
-| Level | Treatment | Use |
+Accent colors (the "gigs" set):
+| Token | Hex | Usage |
 |---|---|---|
-| Flat | No shadow, no border | Body sections, top nav, hero |
-| Soft hairline | 1px `{colors.hairline}` border | Inputs, small content cards |
-| Saturated card | Brand pink/teal/lavender/peach/ochre fill — no shadow | Feature cards |
-| Cream card | `{colors.surface-card}` background — no shadow | Testimonial, secondary cards |
-| Subtle drop shadow | Faint shadow at low alpha | Hover-elevated states (rare) |
+| `gigs-pink` | `#FF4D8B` | hero accent, primary CTA blocks, marquee strip, footer |
+| `gigs-purple` | `#B8A4ED` | solid feature/event card fill, header login button |
+| `gigs-orange` | `#FFB084` | secondary accents, oversized punctuation, hover fills |
+| `gigs-yellow` | `#E8B94A` | corner tapes, photo frames, action stickers, hover fills |
+| `gigs-teal` | `#A4D4C5` | event card accents, LOCATION meta chips, hover fills |
+| `gigs-dark` | `#1A3A3A` | dark photo panel / dark event card fill, text background |
 
-The system uses no heavy shadows. Depth comes from the saturated color contrast between cream canvas and bright feature cards.
+Functional:
+- `error` / coral `#FF6B5A` (in export `--color-coral`) — RESERVE for critical states: "SOLD OUT" badges, errors, cancellation.
 
-### Decorative Depth
-- **3D claymation illustrations** — mountains, characters, mascots rendered in a hand-crafted 3D style. The brand's most-recognized depth element. Not a token — these are illustrated assets.
-- **Mascot characters** appear as inline figures in feature cards and CTAs.
+Rules:
+- Use accent colors boldly, do NOT distribute evenly. Some sections stay almost entirely cream + black; others become loud with one dominant accent. Avoid rainbow gradients; solid color fields + strong contrast only.
+- Cream-throughout is a system contract — the footer is a loud color block (`gigs-pink`), not a dark-navy footer.
 
-## Shapes
+## 3. Typography
 
-### Border Radius Scale
+- Font: **Inter**. Weights available: 400, 500, 600, 700, 800 **(black, default headline weight)**, 900.
+- Headlines: oversized, **uppercase**, `font-black` (800/900), tight leading (`leading-[0.82]`–`[1.1]`), `tracking-tighter`. Occasionally break across lines, interact with other elements, unusual-but-intentional alignment.
+- Body stays highly readable (16–20px, 700 for emphasis copy, 400 for long text).
 
-| Token | Value | Use |
-|---|---|---|
-| `{rounded.xs}` | 6px | Small badges, dropdown items |
-| `{rounded.sm}` | 8px | Small buttons, hairline-border accent |
-| `{rounded.md}` | 12px | Standard CTA buttons, text inputs |
-| `{rounded.lg}` | 16px | Content cards, testimonial cards, pricing tiers |
-| `{rounded.xl}` | 24px | Feature cards (the saturated brand-color cards) |
-| `{rounded.pill}` | 9999px | Category tabs, badge pills |
-| `{rounded.full}` | 9999px / 50% | Avatars, icon buttons |
+Scale (deviations from tailwind default, applied via utilities):
+| Role | Example size | Weight | Case/Tracking |
+|---|---|---|---|
+| Hero headline | up to `11rem` / `text-[clamp(...)]` | 900 | uppercase, `tracking-tighter`, `leading-[0.82]` |
+| Section headline | `text-5xl`–`text-7xl` | 900 | uppercase, `tracking-tighter` |
+| Card title | `text-2xl`–`text-3xl` | 900 | uppercase |
+| Meta / location | `text-sm` | 700 | `text-foreground/80` |
+| Labels / stickers | `text-xs`–`text-sm` | 800 | uppercase, `tracking-widest` |
+| Body copy | `text-xl`–`text-2xl` | 700 (hero sub) / 400 | normal |
 
-## Animations
+Use typography variation to create rhythm — not every headline gets the same treatment.
 
-### Duration Tokens (Implementation Later)
-- **`duration-instant`** (100ms) — Micro-interactions, button press feedback
-- **`duration-fast`** (150ms) — Hover states, tooltips
-- **`duration-base`** (250ms) — Default transitions, card lifts, standard animations
-- **`duration-slow`** (400ms) — Modals, page transitions, complex sequences
-- **`duration-slower`** (600ms) — Hero entrance, stagger animations, grand reveals
+## 4. Borders / Shadows / Shapes
 
-### Easing Functions (Playful, Not Linear)
-- **`easing-default`** (cubic-bezier(0.4, 0, 0.2, 1)) — Standard smooth ease-in-out for most transitions
-- **`easing-bounce`** (cubic-bezier(0.68, -0.55, 0.265, 1.55)) — Playful bounce for festival energy (cards, feature cards, buttons)
-- **`easing-smooth`** (cubic-bezier(0.25, 0.1, 0.25, 1)) — Smooth acceleration for complex animations
+- **Borders:** thick solid black, prefer 2px / 3px / 4px. Never subtle 1px gray borders. Utilities:
+  - `.brut-border` = 3px solid `#0A0A0A`
+  - `.brut-border-2` = 2px solid `#0A0A0A`
+  - `.brut-border-4` = 4px solid `#0A0A0A`
+- **Shadows:** hard offset, no blur. `.brut-shadow` = `6px 6px 0 #0A0A0A`; `.brut-shadow-sm` = `4px 4px 0 #0A0A0A`.
+- **Radius:** default **square** (sharp corners). Rectangular or slightly-rounded acceptable, never uniform pills. Ship CTAs as hard rectangles.
+- Buttons feel physical and tactile: press down + shadow collapses.
 
-### Scale Values (Hover & Active States)
-- **`scale-hover`** (1.03) — Subtle lift for feature cards on hover
-- **`scale-button-hover`** (1.05) — Button scale on hover (noticeable but not extreme)
-- **`scale-active`** (0.98) — Button press feedback (slight compress)
+## 5. Motion & Interaction
 
-### Shadow Lift Values (Hover States)
-- **`shadow-lift-subtle`** (0 4px 12px rgba(0, 0, 0, 0.08)) — Minimal lift for cards
-- **`shadow-lift-medium`** (0 8px 24px rgba(0, 0, 0, 0.12)) — Standard card hover
-- **`shadow-lift-strong`** (0 12px 32px rgba(0, 0, 0, 0.16)) — Pronounced lift for featured elements
+Defined in the Figma export (`src/index.css`) — do not improvise timings:
 
-### Component Animation Behaviors
+- **Marquee strip** (`@keyframes marquee`): translateX `0 → -50%`, `20s linear infinite`, `width: max-content`, content duplicated to loop seamlessly. Used for corner tapes + running headlines.
+- **`.brut-button`**: `transition: all .1s ease`; hover `translate(-2px,-2px)` + `box-shadow 6px 6px 0`; active `translate(2px,2px)` + `box-shadow 2px 2px 0`.
+- **`.brut-card-hover`**: `transition: all .2s ease`; hover `translate(-4px,-4px)` + `box-shadow 10px 10px 0`.
+- Micro-motion (utility-driven): `transition-colors` for hover color shifts (`.hover:text-gigs-pink`, `hover:bg-gigs-yellow`, etc.), `transition-transform` for decorative rotations (`.hover:rotate-0`, `.hover:rotate-2`), image desaturation→color (`grayscale` → `grayscale-0`).
+- Keep motions short (0.1–0.3s) and purposeful — they reinforce the tactile physicality.
 
-**Button Primary (`button-primary`):**
-- Hover: Scale to `scale-button-hover` + `shadow-lift-subtle`
-- Active: Scale to `scale-active` (press feedback)
-- Transition: `duration-fast` with `easing-default`
+## 6. Composition & Layout
 
-**Feature Cards (all color variants):**
-- Hover: Scale to `scale-hover` + `shadow-lift-medium`
-- Transition: `duration-base` with `easing-bounce` (playful for pop design)
-- Entrance: Stagger animation with 100ms delay per card (`duration-slower` + `easing-smooth`)
+- Max content width ~`1280px`, container `max-w-[1280px] mx-auto`, horizontal padding `p-4 md:px-8`.
+- Desktop frame 1440px; mobile frame 390px. On mobile: preserve oversized typography, stack overlapped layouts into controlled stacking, avoid horizontal overflow, keep primary CTA reachable — never just scale down.
+- Embrace: overlapping event cards, large typography, floating category labels, event posters, oversized date blocks, offset CTAs, visual interruptions, irregular card sizes, rotated tapes/stickers.
+- Keep the page easy to scan — tension between typography/imagery/color/controls must be intentional.
 
-**Hero Band Entrance:**
-- Headline: Fade in + slide up (150ms stagger from headline to subheading to CTA)
-- Duration: `duration-slower`
-- Easing: `easing-smooth`
+## 7. UI Components
 
-**Text Input Focus:**
-- Border thicken + color change to ink
-- Transition: `duration-fast` with `easing-default`
+### 7.1 Header (TopNav)
+- Sticky top, `bg-background` with `border-b-4 border-foreground` (brut-border-4, top/left/right none).
+- Brand: oversized `font-black tracking-tighter` — "GIGS" in an inverted black box (bg foreground, text background, slight `-rotate-2`), "PASS" + pink dot ("PASS.") — `text-3xl md:text-5xl`.
+- Nav (desktop): Discover / Events / Categories — `font-bold text-lg uppercase tracking-tight`, hover color per accent; "Discover" carries a tiny rotated yellow `LIVE` badge above it (`brut-border-2 rotate-6 bg-gigs-yellow text-[10px]`).
+- Right: Search / My Orders as square bordered buttons (`brut-border-2 brut-button bg-background`, hover fills accent), Login as solid `bg-gigs-purple` bordered button.
 
-**Urgency Badges (Almost Sold Out, Limited Tickets):**
-- Pulse animation (subtle breathing effect)
-- Duration: 2000ms (looping)
+### 7.2 Buttons
+- Hard rectangle, thick border (`brut-border-2`/`brut-border-4`), `font-black uppercase`, optional `.brut-shadow`/`.brut-shadow-sm`.
+- Primary CTA: solid accent fill + shadow, hover `translate(1,1)` + shadow collapse. Secondary: background fill, hover accent bg.
+- Default hover behaviors: `hover:translate-y-1 hover:translate-x-1 hover:shadow-none` OR `.brut-button` translate + shadow-grow. Pick one consistent pattern per button.
 
-**Queue Position Counter:**
-- Count-up animation when position changes
-- Duration: `duration-base` with `easing-smooth`
+### 7.3 Badges / Stickers
+- Square-cornered chips with `brut-border-2`, uppercase `font-black text-xs`, small padding. Fill variants: `bg-gigs-pink`, `bg-gigs-yellow`, `bg-gigs-teal` (text foreground), inverse black box (bg foreground, text background).
+- Slightly rotated for character (`rotate-6`, `-rotate-3`). Used for: "LIVE", "TONIGHT", "SOLD OUT", "SELLING FAST", "LIMITED", "NO. 01".
 
-### Animation Philosophy
+### 7.4 Event Cards (variety within one system)
+See home page for 4 expression variants; all share the system tokens:
+1. **Light card:** `bg-background brut-border-4 p-4 brut-shadow brut-card-hover` — image box `bg-gigs-dark brut-border-2 aspect-[4/3]` (grayscale → color on group-hover), title `font-black uppercase group-hover:text-gigs-pink`, MapPin/Calendar meta rows, price block "FROM / Rp 250K" + `border-t-2 border-dashed` divider, "BUY" solid black button.
+2. **Purple fill card:** `bg-gigs-purple brut-border-4 brut-shadow brut-card-hover`, image `mix-blend-multiply`, white inner block (`bg-background p-3 brut-border-2`) carrying title + meta, arrow (`ArrowRight`) that slides right on hover; offset vertically (`md:mt-8`).
+3. **Teal accent card:** cream card with teal "LIMITED" headstrip (`bg-gigs-teal brut-border-2 font-black tracking-widest`), teal price/GET footer block.
+4. **Dark card:** `bg-gigs-dark text-background`, oversized pink asterisk watermark, `bg-gigs-yellow` on title, image `mix-blend-screen opacity-70 → 100`.
+- Ranked sticker: absolute circle `-top-3 -right-3 bg-gigs-pink w-8 h-8 rounded-full brut-border-2 font-black`, `group-hover:scale-125`.
 
-**Do:**
-- ✅ Use `easing-bounce` for playful interactions (feature cards, hero elements)
-- ✅ Stagger feature card entrances (100ms delay per card for energy)
-- ✅ Scale hover states (1.03–1.05) for tactile, rewarding feedback
-- ✅ Pulse animation for urgency states ("Almost sold out", limited availability)
-- ✅ Smooth count-up for queue position numbers and countdown timers
-- ✅ Keep animations under 600ms — faster feels responsive, slower feels sluggish
-- ✅ Reserve animations for interactive elements — not decorative
+### 7.5 Category Blocks (BROWSE VIBES)
+- Not pills — oversized text blocks `text-5xl md:text-7xl font-black uppercase tracking-tighter`.
+- Variations: plain accent-color text with hover color shift + slight rotate; inverted black box (`bg-foreground text-background`), bordered box (`border-4 border-foreground`, hover purple fill), underlined accent decoration (e.g. `decoration-gigs-teal decoration-8`).
 
-**Don't:**
-- ❌ Don't use linear easing — feels robotic and corporate (antithesis of pop design)
-- ❌ Don't overuse bounce on every element — reserve for hero & feature cards for maximum impact
-- ❌ Don't animate more than 3 properties simultaneously — hurts performance
-- ❌ Don't use duration > 600ms unless absolutely necessary
-- ❌ Don't animate things that aren't interactive — animations should reward user action
+### 7.6 Coming Up List (COMING UP)
+- Deliberately structured contrast to the chaotic hero: full-width `bg-foreground text-background` band, `border-t-4`.
+- Grid header row (DATE / EVENT / LOCATION / PRICE / ACTION, uppercase `tracking-widest text-background/50`).
+- Rows: `grid grid-cols-12`, thick `border-b-2 border-background/20`, hover `bg-background/10`; date `text-xl font-bold` (accent on hot rows), title `text-3xl font-black uppercase` (hover accent), action "TICKETS" button `brut-border-2` hidden → visible on group-hover.
 
-### Implementation Notes
+### 7.7 Corner Tapes
+- Absolute-positioned rotated strips (`rotate-45` / `-rotate-45`), `bg-gigs-yellow border-y-4 border-foreground font-black uppercase`, containing `animate-marquee` text ("/// SOLD OUT", "/// SELLING FAST", etc.). `pointer-events-none select-none`, z-index above content, partially off-screen for a taped-on look.
 
-**Current Status:** Animation tokens are defined here as garis besar (outline) for pop design aesthetic. Technical implementation (CSS keyframes, Framer Motion, or `@tailwindcss` utilities) will be handled during component development phase.
+### 7.8 Footer
+- Loud block: `bg-gigs-pink border-t-4 border-foreground`, uppercase black text throughout. Four columns: brand (oversized GIGS PASS.), Explore / Support links (`hover:underline`), "For Organizers" CTA (`bg-background brut-border-4 brut-shadow`, hover `bg-gigs-yellow`). Bottom bar `border-t-4 border-foreground` with copyright + Terms/Privacy.
 
-**Recommended Approach:** Use Tailwind CSS + custom `@keyframes` for MVP (zero additional dependencies). Optional lightweight libraries like `react-countup` for specific cases (queue counter). Defer Framer Motion until complex page transitions are required.
+### 7.9 Forms, Inputs & Data Tables (to be built on checkout + dashboards — apply same rules)
+- Rectangular inputs with 2–4px black border, cream bg, `font-bold` label uppercase. Focus: keep border, add offset shadow (no ring blur).
+- Data tables: reuse COMING UP list pattern (thick row borders, uppercase header labels, hover accent).
 
-## Components
+## 8. Micro-Interactions / Visual Details
 
-### Top Navigation
+Add sparingly — they enhance identity, not noise:
+- arrows (`.ArrowRight` slide on hover), oversized punctuation (`✸`, `*` at huge sizes, low opacity), numbered labels, rotated text, small stickers, date stamps, unconventional dividers (`border-t-2 border-dashed border-foreground/30`), offset labels, tiny "LIVE" indicators.
 
-**`top-nav`** — Cream nav bar pinned to top. 64px tall, `{colors.canvas}` background. Carries the Clay logo + wordmark at left, primary horizontal menu (Product, Solutions, Resources, Pricing, Customers) center, right-side cluster with "Sign in" + "Try free" `{component.button-primary}`. Menu items in `{typography.nav-link}` (Inter 14px / 500).
+## 9. Accessibility & UX Guardrails
 
-### Buttons
+- Do NOT sacrifice usability for anti-design: obvious CTAs, readable info, predictable patterns, strong contrast (cream/black + saturated accents).
+- Hover-feedback must not be color-only where motion matters to non-sighted users; also shift position/shadow so state is visible without color.
+- 70/30 rule enforced on every page.
 
-**`button-primary`** — Background `{colors.primary}` (near-black), text `{colors.on-primary}` (white), type `{typography.button}` (Inter 14px / 600), padding 12px × 20px, height 44px, rounded `{rounded.md}` (12px).
+## 10. Implementation Notes (frontend mapping)
 
-**`button-secondary`** — Cream button with hairline outline. Background `{colors.canvas}`, text `{colors.ink}`, 1px hairline border.
+- Fonts: import Inter with weights 400–900 (`@fontsource-variable/inter` covers variable weights).
+- Utilities live in `src/index.css`: `.brut-border`, `.brut-border-2`, `.brut-border-4`, `.brut-shadow`, `.brut-shadow-sm`, `.brut-button`, `.brut-card-hover`, `@keyframes marquee`, `.animate-marquee`, `--color-gigs-*` theme tokens.
+- Colors in Tailwind: `background #FFFAF0`, `foreground #0A0A0A`, `gigs-pink #FF4D8B`, `gigs-purple #B8A4ED`, `gigs-orange #FFB084`, `gigs-yellow #E8B94A`, `gigs-teal #A4D4C5`, `gigs-dark #1A3A3A`.
+- Components: `Button`, `Card`, `Badge`, `FeatureCard`, `TopNav`, `Footer` in `src/components/`. The previous rounded/hairline "pop" styling is retired; replace hover `scale` + soft shadows with brutal translate + offset shadows.
 
-**`button-on-color`** — White button used over saturated brand-color feature cards. Same shape as primary but inverted (white background, ink text).
+## 11. Iteration Guide
 
-**`button-text-link`** — Inline text button, no background. Used for "Sign in" and inline link CTAs.
+1. Reference this doc + the Figma export (`docs/design/figma-export/src/App.tsx`, `index.css`) as source of truth.
+2. Every color/shadow/border change flows through tokens — never inline hex in components.
+3. New components must follow one of the card/label/button patterns above; variety is allowed but must reuse the token set.
+4. Do not bring back soft shadows, hairline borders, pill radii, or uniform 6-color card grids.
 
-**`text-link`** — Inline body links in `{colors.ink}` with underline.
+## 12. Known Gaps
 
-### Cards & Containers
-
-**`hero-band`** — Cream-canvas hero with 7-5 grid: h1 + sub-headline + button row on the left, 3D claymation illustration on the right. Vertical padding `{spacing.section}` (96px).
-
-**`hero-illustration-card`** — Right-side artifact holding 3D claymation illustration (mountains, mascot character, abstract shapes). Background `{colors.surface-soft}`, rounded `{rounded.xl}` (24px). The illustration IS the artifact.
-
-**`feature-card-pink`** / **`feature-card-teal`** / **`feature-card-lavender`** / **`feature-card-peach`** / **`feature-card-ochre`** — Saturated single-color feature cards. Background varies per variant; rounded `{rounded.xl}` (24px); padding `{spacing.xl}` (32px). Each card carries an h3 in `{typography.title-md}`, a body description, and a product UI fragment or mascot illustration. Text color flips to `{colors.on-dark}` (white) on pink and teal cards, `{colors.ink}` (dark) on lavender/peach/ochre cards (the lighter saturations have enough contrast for dark text).
-
-**`feature-card-cream`** — Lower-key feature card variant on `{colors.surface-card}`. Used for less-emphasized features that don't warrant a saturated color.
-
-**`product-mockup-card`** — Card showing actual Clay product UI (Claygent agent runs, sequencer flows, CRM enrichment tables). Background `{colors.canvas}` with hairline border, rounded `{rounded.lg}`, padding `{spacing.lg}` (24px).
-
-**`testimonial-card`** — Customer quote cards. Background `{colors.surface-card}` (cream), rounded `{rounded.lg}`, padding `{spacing.lg}` (24px). Top row has avatar + name + role; below sits the testimonial in `{typography.body-md}`.
-
-**`pricing-tier-card`** — Standard tier card. Background `{colors.canvas}` with hairline, rounded `{rounded.lg}`, padding `{spacing.xl}` (32px).
-
-**`pricing-tier-card-featured`** — The featured tier flips to `{colors.brand-teal}` (deep teal-green). The teal surface IS the featured signal.
-
-**`expert-card`** — Used on /experts page. Background `{colors.canvas}` with hairline, rounded `{rounded.lg}`, padding `{spacing.lg}`. Carries an avatar at top, expert name, specialization, and a "Book session" link.
-
-### Inputs & Forms
-
-**`text-input`** — Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.body-md}`, rounded `{rounded.md}` (12px), padding 12px × 16px, height 44px. 1px hairline border.
-
-**`text-input-focused`** — Border thickens to ink for emphasis.
-
-### Tabs / Badges
-
-**`category-tab`** + **`category-tab-active`** — Pill-shaped tabs in sub-nav. Inactive: transparent + muted text. Active: cream-card background + ink text. Padding 8px × 16px.
-
-**`badge-pill`** — Small cream-fill pill labels in `{typography.caption}` (13px / 500), rounded `{rounded.pill}`.
-
-### CTA / Footer
-
-**`cta-band-illustrated`** — Pre-footer "Turn your growth ideas into reality today" band. Background `{colors.surface-soft}`, rounded `{rounded.xl}`, padding 80px. Carries an h2 in `{typography.display-md}`, a sub-line, and a `{component.button-primary}` — usually paired with a 3D illustration of a mascot or scene.
-
-**`footer`** — Cream-tinted footer (NOT dark navy unlike most SaaS sites). Background `{colors.surface-soft}`, text `{colors.body}`. 4-column link list. Vertical padding 80px. Often features a horizon-style 3D mountain illustration at the very bottom — Clay's signature footer mountain.
-
-## Do's and Don'ts
-
-### Do (Pop Design for Event Platform)
-- Anchor every page on the cream canvas (`{colors.canvas}` — #fffaf0). The warm tint differentiates Gigs Pass from cool-white competitor sites (Ticketmaster, Eventbrite).
-- Use saturated brand colors boldly — pink/ochre for high-energy features, teal for premium/trust elements.
-- Cycle saturated feature cards across the page in strict order: pink → teal → lavender → peach → ochre → mint → repeat. Repeating the same color twice in a row reads as off-rhythm and breaks visual momentum.
-- Use Inter 500 at display sizes with negative letter-spacing on every display headline. Large text (72px hero) commands attention for event discovery.
-- Reserve hot pink (#ff4d8b) for highest-priority CTAs and urgency states ("Buy Now", "Almost Sold Out").
-- Reserve ochre (#e8b94a) for "Popular" badges and limited availability warnings.
-- Reserve teal (#1a3a3a) for trust/premium features (featured event tier, organizer dashboard, admin sections).
-- Add hover states with scale (1.03–1.05) + shadow lift for tactile feedback — reward user interaction.
-- Use cream footer, not dark. Maintain warm-throughout aesthetic.
-- Anchor every band with `{spacing.section}` (96px) vertical rhythm.
-
-### Don't (Pop Design Anti-patterns)
-- Don't use cool grays or whites for canvas. The cream tint (#fffaf0) is non-negotiable for warm vibe.
-- Don't repeat the same brand-color card twice consecutively. This kills visual momentum and feels unplanned.
-- Don't use more than 6 brand colors + coral. Overcolor palette = overwhelming and inconsistent.
-- Don't make ALL interactions bounce. Reserve bounce easing for hero & feature cards only — overuse = exhausting.
-- Don't use gray-scale or muted color variants for feature cards. Pop design demands saturated, confident colors.
-- Don't bold display weight beyond 500. Inter at 700 reads as bombastic and corporate.
-- Don't use linear easing on animations. Always use cubic-bezier curves for personality.
-- Don't drop below 14px body text — small text reads timid, we want confident communication.
-- Don't add a dark footer. Maintain warm cream aesthetic throughout.
-- Don't add hover state styling beyond scale + shadow. Keep it simple and consistent.
-
-## Responsive Behavior
-
-### Breakpoints
-
-| Name | Width | Key Changes |
-|---|---|---|
-| Mobile | < 768px | Hamburger nav; hero h1 72→36px; hero-illustration-card stacks below; feature grids 1-up; pricing 1-up |
-| Tablet | 768–1024px | Top nav tightens; feature cards 2-up; pricing 2-up |
-| Desktop | 1024–1440px | Full top-nav; 3-up feature cards; 3-up pricing tiers |
-| Wide | > 1440px | Same as desktop with more breathing room; max content 1280px |
-
-### Touch Targets
-- `{component.button-primary}` at minimum 44 × 44px (matches WCAG AAA).
-- `{component.text-input}` height is 44px.
-
-### Collapsing Strategy
-- Top nav collapses to hamburger at < 768px.
-- Hero 7-5 grid → single-column on mobile.
-- Feature card grids reduce columns rather than scaling.
-- Saturated feature cards retain their colored fill at every breakpoint.
-- Pricing tier cards collapse 4 → 2 → 1.
-
-## Iteration Guide
-
-1. Focus on ONE component at a time. Reference its YAML key (`{component.feature-card-pink}`, `{component.pricing-tier-card-featured}`).
-2. Pick the right brand-color card for the feature: pink for outbound/sequencer, teal for enterprise/featured, lavender for AI-agent products, peach for general SaaS warmth, ochre for community / experts.
-3. Variants of an existing component (`-active`, `-disabled`) live as separate entries.
-4. Use `{token.refs}` everywhere — never inline hex.
-5. Never document hover.
-6. Display headlines stay Plain Black 500 with negative letter-spacing. Body stays Inter 400.
-7. The cream-throughout palette is a system contract — don't add a dark footer.
-
-## Known Gaps
-
-- Plain Black is licensed to Clay and not available as a public web font; Inter weight 500 with negative letter-spacing is the closest substitute.
-- 3D claymation illustrations are commissioned assets, not system tokens — they're rendered per-page.
-- The mascot characters (named characters that recur across the site) are illustrated assets; their exact lineage and naming are not formalized in tokens.
-- Animation and transition timings (3D illustration parallax on scroll, feature card entrance animations) are not in scope.
-- Form validation states beyond `{component.text-input-focused}` are not extracted.
-- The actual Clay product surface (in-app data tables, formula editor, agent builder) shares some tokens with the marketing site but adds many product-specific components that are out of scope.
+- Only the HOME/DISCOVER page is designed in the Figma export. Detail event, waiting room, checkout, and order history screens are derived from this system (rule-driven, not reference-matched).
+- No formal 3D/illustration assets in scope; poster art uses photo placeholders (Unsplash in the reference).
+- Form validation states beyond focus/shadow are not extracted — define them when the checkout forms are built, following section 7.9.
