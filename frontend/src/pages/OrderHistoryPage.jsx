@@ -76,7 +76,7 @@ export default function OrderHistoryPage() {
       <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-2 flex items-center gap-4">
         MY <span className="bg-foreground text-background px-2 brut-shadow -rotate-2 inline-block">ORDERS</span>
       </h1>
-      <p className="font-bold text-lg mb-10">Every stub you've punched, in one place.</p>
+      <p className="font-bold text-lg mb-10">{"Every stub you've punched, in one place."}</p>
 
       {error ? (
         <div className="text-center py-10">
