@@ -5,20 +5,23 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(getToken()));
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    if (!getToken()) return;
+    let cancelled = false;
 
     api
       .get("/auth/me")
-      .then((data) => setUser(data.user))
+      .then((data) => {
+        if (!cancelled) setUser(data.user);
+      })
       .catch(() => clearToken())
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
   }, []);
 
   const login = useCallback(async (email, password) => {
