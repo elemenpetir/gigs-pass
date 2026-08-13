@@ -1,44 +1,44 @@
 import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
-const Footer = forwardRef(({ 
-  logo,
-  description,
-  links = [],
-  social,
-  copyright,
+const Footer = forwardRef(({
+  brand = 'GIGS PASS.',
+  tagline,
+  columns = [],
+  bottom,
   className,
-  ...props 
+  ...props
 }, ref) => (
   <footer
     className={cn(
-      'w-full bg-surface-soft border-t border-hairline',
-      'px-6 py-16',
+      'w-full bg-gigs-pink border-t-4 border-foreground',
       className
     )}
     ref={ref}
     {...props}
   >
-    <div className="max-w-6xl mx-auto">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-16 pb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16 text-foreground">
         {/* Brand Column */}
-        <div className="md:col-span-1">
-          {logo && <div className="text-title-lg font-display mb-2">{logo}</div>}
-          {description && <p className="text-body-sm text-muted">{description}</p>}
+        <div>
+          <h2 className="text-4xl font-black tracking-tighter leading-none mb-6 uppercase">
+            {brand}
+          </h2>
+          {tagline && <p className="font-bold max-w-xs">{tagline}</p>}
         </div>
 
         {/* Links Columns */}
-        {links.map((column, idx) => (
+        {columns.map((column, idx) => (
           <div key={idx}>
             {column.title && (
-              <h4 className="text-title-sm font-medium mb-4 text-ink">{column.title}</h4>
+              <h4 className="font-black text-xl mb-4 uppercase">{column.title}</h4>
             )}
-            <ul className="space-y-2">
+            <ul className="space-y-2 font-bold">
               {column.items?.map((item, itemIdx) => (
                 <li key={itemIdx}>
                   <a
                     href={item.href}
-                    className="text-body-sm text-muted hover:text-primary transition-colors duration-fast"
+                    className="hover:underline underline-offset-4"
                   >
                     {item.label}
                   </a>
@@ -50,17 +50,11 @@ const Footer = forwardRef(({
       </div>
 
       {/* Bottom */}
-      <div className="border-t border-hairline pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-        {copyright && (
-          <p className="text-body-sm text-muted">{copyright}</p>
-        )}
-        
-        {social && (
-          <div className="flex items-center gap-4">
-            {social}
-          </div>
-        )}
-      </div>
+      {bottom && (
+        <div className="border-t-4 border-foreground pt-8 flex flex-col md:flex-row justify-between items-center font-bold text-sm">
+          {bottom}
+        </div>
+      )}
     </div>
   </footer>
 ))

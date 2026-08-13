@@ -2,25 +2,27 @@ import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
 const variantStyles = {
-  default: 'bg-surface-card text-ink border border-hairline',
-  primary: 'bg-primary text-on-primary',
-  success: 'bg-success text-on-primary',
-  warning: 'bg-warning text-ink',
-  error: 'bg-error text-on-primary',
-  pink: 'bg-brand-pink text-on-primary',
-  teal: 'bg-brand-teal text-on-dark',
-  ochre: 'bg-brand-ochre text-ink',
+  default: 'bg-canvas text-ink border-foreground',
+  inverse: 'bg-foreground text-background border-foreground',
+  pink: 'bg-gigs-pink text-foreground border-foreground',
+  purple: 'bg-gigs-purple text-ink border-foreground',
+  yellow: 'bg-gigs-yellow text-ink border-foreground',
+  teal: 'bg-gigs-teal text-ink border-foreground',
+  dark: 'bg-gigs-dark text-background border-foreground',
+  success: 'bg-success text-foreground border-foreground',
+  warning: 'bg-warning text-ink border-foreground',
+  error: 'bg-error text-background border-foreground',
 }
 
-const Badge = forwardRef(({ 
+const Badge = forwardRef(({
   className,
   variant = 'default',
   disabled = false,
-  ...props 
+  ...props
 }, ref) => (
   <span
     className={cn(
-      'inline-flex items-center rounded-pill px-3 py-1.5 text-caption font-medium border border-transparent',
+      'inline-flex items-center rounded-none px-2 py-1 text-xs font-black uppercase tracking-widest brut-border-2',
       variantStyles[variant],
       disabled && 'opacity-50 cursor-not-allowed',
       className

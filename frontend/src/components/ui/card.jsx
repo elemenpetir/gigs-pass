@@ -2,25 +2,29 @@ import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
 const colorVariants = {
-  default: 'bg-surface-card text-ink border border-hairline',
-  pink: 'bg-brand-pink text-on-primary border-brand-pink',
-  teal: 'bg-brand-teal text-on-dark border-brand-teal',
-  lavender: 'bg-brand-lavender text-ink border-brand-lavender',
-  peach: 'bg-brand-peach text-ink border-brand-peach',
-  ochre: 'bg-brand-ochre text-ink border-brand-ochre',
-  mint: 'bg-brand-mint text-ink border-brand-mint',
+  default: 'bg-canvas text-ink border-foreground',
+  pink: 'bg-gigs-pink text-foreground border-foreground',
+  purple: 'bg-gigs-purple text-ink border-foreground',
+  orange: 'bg-gigs-orange text-ink border-foreground',
+  yellow: 'bg-gigs-yellow text-ink border-foreground',
+  teal: 'bg-gigs-teal text-ink border-foreground',
+  dark: 'bg-gigs-dark text-background border-foreground',
 }
 
-const Card = forwardRef(({ 
+const Card = forwardRef(({
   className,
   variant = 'default',
   interactive = false,
-  ...props 
+  shadow = false,
+  border = true,
+  ...props
 }, ref) => (
   <div
     className={cn(
-      'rounded-lg p-6 border transition-all duration-base',
-      interactive && 'hover:scale-103 hover:shadow-lg hover:-translate-y-1 cursor-pointer',
+      'rounded-none p-4',
+      border && 'border-4 border-foreground',
+      shadow && 'brut-shadow',
+      interactive && 'brut-card-hover cursor-pointer',
       colorVariants[variant],
       className
     )}

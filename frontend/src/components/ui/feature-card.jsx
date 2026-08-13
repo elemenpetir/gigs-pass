@@ -2,17 +2,17 @@ import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
 const colorVariants = {
-  pink: 'bg-brand-pink text-on-primary',
-  teal: 'bg-brand-teal text-on-dark',
-  lavender: 'bg-brand-lavender text-ink',
-  peach: 'bg-brand-peach text-ink',
-  ochre: 'bg-brand-ochre text-ink',
-  mint: 'bg-brand-mint text-ink',
+  pink: 'bg-gigs-pink text-foreground',
+  teal: 'bg-gigs-dark text-background',
+  lavender: 'bg-gigs-purple text-ink',
+  peach: 'bg-gigs-orange text-ink',
+  ochre: 'bg-gigs-yellow text-ink',
+  mint: 'bg-gigs-teal text-ink',
 }
 
 const colorOrder = ['pink', 'teal', 'lavender', 'peach', 'ochre', 'mint']
 
-const FeatureCard = forwardRef(({ 
+const FeatureCard = forwardRef(({
   title,
   description,
   color = 'pink',
@@ -20,7 +20,7 @@ const FeatureCard = forwardRef(({
   children,
   className,
   previousColor,
-  ...props 
+  ...props
 }, ref) => {
   if (!Object.keys(colorVariants).includes(color)) {
     console.warn(`Invalid feature card color: ${color}. Use one of: ${Object.keys(colorVariants).join(', ')}`)
@@ -33,8 +33,7 @@ const FeatureCard = forwardRef(({
   return (
     <div
       className={cn(
-        'rounded-xl p-8 transition-all duration-base',
-        'hover:scale-103 hover:shadow-lg hover:-translate-y-1',
+        'rounded-none border-4 border-foreground p-8 brut-shadow brut-card-hover',
         colorVariants[color],
         className
       )}
@@ -42,7 +41,7 @@ const FeatureCard = forwardRef(({
       {...props}
     >
       {icon && <div className="mb-4 text-2xl">{icon}</div>}
-      {title && <h3 className="text-title-md font-display mb-2">{title}</h3>}
+      {title && <h3 className="text-title-lg font-display mb-2">{title}</h3>}
       {description && <p className="text-body-md opacity-90 mb-4">{description}</p>}
       {children}
     </div>
