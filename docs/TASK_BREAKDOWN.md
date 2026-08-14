@@ -5,15 +5,15 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** **Fase 10 (Frontend Buyer Flow) complete** — 5 halaman buyer (discover, detail event, waiting room, checkout, riwayat order) + **migrasi desain total ke Neo-Brutalism**. Commit terakhir: `fix: espace apostrophe pada heading order history`. Frontend infra baru: router (`react-router-dom`), API client (`src/lib/api.js`), auth context (`src/lib/auth.jsx`), halaman login/register. Endpoint baru backend: `GET /api/orders` (riwayat order buyer, join kategori + event).
+- **Terakhir Dikerjakan:** **Fase 11 (Frontend Organizer & Admin Flow) complete** — seluruh item Fase 11 selesai. Commits terakhir: `feat: add admin dashboard (events, orders) & analytics` dan `feat: add event orders & fund status page`. Item yang selesai: (1) Form create/edit event (upload gambar), (2) Form create/edit kategori tiket, (3) Halaman daftar order & status dana per event, (4) Halaman admin: suspend/cancel/unsuspend event, (5) Halaman admin: manual override order.
 - **Keputusan Teknis / Catatan:**
   - **Desain final = Neo-Brutalism + anti-design + festival** — source of truth `docs/design/figma-export/` (hasil Figma Make, di-gitignore). `docs/design/design.md` di-rewrite penuh: cream `#FFFAF0` + hitam `#0A0A0A`, border tebal 2/3/4px, hard offset shadow, radius persegi, Inter 400–900 uppercase, marquee 20s, `brut-button`/`brut-card-hover`, pita diagonal, aturan 70/30.
   - **Tailwind v4:** `tailwind.config.js` DIHAPUS (v4 tidak auto-detect config legacy — butuh `@config`; semua token hidup di `@theme` `src/index.css`). `max-w-[1280px]` → `max-w-7xl` (=80rem). `vite.config.js` pakai `import.meta.dirname` (hilangkan warning Vite).
   - **Frontend buyer flow:** waiting room pakai `@microsoft/fetch-event-source` (Bearer header, auto-reconnect, abort saat granted). Checkout: lock 300s + countdown (denyut <60s), pay mock `{success}`, one-shot admission. Login redirect pakai `location.state.from`. `auth.jsx` pakai lazy-init `useState(() => Boolean(getToken()))` (tanpa setState sinkron dalam effect).
   - **Ritme verifikasi frontend (AGENTS.md):** build wajib 1x di titik commit per unit kerja; lint di sela perubahan besar; docs-only tidak perlu build.
   - **Fase 9 design decision (backend analytics):** paid statuses untuk revenue hanya 4 (`pending`, `holding_period`, `released`, `held`). `refunded` dihitung TERPISAH (`refundedAmount`), `netRevenue = revenue − refundedAmount`. `held` tetap masuk revenue tapi di-breakdown eksplisit (`heldAmount`/`heldCount`). Fund status organizer diambil dari balance ledger account (`organizer_pending`/`organizer_available`), bukan SUM orders. Endpoint: `GET /api/analytics/event/:id/overview` (organizer, owner check) & `GET /api/analytics/platform/overview` (admin).
-- **Status Fase lain:** Fase 1-9 backend complete (unit test mock **232**). Frontend Fase 9 (dashboard organizer + admin) tetap ditunda — digarap setelah Fase 11 infra halaman organizer.
-- **Task Selanjutnya:** **Fase 11 (Frontend Organizer & Admin Flow)** — form create/edit event + kategori, daftar order & status dana, admin approve/override.
+- **Status Fase lain:** Fase 1-11 complete (unit test mock **232**).
+- **Task Selanjutnya:** **Fase 12 (Unit Test Lanjutan & CI)** — lengkapi test coverage service kritikal, setup GitHub Actions CI, deploy otomatis setelah test lolos.
 
 ## Ringkasan per Minggu
 
@@ -166,11 +166,11 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 11 — Frontend Organizer & Admin Flow
 
-- [ ] Form create/edit event (termasuk upload gambar)
-- [ ] Form create/edit kategori tiket
-- [ ] Halaman daftar order & status dana per event
-- [ ] Halaman admin: approve event
-- [ ] Halaman admin: manual override order
+- [x] Form create/edit event (termasuk upload gambar)
+- [x] Form create/edit kategori tiket
+- [x] Halaman daftar order & status dana per event
+- [x] Halaman admin: approve event
+- [x] Halaman admin: manual override order
 
 ---
 
