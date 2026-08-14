@@ -28,6 +28,17 @@ const findPublished = async () => {
   return result.rows;
 };
 
+const findByOrganizerId = async (organizerId) => {
+  const query = `
+    SELECT id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at
+    FROM events
+    WHERE organizer_id = $1
+    ORDER BY created_at DESC;
+  `;
+  const result = await pool.query(query, [organizerId]);
+  return result.rows;
+};
+
 const updateEvent = async (id, title, description, eventDate) => {
   const query = `
     UPDATE events
@@ -65,6 +76,7 @@ module.exports = {
   createEvent,
   findById,
   findPublished,
+  findByOrganizerId,
   updateEvent,
   updateStatus,
   updateImage,

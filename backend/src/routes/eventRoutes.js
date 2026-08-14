@@ -13,6 +13,7 @@ const upload = multer({
 const router = express.Router();
 
 router.get("/", eventController.list);
+router.get("/mine", authenticate, authorize(["organizer"]), eventController.listMine);
 router.get("/:id", eventController.getById);
 router.get("/:id/categories", categoryController.listByEvent);
 

@@ -10,6 +10,8 @@ import WaitingRoomPage from "@/pages/WaitingRoomPage";
 import CheckoutPage from "@/pages/CheckoutPage";
 import OrderHistoryPage from "@/pages/OrderHistoryPage";
 import LoginPage from "@/pages/LoginPage";
+import OrganizerEventsPage from "@/pages/OrganizerEventsPage";
+import EventFormPage from "@/pages/EventFormPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 
 function App() {
@@ -35,9 +37,9 @@ function App() {
             }
           >
             <Route index element={<Navigate to="/organizer/events" replace />} />
-            <Route path="events" element={<PlaceholderPage title="My Events" />} />
-            <Route path="events/new" element={<PlaceholderPage title="New Event" />} />
-            <Route path="events/:id/edit" element={<PlaceholderPage title="Edit Event" />} />
+            <Route path="events" element={<OrganizerEventsPage />} />
+            <Route path="events/new" element={<EventFormPage />} />
+            <Route path="events/:id/edit" element={<EventFormPage />} />
             <Route path="events/:id/categories" element={<PlaceholderPage title="Ticket Categories" />} />
             <Route path="events/:id/orders" element={<PlaceholderPage title="Event Orders" />} />
           </Route>

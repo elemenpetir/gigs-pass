@@ -52,6 +52,20 @@ const list = async (req, res) => {
   }
 };
 
+const listMine = async (req, res) => {
+  try {
+    const events = await eventService.listOrganizerEvents(req.user.id);
+
+    return res.status(200).json({
+      status: "success",
+      message: "My events retrieved",
+      data: { events },
+    });
+  } catch (error) {
+    return res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
+
 const getById = async (req, res) => {
   try {
     const event = await eventService.getEventById(req.params.id);
@@ -148,6 +162,7 @@ module.exports = {
   create,
   update,
   list,
+  listMine,
   getById,
   uploadImage,
   publish,

@@ -76,6 +76,10 @@ const listPublishedEvents = async () => {
   return eventModel.findPublished();
 };
 
+const listOrganizerEvents = async (organizerId) => {
+  return eventModel.findByOrganizerId(organizerId);
+};
+
 const getEventById = async (eventId) => {
   const event = await eventModel.findById(eventId);
   if (!event) {
@@ -225,6 +229,7 @@ module.exports = {
   createEvent,
   updateEvent,
   listPublishedEvents,
+  listOrganizerEvents,
   getEventById,
   uploadEventImage,
   publishEvent,
