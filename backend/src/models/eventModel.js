@@ -39,6 +39,19 @@ const findByOrganizerId = async (organizerId) => {
   return result.rows;
 };
 
+const findAll = async () => {
+  const query = `
+    SELECT
+      e.id, e.organizer_id, e.title, e.description, e.image_url, e.event_date, e.status, e.created_at, e.updated_at,
+      u.name AS organizer_name
+    FROM events e
+    JOIN users u ON u.id = e.organizer_id
+    ORDER BY e.created_at DESC;
+  `;
+  const result = await pool.query(query);
+  return result.rows;
+};
+
 const updateEvent = async (id, title, description, eventDate) => {
   const query = `
     UPDATE events
@@ -77,7 +90,8 @@ module.exports = {
   findById,
   findPublished,
   findByOrganizerId,
+  findAll,
   updateEvent,
-  updateStatus,
   updateImage,
+  updateStatus,
 };

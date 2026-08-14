@@ -180,11 +180,30 @@ const findByEventId = async (eventId) => {
   return result.rows;
 };
 
+const findAll = async () => {
+  const query = `
+    SELECT
+      o.id, o.buyer_id, o.category_id, o.status, o.amount, o.paid_at,
+      o.holding_until, o.refund_reason, o.created_at, o.updated_at,
+      c.name AS category_name,
+      u.name AS buyer_name, u.email AS buyer_email,
+      e.id AS event_id, e.title AS event_title, e.organizer_id
+    FROM orders o
+    JOIN ticket_categories c ON c.id = o.category_id
+    JOIN events e ON e.id = c.event_id
+    JOIN users u ON u.id = o.buyer_id
+    ORDER BY o.created_at DESC;
+  `;
+  const result = await pool.query(query);
+  return result.rows;
+};
+
 module.exports = {
   createOrder,
   findById,
   findByBuyerId,
   findByEventId,
+  findAll,
   markPaid,
   markExpired,
   findActiveByBuyerAndCategory,

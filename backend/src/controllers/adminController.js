@@ -1,4 +1,40 @@
+const eventModel = require("../models/eventModel");
+const orderModel = require("../models/orderModel");
 const orderService = require("../services/orderService");
+
+const listEvents = async (req, res) => {
+  try {
+    const events = await eventModel.findAll();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Events retrieved",
+      data: { events },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
+
+const listOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.findAll();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Orders retrieved",
+      data: { orders },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
 
 const overrideOrder = async (req, res) => {
   try {
@@ -22,5 +58,7 @@ const overrideOrder = async (req, res) => {
 };
 
 module.exports = {
+  listEvents,
+  listOrders,
   overrideOrder,
 };

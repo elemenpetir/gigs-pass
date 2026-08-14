@@ -14,7 +14,9 @@ import OrganizerEventsPage from "@/pages/OrganizerEventsPage";
 import EventFormPage from "@/pages/EventFormPage";
 import CategoriesPage from "@/pages/CategoriesPage";
 import EventOrdersPage from "@/pages/EventOrdersPage";
-import PlaceholderPage from "@/pages/PlaceholderPage";
+import AdminEventsPage from "@/pages/AdminEventsPage";
+import AdminOrdersPage from "@/pages/AdminOrdersPage";
+import AdminAnalyticsPage from "@/pages/AdminAnalyticsPage";
 
 function App() {
   return (
@@ -44,7 +46,6 @@ function App() {
             <Route path="events/:id/edit" element={<EventFormPage />} />
             <Route path="events/:id/categories" element={<CategoriesPage />} />
             <Route path="events/:id/orders" element={<EventOrdersPage />} />
-            <Route path="events/:id/orders" element={<PlaceholderPage title="Event Orders" />} />
           </Route>
 
           <Route
@@ -56,8 +57,9 @@ function App() {
             }
           >
             <Route index element={<Navigate to="/admin/events" replace />} />
-            <Route path="events" element={<PlaceholderPage title="Event Control" />} />
-            <Route path="orders" element={<PlaceholderPage title="Order Override" />} />
+            <Route path="events" element={<AdminEventsPage />} />
+            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
           </Route>
         </Routes>
       </AuthProvider>

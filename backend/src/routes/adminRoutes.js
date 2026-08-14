@@ -5,6 +5,20 @@ const authorize = require("../middlewares/authorize");
 
 const router = express.Router();
 
+router.get(
+  "/events",
+  authenticate,
+  authorize(["admin"]),
+  adminController.listEvents,
+);
+
+router.get(
+  "/orders",
+  authenticate,
+  authorize(["admin"]),
+  adminController.listOrders,
+);
+
 router.post(
   "/orders/:id/override",
   authenticate,

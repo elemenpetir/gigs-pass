@@ -185,6 +185,33 @@ const suspendEvent = async (eventId) => {
   return eventModel.updateStatus(eventId, "suspended");
 };
 
+const unsuspendEvent = async (eventId) => {
+  const event = await eventModel.findById(eventId);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!isFutureDate(event.event_date)) {
+    const error = new Error("Cannot unsuspend an event that has already taken place");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (event.status !== "suspended") {
+    const error = new Error("Only suspended events can be unsuspended");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return eventModel.updateStatus(eventId, "published");
+};
+
+const listAllEvents = async () => {
+  return eventModel.findAll();
+};
+
 const cancelEvent = async ({ userId, role }, eventId) => {
   const event = await eventModel.findById(eventId);
   if (!event) {
@@ -245,10 +272,12 @@ module.exports = {
   updateEvent,
   listPublishedEvents,
   listOrganizerEvents,
+  listAllEvents,
   getEventById,
   uploadEventImage,
   publishEvent,
   suspendEvent,
+  unsuspendEvent,
   cancelEvent,
   getEventOrders,
 };

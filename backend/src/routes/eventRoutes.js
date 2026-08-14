@@ -60,6 +60,13 @@ router.put(
 );
 
 router.put(
+  "/:id/unsuspend",
+  authenticate,
+  authorize(["admin"]),
+  eventController.unsuspend,
+);
+
+router.put(
   "/:id/cancel",
   authenticate,
   authorize(["organizer", "admin"]),
