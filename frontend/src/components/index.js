@@ -3,6 +3,8 @@ export { Button } from "./ui/button";
 export { Card } from "./ui/card";
 export { Badge } from "./ui/badge";
 export { FeatureCard, colorOrder } from "./ui/feature-card";
+export { Input, Textarea, Select } from "./ui/input";
+export { Label } from "./ui/label";
 
 // Layout Components
 export { TopNav } from "./layout/TopNav";

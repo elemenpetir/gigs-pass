@@ -26,14 +26,17 @@ class ApiError extends Error {
 }
 
 async function request(path, { method = "GET", body, headers = {}, auth = true } = {}) {
-  const options = { method, headers: { "Content-Type": "application/json", ...headers } };
+  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const options = { method, headers: { ...headers } };
+
+  if (!isFormData) options.headers["Content-Type"] = "application/json";
 
   if (auth) {
     const token = getToken();
     if (token) options.headers.Authorization = `Bearer ${token}`;
   }
 
-  if (body !== undefined) options.body = JSON.stringify(body);
+  if (body !== undefined) options.body = isFormData ? body : JSON.stringify(body);
 
   const res = await fetch(`${BASE_URL}${path}`, options);
 
@@ -56,6 +59,7 @@ export const api = {
   get: (path, opts) => request(path, { ...opts, method: "GET" }),
   post: (path, body, opts) => request(path, { ...opts, method: "POST", body }),
   put: (path, body, opts) => request(path, { ...opts, method: "PUT", body }),
+  upload: (path, formData, opts) => request(path, { ...opts, method: "POST", body: formData }),
 };
 
 export { ApiError };

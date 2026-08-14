@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { TopNav, Footer } from "@/components";
+import UserNav from "@/components/layout/UserNav";
 
 const NAV_LINKS = [
   { label: "Discover", badge: "LIVE", href: "/" },
@@ -12,22 +13,7 @@ export default function AppLayout() {
     <div className="min-h-screen selection:bg-gigs-pink selection:text-white">
       <TopNav
         links={NAV_LINKS}
-        right={
-          <>
-            <a
-              href="/orders"
-              className="inline-flex items-center gap-2 px-3 py-2 font-black uppercase text-sm md:text-base brut-border-2 brut-button bg-canvas"
-            >
-              My Orders
-            </a>
-            <a
-              href="/login"
-              className="inline-flex items-center gap-2 px-4 py-2 font-black uppercase text-sm md:text-base brut-border-2 brut-button bg-gigs-purple"
-            >
-              Login
-            </a>
-          </>
-        }
+        right={<UserNav />}
       />
       <main className="max-w-7xl mx-auto px-4 md:px-8 relative overflow-hidden">
         <Outlet />
@@ -57,7 +43,7 @@ export default function AppLayout() {
             items: [
               {
                 label: "Create Event",
-                href: "/admin/events/new",
+                href: "/organizer/events/new",
               },
             ],
           },
