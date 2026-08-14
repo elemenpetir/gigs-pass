@@ -13,6 +13,7 @@ import LoginPage from "@/pages/LoginPage";
 import OrganizerEventsPage from "@/pages/OrganizerEventsPage";
 import EventFormPage from "@/pages/EventFormPage";
 import CategoriesPage from "@/pages/CategoriesPage";
+import EventOrdersPage from "@/pages/EventOrdersPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
             <Route path="events/new" element={<EventFormPage />} />
             <Route path="events/:id/edit" element={<EventFormPage />} />
             <Route path="events/:id/categories" element={<CategoriesPage />} />
+            <Route path="events/:id/orders" element={<EventOrdersPage />} />
             <Route path="events/:id/orders" element={<PlaceholderPage title="Event Orders" />} />
           </Route>
 

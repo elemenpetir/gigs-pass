@@ -16,6 +16,12 @@ router.get("/", eventController.list);
 router.get("/mine", authenticate, authorize(["organizer"]), eventController.listMine);
 router.get("/:id", eventController.getById);
 router.get("/:id/categories", categoryController.listByEvent);
+router.get(
+  "/:id/orders",
+  authenticate,
+  authorize(["organizer"]),
+  eventController.listOrders,
+);
 
 router.post(
   "/",

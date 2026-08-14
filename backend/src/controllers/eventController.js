@@ -158,6 +158,26 @@ const cancel = async (req, res) => {
   }
 };
 
+const listOrders = async (req, res) => {
+  try {
+    const orders = await eventService.getEventOrders(
+      req.user.id,
+      req.params.id,
+    );
+
+    return res.status(200).json({
+      status: "success",
+      message: "Event orders retrieved",
+      data: { orders },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
+
 module.exports = {
   create,
   update,
@@ -168,4 +188,5 @@ module.exports = {
   publish,
   suspend,
   cancel,
+  listOrders,
 };

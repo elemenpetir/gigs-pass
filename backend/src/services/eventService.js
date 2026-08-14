@@ -225,6 +225,21 @@ const cancelEvent = async ({ userId, role }, eventId) => {
   });
 };
 
+const getEventOrders = async (userId, eventId) => {
+  const event = await eventModel.findById(eventId);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  if (event.organizer_id !== userId) {
+    const error = new Error("Forbidden: only event owner can view orders");
+    error.statusCode = 403;
+    throw error;
+  }
+  return orderModel.findByEventId(eventId);
+};
+
 module.exports = {
   createEvent,
   updateEvent,
@@ -235,4 +250,5 @@ module.exports = {
   publishEvent,
   suspendEvent,
   cancelEvent,
+  getEventOrders,
 };

@@ -162,10 +162,29 @@ const overrideStatus = async (orderId, status, client = pool) => {
   return result.rows[0] || null;
 };
 
+const findByEventId = async (eventId) => {
+  const query = `
+    SELECT
+      o.id, o.buyer_id, o.category_id, o.status, o.amount, o.paid_at,
+      o.holding_until, o.refund_reason, o.created_at, o.updated_at,
+      c.name AS category_name,
+      u.name AS buyer_name, u.email AS buyer_email
+    FROM orders o
+    JOIN ticket_categories c ON c.id = o.category_id
+    JOIN events e ON e.id = c.event_id
+    JOIN users u ON u.id = o.buyer_id
+    WHERE c.event_id = $1
+    ORDER BY o.created_at DESC;
+  `;
+  const result = await pool.query(query, [eventId]);
+  return result.rows;
+};
+
 module.exports = {
   createOrder,
   findById,
   findByBuyerId,
+  findByEventId,
   markPaid,
   markExpired,
   findActiveByBuyerAndCategory,
