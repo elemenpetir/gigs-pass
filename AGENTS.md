@@ -152,6 +152,7 @@ Frontend must follow `docs/design/design.md`:
 ### Strict Execution & Git Rules
 1. **Tidak Ada Eksekusi Otomatis:** DILARANG mengeksekusi kode, membuat file, atau mengubah sistem tanpa perintah/persetujuan eksplisit dari User per unit kerja.
 2. **Konfirmasi Sebelum Commit & Push:** WAJIB menanyakan dan meminta konfirmasi persetujuan dari User terlebih dahulu sebelum menjalankan perintah `git commit` maupun `git push`.
+3. **Jangan Otomatis Kerjakan Task Berikutnya Setelah Push:** SETELAH `git push` berhasil, STOP. Jangan langsung mengeksekusi task/unit kerja berikutnya tanpa instruksi eksplisit dari User. Selalu tunggu perintah baru untuk melanjutkan.
 
 ### Task Execution
 Follow `docs/TASK_BREAKDOWN.md` phase order — do not skip phases unless independent.
@@ -173,15 +174,12 @@ Each checklist item = 1 unit of work = 1 commit.
 
 1. **Summarize files** being committed (list files or describe change scope)
 2. **Show commit message** that will be used (exact format: `<type>: <description>`)
-3. **ASK USER explicitly:** "Apakah saya boleh commit dengan pesan: `<type>: <description>`?"
+3. **ASK USER explicitly:** "Apakah saya boleh commit & push dengan pesan: `<type>: <description>`?"
 4. **WAIT for user confirmation** — DO NOT PROCEED without explicit "yes", "setuju", "lanjut", or similar approval
-5. **ONLY THEN execute** `git commit`
-6. **For push:** After commit succeeds, **ASK AGAIN** "Apakah saya boleh push ke origin/main?"
-7. **WAIT for user confirmation** — DO NOT PUSH without explicit approval
-8. **ONLY THEN execute** `git push origin main`
+5. **ONLY THEN execute** `git commit` lalu `git push origin main` (commit+push adalah SATU proses yang dikonfirmasi sekaligus — SATU pertanyaan saja, tidak dipisah jadi 2 konfirmasi)
 
 **CRITICAL CONSTRAINTS:**
-- ❌ NEVER combine commit + push in single bash command (must be separate steps with confirmation between them)
+- ❌ NEVER commit/push without the single combined ASK (one confirmation covers both commit & push)
 - ❌ NEVER batch multiple commits without individual confirmation per commit
 - ❌ NEVER assume "execute phase X" means "commit and push automatically"
 - ❌ NEVER skip the ASK step even if changes seem minor or obvious
