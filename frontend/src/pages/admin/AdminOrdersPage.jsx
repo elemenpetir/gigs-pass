@@ -29,27 +29,43 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await api.get("/admin/orders");
-      setOrders(data.orders || []);
-    } catch (err) {
-      setError(err.message || "Failed to load orders");
-    } finally {
-      setLoading(false);
-    }
+    return api.get("/admin/orders");
   }, []);
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    load()
+      .then((data) => {
+        if (cancelled) return;
+        setOrders(data.orders || []);
+        setError("");
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "Failed to load orders");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [load]);
+
+  const refresh = useCallback(async () => {
+    try {
+      const data = await load();
+      setOrders(data.orders || []);
+      setError("");
+    } catch (err) {
+      setError(err.message || "Failed to load orders");
+    }
   }, [load]);
 
   const override = async (id, status) => {
     setError("");
     try {
       await api.post(`/admin/orders/${id}/override`, { status });
-      await load();
+      await refresh();
     } catch (err) {
       setError(err.message || `Override to ${status} failed`);
     }

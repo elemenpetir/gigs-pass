@@ -26,19 +26,26 @@ export default function OrganizerEventsPage() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    try {
-      const data = await api.get("/events/mine");
-      setEvents(data.events || []);
-      setError("");
-    } catch (err) {
-      setError(err.message || "Failed to load events");
-    } finally {
-      setLoading(false);
-    }
+    return api.get("/events/mine");
   }, []);
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    load()
+      .then((data) => {
+        if (cancelled) return;
+        setEvents(data.events || []);
+        setError("");
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "Failed to load events");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [load]);
 
   const publish = async (id) => {

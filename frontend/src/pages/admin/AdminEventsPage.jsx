@@ -26,27 +26,43 @@ export default function AdminEventsPage() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await api.get("/admin/events");
-      setEvents(data.events || []);
-    } catch (err) {
-      setError(err.message || "Failed to load events");
-    } finally {
-      setLoading(false);
-    }
+    return api.get("/admin/events");
   }, []);
 
   useEffect(() => {
-    load();
+    let cancelled = false;
+    load()
+      .then((data) => {
+        if (cancelled) return;
+        setEvents(data.events || []);
+        setError("");
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || "Failed to load events");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [load]);
+
+  const refresh = useCallback(async () => {
+    try {
+      const data = await load();
+      setEvents(data.events || []);
+      setError("");
+    } catch (err) {
+      setError(err.message || "Failed to load events");
+    }
   }, [load]);
 
   const suspend = async (id) => {
     setError("");
     try {
       await api.put(`/events/${id}/suspend`);
-      await load();
+      await refresh();
     } catch (err) {
       setError(err.message || "Suspend failed");
     }
@@ -56,7 +72,7 @@ export default function AdminEventsPage() {
     setError("");
     try {
       await api.put(`/events/${id}/unsuspend`);
-      await load();
+      await refresh();
     } catch (err) {
       setError(err.message || "Unsuspend failed");
     }
@@ -66,7 +82,7 @@ export default function AdminEventsPage() {
     setError("");
     try {
       await api.put(`/events/${id}/cancel`);
-      await load();
+      await refresh();
     } catch (err) {
       setError(err.message || "Cancel failed");
     }
