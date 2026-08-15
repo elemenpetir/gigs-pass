@@ -1,8 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Coins, Calendar, Ticket, User } from "lucide-react";
+import { Coins, Calendar, Ticket, User, BarChart3, PieChart as PieIcon } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { api } from "@/lib/api";
 import { formatIDR, formatEventDate } from "@/lib/format";
+import { CHART_COLORS, axisTick, moneyTick, BrutChartTooltip, ChartCard } from "@/components/ui/chart";
 
 const STATUS_STYLES = {
   awaiting_payment: { label: "AWAITING PAYMENT", cls: "bg-gigs-yellow text-foreground border-foreground" },
@@ -74,6 +87,22 @@ export default function EventOrdersPage() {
 
   const summary = analytics?.summary || {};
   const fund = analytics?.fundStatus || {};
+  const perCategory = analytics?.perCategory || [];
+
+  const revenueData = perCategory.map((c) => ({
+    name: c.name || "—",
+    revenue: c.sold_amount || 0,
+    sold: c.sold_count || 0,
+    quota: c.quota || 0,
+  }));
+
+  const statusData = [
+    { name: "Sold", value: summary.ticketsSold || 0 },
+    { name: "Awaiting", value: summary.awaitingCount || 0 },
+    { name: "Held", value: summary.heldCount || 0 },
+    { name: "Refunded", value: summary.refundedCount || 0 },
+    { name: "Expired", value: summary.expiredCount || 0 },
+  ].filter((s) => s.value > 0);
 
   return (
     <section className="py-4">
@@ -131,13 +160,11 @@ export default function EventOrdersPage() {
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           {[
+            { label: "Sold", value: summary.ticketsSold || 0 },
             { label: "Awaiting", value: summary.awaitingCount || 0 },
-            { label: "Paid", value: summary.paidCount || 0 },
-            { label: "Holding", value: summary.holdingCount || 0 },
-            { label: "Released", value: summary.releasedCount || 0 },
+            { label: "Held", value: summary.heldCount || 0 },
             { label: "Refunded", value: summary.refundedCount || 0 },
             { label: "Expired", value: summary.expiredCount || 0 },
-            { label: "Held", value: summary.heldCount || 0 },
           ].map((s) => (
             <div key={s.label} className="brut-border-2 p-3 bg-canvas" style={{ border: "2px solid #0a0a0a" }}>
               <p className="font-black text-2xl text-foreground">{s.value}</p>
@@ -145,6 +172,56 @@ export default function EventOrdersPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+        <ChartCard title="Revenue by Category" icon={<BarChart3 className="w-5 h-5" />}>
+          {revenueData.length === 0 ? (
+            <p className="text-sm font-bold opacity-60">No data</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={revenueData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                <CartesianGrid strokeDasharray="4 4" stroke="#0a0a0a" opacity={0.25} />
+                <XAxis dataKey="name" tick={axisTick} interval={0} />
+                <YAxis tick={moneyTick} width={70} />
+                <Tooltip content={<BrutChartTooltip format={formatIDR} />} />
+                <Bar dataKey="revenue" name="Revenue" radius={0}>
+                  {revenueData.map((_, i) => (
+                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="#0a0a0a" strokeWidth={2} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </ChartCard>
+
+        <ChartCard title="Order Status" icon={<PieIcon className="w-5 h-5" />}>
+          {statusData.length === 0 ? (
+            <p className="text-sm font-bold opacity-60">No data</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  innerRadius={50}
+                  stroke="#0a0a0a"
+                  strokeWidth={2}
+                >
+                  {statusData.map((_, i) => (
+                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<BrutChartTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </ChartCard>
       </div>
 
       {/* Orders table */}
