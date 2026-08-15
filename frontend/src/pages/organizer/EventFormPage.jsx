@@ -139,7 +139,7 @@ export default function EventFormPage() {
         <div>
           <Label>Poster Image</Label>
           <div className="flex flex-col md:flex-row gap-6 items-start">
-            <div className="aspect-[4/3] w-full md:w-56 brut-border-2 bg-gigs-dark overflow-hidden flex items-center justify-center">
+            <div className="aspect-4/3 w-full md:w-56 brut-border-2 bg-gigs-dark overflow-hidden flex items-center justify-center">
               {preview || existingImage ? (
                 <img src={preview || existingImage} alt="Poster preview" className="w-full h-full object-cover" />
               ) : (

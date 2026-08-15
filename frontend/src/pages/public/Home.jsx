@@ -23,7 +23,7 @@ function Tape({ items, className = "" }) {
   );
 }
 
-function EventImage({ event, ratioClass = "aspect-[4/3]", grayscale = true }) {
+function EventImage({ event, ratioClass = "aspect-4/3", grayscale = true }) {
   return (
     <div className={`${ratioClass} brut-border-2 overflow-hidden relative bg-gigs-dark`}>
       {event.image_url ? (
@@ -83,7 +83,7 @@ function Hero({ heroEvent }) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gigs-orange text-[12rem] font-black rotate-12 opacity-40 z-0 pointer-events-none select-none">
           *
         </div>
-        <div className="relative z-10 bg-gigs-yellow brut-border-4 brut-shadow p-2 w-full max-w-[320px] md:max-w-sm rotate-3 hover:rotate-0 transition-transform duration-300">
+        <div className="relative z-10 bg-gigs-yellow brut-border-4 brut-shadow p-2 w-full max-w-80 md:max-w-sm rotate-3 hover:rotate-0 transition-transform duration-300">
           <div className="brut-border-2 overflow-hidden aspect-3/4 relative bg-gigs-dark">
             {heroEvent?.image_url ? (
               <img
@@ -121,7 +121,7 @@ function HotCard({ event, minPrice, variant }) {
   if (variant === "purple") {
     return (
       <Link to={link} className="bg-gigs-purple brut-border-4 p-4 brut-shadow brut-card-hover group flex flex-col h-full mt-0 md:mt-8 relative">
-        <EventImage event={event} ratioClass="aspect-[3/4]" grayscale={false} />
+        <EventImage event={event} ratioClass="aspect-3/4" grayscale={false} />
         <div className="flex-1 flex flex-col bg-background p-3 brut-border-2">
           <h3 className="text-2xl font-black uppercase leading-tight mb-2">{event.title}</h3>
           <div className="flex flex-col gap-1 text-sm font-bold mb-2">

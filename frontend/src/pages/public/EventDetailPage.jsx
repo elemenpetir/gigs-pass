@@ -9,7 +9,7 @@ function MarqueeLine() {
   const items = ["SECURE YOUR SPOT", "✸", "ONE TICKET", "✸", "NO HIDDEN FEES", "✸", "FESTIVALS", "✸", "UNDERGROUND GIGS", "✸"];
   const doubled = [...items, ...items];
   return (
-    <div className="w-full bg-gigs-yellow text-foreground font-black text-xl md:text-2xl uppercase tracking-tighter py-2 brut-border-4 -mx-4 md:-mx-8 px-4 md:px-8 md:w-[calc(100%+4rem)] rotate-[-1deg] my-10 overflow-hidden">
+    <div className="w-full bg-gigs-yellow text-foreground font-black text-xl md:text-2xl uppercase tracking-tighter py-2 brut-border-4 -mx-4 md:-mx-8 px-4 md:px-8 md:w-[calc(100%+4rem)] -rotate-1 my-10 overflow-hidden">
       <div className="animate-marquee whitespace-nowrap flex items-center">
         {doubled.map((item, idx) => (
           <span key={idx} className="mx-3">{item}</span>
@@ -89,7 +89,7 @@ export default function EventDetailPage() {
       <section className="py-10 md:py-14 grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
         {/* Poster */}
         <div className="lg:col-span-2 relative z-10 bg-gigs-yellow brut-border-4 brut-shadow p-2 rotate-1 hover:rotate-0 transition-transform duration-300">
-          <div className="brut-border-2 overflow-hidden aspect-[3/4] relative bg-gigs-dark">
+          <div className="brut-border-2 overflow-hidden aspect-3/4 relative bg-gigs-dark">
             {event.image_url ? (
               <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" />
             ) : (

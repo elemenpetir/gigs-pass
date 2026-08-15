@@ -9,7 +9,7 @@ function WaitingTape() {
   const items = ["ONCE YOU'RE IN", "✸", "GRAB YOUR TICKET FAST", "✸", "YOUR SPOT EXPIRES", "✸", "ONE BUYER = ONE TICKET", "✸"];
   const doubled = [...items, ...items];
   return (
-    <div className="w-full bg-gigs-pink text-foreground font-black text-lg md:text-xl uppercase tracking-tighter py-2 brut-border-4 border-x-0 -mx-4 md:-mx-8 px-4 md:px-8 w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden rotate-[-1deg] my-10">
+    <div className="bg-gigs-pink text-foreground font-black text-lg md:text-xl uppercase tracking-tighter py-2 brut-border-4 border-x-0 -mx-4 md:-mx-8 px-4 md:px-8 w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden -rotate-1 my-10">
       <div className="animate-marquee whitespace-nowrap flex items-center">
         {doubled.map((item, idx) => (
           <span key={idx} className="mx-3">{item}</span>
