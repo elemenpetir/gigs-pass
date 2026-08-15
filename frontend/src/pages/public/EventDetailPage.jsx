@@ -9,7 +9,7 @@ function MarqueeLine() {
   const items = ["SECURE YOUR SPOT", "✸", "ONE TICKET", "✸", "NO HIDDEN FEES", "✸", "FESTIVALS", "✸", "UNDERGROUND GIGS", "✸"];
   const doubled = [...items, ...items];
   return (
-    <div className="w-full bg-gigs-yellow text-foreground font-black text-xl md:text-2xl uppercase tracking-tighter py-2 brut-border-4 -mx-4 md:-mx-8 px-4 md:px-8 w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] rotate-[-1deg] my-10 overflow-hidden">
+    <div className="w-full bg-gigs-yellow text-foreground font-black text-xl md:text-2xl uppercase tracking-tighter py-2 brut-border-4 -mx-4 md:-mx-8 px-4 md:px-8 md:w-[calc(100%+4rem)] rotate-[-1deg] my-10 overflow-hidden">
       <div className="animate-marquee whitespace-nowrap flex items-center">
         {doubled.map((item, idx) => (
           <span key={idx} className="mx-3">{item}</span>
@@ -130,7 +130,7 @@ export default function EventDetailPage() {
         {categories.length === 0 ? (
           <div className="border-4 border-foreground p-12 text-center bg-canvas">
             <h3 className="text-3xl font-black uppercase tracking-tighter mb-2">tickets not live yet</h3>
-            <p className="font-bold">This event hasn't opened its gates. Join the vibe later. <span className="text-gigs-pink">✸</span></p>
+            <p className="font-bold">This event {"hasn't"} opened its gates. Join the vibe later. <span className="text-gigs-pink">✸</span></p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

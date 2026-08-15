@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { ArrowRight, Ticket } from "lucide-react";
+import { Ticket } from "lucide-react";
 import { api, BASE_URL, getToken } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { formatEventDate } from "@/lib/format";
 
 function WaitingTape() {
   const items = ["ONCE YOU'RE IN", "✸", "GRAB YOUR TICKET FAST", "✸", "YOUR SPOT EXPIRES", "✸", "ONE BUYER = ONE TICKET", "✸"];
@@ -138,7 +137,7 @@ export default function WaitingRoomPage() {
         <div className={`border-4 border-foreground p-10 brut-shadow relative ${granted ? "bg-gigs-teal" : "bg-gigs-yellow"}`}>
           {granted ? (
             <>
-              <div className="text-sm font-black uppercase tracking-widest bg-foreground text-background px-2 py-1 w-fit mx-auto mb-4">YOU'RE IN</div>
+              <div className="text-sm font-black uppercase tracking-widest bg-foreground text-background px-2 py-1 w-fit mx-auto mb-4">{"YOU'RE IN"}</div>
               <div className="text-7xl md:text-9xl font-black leading-none tracking-tighter">GRAB IT</div>
               <p className="mt-4 font-black uppercase text-lg">Redirecting to checkout…</p>
             </>
@@ -165,7 +164,7 @@ export default function WaitingRoomPage() {
         </div>
 
         <p className="mt-8 text-sm font-bold text-foreground/70 max-w-md mx-auto uppercase tracking-wide">
-          Keep this tab open. Your place in line refreshes in real time — when you reach the front, we'll send you straight to checkout. One buyer = one ticket. <span className="text-gigs-pink">✸</span>
+          Keep this tab open. Your place in line refreshes in real time — when you reach the front, {"we'll"} send you straight to checkout. One buyer = one ticket. <span className="text-gigs-pink">✸</span>
         </p>
       </div>
     </section>
