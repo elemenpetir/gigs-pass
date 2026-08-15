@@ -4,19 +4,19 @@ import { RequireRole } from "@/lib/guard";
 import AppLayout from "@/layouts/AppLayout";
 import OrganizerLayout from "@/layouts/OrganizerLayout";
 import AdminLayout from "@/layouts/AdminLayout";
-import Home from "@/pages/Home";
-import EventDetailPage from "@/pages/EventDetailPage";
-import WaitingRoomPage from "@/pages/WaitingRoomPage";
-import CheckoutPage from "@/pages/CheckoutPage";
-import OrderHistoryPage from "@/pages/OrderHistoryPage";
-import LoginPage from "@/pages/LoginPage";
-import OrganizerEventsPage from "@/pages/OrganizerEventsPage";
-import EventFormPage from "@/pages/EventFormPage";
-import CategoriesPage from "@/pages/CategoriesPage";
-import EventOrdersPage from "@/pages/EventOrdersPage";
-import AdminEventsPage from "@/pages/AdminEventsPage";
-import AdminOrdersPage from "@/pages/AdminOrdersPage";
-import AdminAnalyticsPage from "@/pages/AdminAnalyticsPage";
+import Home from "@/pages/public/Home";
+import EventDetailPage from "@/pages/public/EventDetailPage";
+import WaitingRoomPage from "@/pages/buyer/WaitingRoomPage";
+import CheckoutPage from "@/pages/buyer/CheckoutPage";
+import OrderHistoryPage from "@/pages/buyer/OrderHistoryPage";
+import LoginPage from "@/pages/auth/LoginPage";
+import OrganizerEventsPage from "@/pages/organizer/OrganizerEventsPage";
+import EventFormPage from "@/pages/organizer/EventFormPage";
+import CategoriesPage from "@/pages/organizer/CategoriesPage";
+import EventOrdersPage from "@/pages/organizer/EventOrdersPage";
+import AdminEventsPage from "@/pages/admin/AdminEventsPage";
+import AdminOrdersPage from "@/pages/admin/AdminOrdersPage";
+import AdminAnalyticsPage from "@/pages/admin/AdminAnalyticsPage";
 
 function App() {
   return (
