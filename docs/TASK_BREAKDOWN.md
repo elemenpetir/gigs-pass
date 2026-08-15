@@ -5,7 +5,7 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** **Fase 11 (Frontend Organizer & Admin Flow) complete** — seluruh item Fase 11 selesai. Commits terakhir: `feat: add admin dashboard (events, orders) & analytics` dan `feat: add event orders & fund status page`. Item yang selesai: (1) Form create/edit event (upload gambar), (2) Form create/edit kategori tiket, (3) Halaman daftar order & status dana per event, (4) Halaman admin: suspend/cancel/unsuspend event, (5) Halaman admin: manual override order.
+- **Terakhir Dikerjakan:** **Fase 9 (Frontend Dashboard) complete** — kedua item frontend Fase 9 selesai (dashboard organizer & admin pakai Recharts). Commits: `feat: add recharts organizer dashboard charts` dan `feat: add recharts admin analytics dashboard`. Sebelumnya sudah selesai: Fase 11 (Frontend Organizer & Admin Flow) complete — seluruh item Fase 11 selesai. Commits terakhir: `feat: add admin dashboard (events, orders) & analytics` dan `feat: add event orders & fund status page`. Item yang selesai: (1) Form create/edit event (upload gambar), (2) Form create/edit kategori tiket, (3) Halaman daftar order & status dana per event, (4) Halaman admin: suspend/cancel/unsuspend event, (5) Halaman admin: manual override order.
 - **Keputusan Teknis / Catatan:**
   - **Desain final = Neo-Brutalism + anti-design + festival** — source of truth `docs/design/figma-export/` (hasil Figma Make, di-gitignore). `docs/design/design.md` di-rewrite penuh: cream `#FFFAF0` + hitam `#0A0A0A`, border tebal 2/3/4px, hard offset shadow, radius persegi, Inter 400–900 uppercase, marquee 20s, `brut-button`/`brut-card-hover`, pita diagonal, aturan 70/30.
   - **Tailwind v4:** `tailwind.config.js` DIHAPUS (v4 tidak auto-detect config legacy — butuh `@config`; semua token hidup di `@theme` `src/index.css`). `max-w-[1280px]` → `max-w-7xl` (=80rem). `vite.config.js` pakai `import.meta.dirname` (hilangkan warning Vite).
@@ -147,8 +147,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 - [x] Endpoint `GET /api/analytics/event/:id/overview` (organizer) — revenue, tiket terjual per kategori, status dana
 - [x] Endpoint `GET /api/analytics/platform/overview` (admin) — ringkasan lintas event
-- [ ] Frontend: halaman dashboard organizer (chart sederhana, Recharts)
-- [ ] Frontend: halaman dashboard admin
+- [x] Frontend: halaman dashboard organizer (chart sederhana, Recharts)
+- [x] Frontend: halaman dashboard admin
 
 ---
 
