@@ -30,7 +30,12 @@ backend/
 frontend/
 ├── src/
 │   ├── components/   # Reusable UI (shadcn/ui based)
-│   ├── pages/        # Route-level pages
+│   ├── pages/        # Route-level pages, dipisah per role:
+│   │   ├── auth/        # LoginPage
+│   │   ├── public/      # Home, EventDetailPage (tanpa login)
+│   │   ├── buyer/       # WaitingRoom, Checkout, OrderHistory
+│   │   ├── organizer/   # Events, EventForm, Categories, EventOrders
+│   │   └── admin/       # AdminEvents, AdminOrders, AdminAnalytics
 │   ├── hooks/        # Custom hooks (SSE connection, etc)
 │   └── lib/          # API client, utilities
 ```
@@ -161,10 +166,10 @@ Each checklist item = 1 unit of work = 1 commit.
 
 ### Before Committing
 1. Run tests (when available): `npm test` (unit) dan `npm run test:integration` (real DB) — atau `npm run test:all` untuk keduanya
-2. Run lint (when available): `npm run lint`
+2. Run lint (when available): `npm run lint` (sudah include `.jsx` via `eslint src/ --ext .js,.jsx --fix` — jangan diubah ke `eslint src/` polos, itu tidak akan melint file `.jsx`)
 3. Verify no `.env` committed
 
-> **Ritme verifikasi frontend:** `npm run build` wajib **1x di titik commit** per unit kerja (bukan di sela sub-langkah); lint boleh di sela perubahan besar. Perubahan docs-only tidak perlu build. `npm run build` ~1–2 detik di project ini — cepat, jangan dilewati saat commit kode frontend (validasi utility Tailwind/`@theme` hanya muncul di build).
+> **Ritme verifikasi frontend:** `npm run build` wajib **1x di titik commit** per unit kerja (bukan di sela sub-langkah); lint boleh di sela perubahan besar. Perubahan docs-only tidak perlu build. `npm run build` ~1–2 detik di project ini — cepat, jangan dilewati saat commit kode frontend (validasi utility Tailwind/`@theme` hanya muncul di build). Catatan: `npm run build` memuat warning Tailwind rope/bare-value bila ada kelas yang bisa disingkat (mis. `rotate-[-1deg]` → `-rotate-1`, `aspect-[4/3]` → `aspect-4/3`) — konversi hanya untuk kelas yang nilai CSS-nya setara persis, jangan konversi sembarangan (mis. `leading-[0.9]` ≠ `leading-<n>` di v4).
 
 ### Commit & Push Protocol (ABSOLUTE — NO EXCEPTIONS)
 
