@@ -21,6 +21,9 @@ export default function AdminLayout() {
           <NavLink to="/admin/orders" className={navCls}>
             Orders
           </NavLink>
+          <NavLink to="/admin/analytics" className={navCls}>
+            Analytics
+          </NavLink>
         </div>
       </div>
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12 relative overflow-hidden">
