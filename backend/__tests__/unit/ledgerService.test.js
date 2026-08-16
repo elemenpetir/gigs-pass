@@ -244,6 +244,18 @@ describe("Ledger Service", () => {
       expect(debits[0].accountId).toBe("acc-pending");
       expect(credits[0].accountId).toBe("acc-available");
     });
+
+    test("throws 500 when organizer accounts missing", async () => {
+      ledgerModel.getOrCreateAccount.mockResolvedValue(null);
+
+      await expect(
+        ledgerService.recordRelease(fakeClient, {
+          id: "o-1",
+          amount: 150000,
+          organizer_id: "org-1",
+        }),
+      ).rejects.toThrow("Organizer accounts not found");
+    });
   });
 
   describe("recordRefund", () => {
@@ -314,6 +326,45 @@ describe("Ledger Service", () => {
           amount: 150000,
         }),
       ).rejects.toThrow("Category not found");
+    });
+
+    test("throws 404 when event not found", async () => {
+      categoryModel.findById.mockResolvedValue({
+        id: "cat-1",
+        event_id: "ev-1",
+      });
+      eventModel.findById.mockResolvedValue(null);
+
+      await expect(
+        ledgerService.recordRefund(fakeClient, {
+          id: "o-1",
+          buyer_id: "buyer-1",
+          category_id: "cat-1",
+          amount: 150000,
+        }),
+      ).rejects.toThrow("Event not found");
+    });
+
+    test("throws 500 when accounts for refund missing", async () => {
+      categoryModel.findById.mockResolvedValue({
+        id: "cat-1",
+        event_id: "ev-1",
+      });
+      eventModel.findById.mockResolvedValue({
+        id: "ev-1",
+        organizer_id: "org-1",
+      });
+      ledgerModel.getOrCreateAccount.mockResolvedValue(null);
+      ledgerModel.getPlatformRevenueAccount.mockResolvedValue(null);
+
+      await expect(
+        ledgerService.recordRefund(fakeClient, {
+          id: "o-1",
+          buyer_id: "buyer-1",
+          category_id: "cat-1",
+          amount: 150000,
+        }),
+      ).rejects.toThrow("Ledger accounts not found for refund");
     });
 
     test("defaults reason to event_cancelled in entry description", async () => {

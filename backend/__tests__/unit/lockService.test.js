@@ -157,6 +157,12 @@ describe("Lock Service", () => {
       expect(result).toEqual({ confirmed: false });
       expect(redis.del).not.toHaveBeenCalled();
     });
+
+    test("throws 404 for unknown category", async () => {
+      await expect(
+        lockService.confirmSlot("buyer-1", 9999),
+      ).rejects.toThrow("Category not found");
+    });
   });
 
   describe("releaseSlot", () => {
@@ -194,6 +200,12 @@ describe("Lock Service", () => {
 
       expect(result).toEqual({ released: false });
       expect(redis.pipeline).not.toHaveBeenCalled();
+    });
+
+    test("throws 404 for unknown category", async () => {
+      await expect(
+        lockService.releaseSlot("buyer-1", 9999),
+      ).rejects.toThrow("Category not found");
     });
   });
 

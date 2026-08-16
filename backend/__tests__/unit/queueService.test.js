@@ -135,7 +135,7 @@ describe("Queue Service", () => {
         "buyer-3",
         "3",
       ]);
-      const pipeline = mockPipeline();
+      mockPipeline();
 
       const dequeued = await queueService.dequeueBatch(category.id, 50);
 
@@ -204,6 +204,12 @@ describe("Queue Service", () => {
 
       expect(redis.zpopmin).toHaveBeenCalledWith(key, 5);
       expect(dequeued).toEqual([{ userId: "buyer-1", score: 1 }]);
+    });
+
+    test("throws 404 for unknown category", async () => {
+      await expect(queueService.dequeueBatch(9999, 50)).rejects.toThrow(
+        "Category not found",
+      );
     });
   });
 });
