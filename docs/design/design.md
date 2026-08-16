@@ -48,12 +48,12 @@ Rules:
 Scale (deviations from tailwind default, applied via utilities):
 | Role | Example size | Weight | Case/Tracking |
 |---|---|---|---|
-| Hero headline | up to `11rem` / `text-[clamp(...)]` | 900 | uppercase, `tracking-tighter`, `leading-[0.82]` |
+| Hero headline | `text-[2.75rem]`–`lg:text-[5.5rem]` | 900 | uppercase, `tracking-tighter`, `leading-[0.85]` |
 | Section headline | `text-5xl`–`text-7xl` | 900 | uppercase, `tracking-tighter` |
 | Card title | `text-2xl`–`text-3xl` | 900 | uppercase |
 | Meta / location | `text-sm` | 700 | `text-foreground/80` |
 | Labels / stickers | `text-xs`–`text-sm` | 800 | uppercase, `tracking-widest` |
-| Body copy | `text-xl`–`text-2xl` | 700 (hero sub) / 400 | normal |
+| Body copy | `text-lg`–`text-xl` | 700 (hero sub) / 400 | normal |
 
 Use typography variation to create rhythm — not every headline gets the same treatment.
 
@@ -94,7 +94,7 @@ Defined in the Figma export (`src/index.css`) — do not improvise timings:
 
 ### 7.2 Buttons
 - Hard rectangle, thick border (`brut-border-2`/`brut-border-4`), `font-black uppercase`, optional `.brut-shadow`/`.brut-shadow-sm`.
-- Primary CTA: solid accent fill + shadow, hover `translate(1,1)` + shadow collapse. Secondary: background fill, hover accent bg.
+- Primary CTA: solid accent fill + shadow, compact padding `px-6 py-3` (`text-lg`), hover `translate(1,1)` + shadow collapse. Secondary: background fill, compact padding `px-5 py-3` (`text-base`), hover accent bg.
 - Default hover behaviors: `hover:translate-y-1 hover:translate-x-1 hover:shadow-none` OR `.brut-button` translate + shadow-grow. Pick one consistent pattern per button.
 
 ### 7.3 Badges / Stickers
@@ -119,7 +119,7 @@ See home page for 4 expression variants; all share the system tokens:
 - Rows: `grid grid-cols-12`, thick `border-b-2 border-background/20`, hover `bg-background/10`; date `text-xl font-bold` (accent on hot rows), title `text-3xl font-black uppercase` (hover accent), action "TICKETS" button `brut-border-2` hidden → visible on group-hover.
 
 ### 7.7 Corner Tapes
-- Absolute-positioned rotated strips (`rotate-45` / `-rotate-45`), `bg-gigs-yellow border-y-4 border-foreground font-black uppercase`, containing `animate-marquee` text ("/// SOLD OUT", "/// SELLING FAST", etc.). `pointer-events-none select-none`, z-index above content, partially off-screen for a taped-on look.
+- Absolute-positioned rotated strips (`rotate-30`, `-rotate-25`, `rotate-40`, etc.), `bg-gigs-yellow border-y-4 border-foreground font-black uppercase`, containing `animate-marquee` text ("/// SOLD OUT", "/// SELLING FAST", "/// ALL ACCESS", etc.). `pointer-events-none select-none`, z-index above content, partially off-screen for a taped-on look.
 
 ### 7.8 Footer
 - Loud block: `bg-gigs-pink border-t-4 border-foreground`, uppercase black text throughout. Four columns: brand (oversized GIGS PASS.), Explore / Support links (`hover:underline`), "For Organizers" CTA (`bg-background brut-border-4 brut-shadow`, hover `bg-gigs-yellow`). Bottom bar `border-t-4 border-foreground` with copyright + Terms/Privacy.
