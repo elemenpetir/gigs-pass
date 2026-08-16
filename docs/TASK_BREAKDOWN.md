@@ -5,7 +5,7 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** **Fase 9 (Frontend Dashboard) complete** — kedua item frontend Fase 9 selesai (dashboard organizer & admin pakai Recharts). Commits: `feat: add recharts organizer dashboard charts` dan `feat: add recharts admin analytics dashboard`. Sebelumnya sudah selesai: Fase 11 (Frontend Organizer & Admin Flow) complete — seluruh item Fase 11 selesai. Commits terakhir: `feat: add admin dashboard (events, orders) & analytics` dan `feat: add event orders & fund status page`. Item yang selesai: (1) Form create/edit event (upload gambar), (2) Form create/edit kategori tiket, (3) Halaman daftar order & status dana per event, (4) Halaman admin: suspend/cancel/unsuspend event, (5) Halaman admin: manual override order.
+- **Terakhir Dikerjakan:** **Fase 12 item 1 complete** — unit test coverage untuk service kritikal (`ledgerService`, `queueService`, `lockService`) telah dilengkapi (total 238 unit tests pass). Commit: `test: add edge case unit tests for critical services`.
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
   - `fix: resolve sync setState lint errors in page load handlers` + `chore: lint jsx files and fix style violations` — **discovery: `npm run lint` tidak pernah memproses `.jsx`** (default ESLint 8 hanya `.js`); script diubah ke `eslint src/ --ext .js,.jsx --fix`. Semua page dengan pola `load()` handle state di-update (return data + `.then()` + cancellation guard).
@@ -16,8 +16,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
   - **Frontend buyer flow:** waiting room pakai `@microsoft/fetch-event-source` (Bearer header, auto-reconnect, abort saat granted). Checkout: lock 300s + countdown (denyut <60s), pay mock `{success}`, one-shot admission. Login redirect pakai `location.state.from`. `auth.jsx` pakai lazy-init `useState(() => Boolean(getToken()))` (tanpa setState sinkron dalam effect).
   - **Ritme verifikasi frontend (AGENTS.md):** build wajib 1x di titik commit per unit kerja; lint di sela perubahan besar; docs-only tidak perlu build.
   - **Fase 9 design decision (backend analytics):** paid statuses untuk revenue hanya 4 (`pending`, `holding_period`, `released`, `held`). `refunded` dihitung TERPISAH (`refundedAmount`), `netRevenue = revenue − refundedAmount`. `held` tetap masuk revenue tapi di-breakdown eksplisit (`heldAmount`/`heldCount`). Fund status organizer diambil dari balance ledger account (`organizer_pending`/`organizer_available`), bukan SUM orders. Endpoint: `GET /api/analytics/event/:id/overview` (organizer, owner check) & `GET /api/analytics/platform/overview` (admin).
-- **Status Fase lain:** Fase 1-11 complete (unit test mock **232**).
-- **Task Selanjutnya:** **Fase 12 (Unit Test Lanjutan & CI)** — lengkapi test coverage service kritikal, setup GitHub Actions CI, deploy otomatis setelah test lolos.
+- **Status Fase lain:** Fase 0-11 complete, Fase 12 (Item 1) complete (unit test: 238).
+- **Task Selanjutnya:** **Fase 12 (CI / GitHub Actions Setup)** — setup GitHub Actions workflow untuk unit & integration test.
 
 ## Ringkasan per Minggu
 
@@ -180,7 +180,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 12 — Unit Test Lanjutan & CI
 
-- [ ] Lengkapi test coverage untuk semua service kritikal (ledger, queue, lock)
+- [x] Lengkapi test coverage untuk semua service kritikal (ledger, queue, lock)
 - [ ] Setup GitHub Actions: jalankan `npm test` **dan** `npm run test:integration` (`--runInBand`) setiap push — pakai `services: postgres:latest` untuk integration test (tanpa Docker lokal)
 - [ ] Matikan auto-deploy, deploy hanya lewat GitHub Actions setelah test lolos (pola sama seperti AssetShield)
 
