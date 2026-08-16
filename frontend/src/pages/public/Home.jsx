@@ -273,7 +273,7 @@ export default function Home() {
         />
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">{"WHAT'S HOT "}<span className="text-gigs-orange">🔥</span></h2>
+          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">{"WHAT'S HOT "}</h2>
           <a href="#coming-up" className="font-bold uppercase text-lg border-b-4 border-foreground hover:text-gigs-purple hover:border-gigs-purple pb-1 transition-colors mt-4 md:mt-0">View All</a>
         </div>
 
@@ -301,8 +301,8 @@ export default function Home() {
               "text-background bg-foreground hover:bg-gigs-yellow hover:text-foreground px-2 md:px-4 -rotate-1 hover:-rotate-3",
               "hover:text-gigs-teal hover:rotate-1",
               "border-4 border-foreground hover:bg-gigs-purple hover:border-gigs-purple px-2 md:px-4 rotate-2 hover:rotate-0",
-              "text-gigs-orange hover:text-foreground -rotate-2",
-              "hover:text-gigs-pink underline decoration-8 underline-offset-8 decoration-gigs-teal",
+              "text-gigs-orange hover:text-foreground -rotate-4 hover:-rotate-0",
+              "hover:text-gigs-pink underline decoration-8 underline-offset-8 decoration-gigs-teal hover:rotate-2",
             ];
             return (
               <a key={cat} href="#coming-up" className={`text-5xl md:text-7xl font-black uppercase tracking-tighter transition-colors ${styles[idx]}`}>
