@@ -293,7 +293,6 @@ export default function Home() {
 
       {/* BROWSE VIBES */}
       <section className="py-16 md:py-24 border-t-4 border-foreground relative">
-        <Tape items={["/// ALL ACCESS", "/// VIP ONLY"]} className="-bottom-12 -right-16 md:-right-24 w-72 md:w-96 -rotate-45" />
         <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-8">BROWSE <span className="bg-foreground text-background px-2">VIBES</span></h2>
         <div className="flex flex-wrap gap-4 md:gap-6">
           {["[MUSIC]", "[FESTIVAL]", "[CONCERT]", "[COMEDY]", "[ART]", "[CULTURE]"].map((cat, idx) => {
@@ -315,8 +314,16 @@ export default function Home() {
       </section>
 
       {/* COMING UP */}
-      <section id="coming-up" className="py-16 md:py-24 border-t-4 border-foreground bg-foreground text-background -mx-4 md:-mx-8 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section 
+        id="coming-up" 
+        className="py-16 md:py-24 border-t-4 border-foreground bg-foreground text-background -mx-4 md:-mx-8 px-4 md:px-8 relative overflow-hidden"
+      >
+        <Tape 
+          items={["/// ALL ACCESS", "/// VIP ONLY"]} 
+          className="top-6 md:top-8 -right-12 md:-right-16 w-80 md:w-96 rotate-40 z-10" 
+        />
+
+        <div className="max-w-7xl mx-auto relative z-10">
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-12 flex items-center gap-4">
             COMING UP <ArrowRight size={48} className="text-gigs-pink" strokeWidth={4} />
           </h2>
