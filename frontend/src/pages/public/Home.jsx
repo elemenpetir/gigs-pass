@@ -17,7 +17,7 @@ function Marquee({ items, className = "" }) {
 
 function Tape({ items, className = "" }) {
   return (
-    <div className={`absolute bg-gigs-yellow text-foreground font-black text-lg md:text-xl uppercase tracking-tighter py-1 border-y-4 border-foreground rotate-45 z-30 pointer-events-none select-none flex overflow-hidden ${className}`}>
+    <div className={`absolute bg-gigs-yellow text-foreground font-black text-lg md:text-xl uppercase tracking-tighter py-1 border-y-4 border-foreground rotate-30 z-30 pointer-events-none select-none flex overflow-hidden ${className}`}>
       <Marquee items={items} />
     </div>
   );
@@ -43,35 +43,35 @@ function EventImage({ event, ratioClass = "aspect-4/3", grayscale = true }) {
 
 function Hero({ heroEvent }) {
   return (
-    <section className="relative min-h-[88vh] py-12 md:py-0 flex flex-col md:flex-row gap-12 md:gap-4 items-center justify-between">
-      <Tape items={["/// WARNING", "/// SELLING FAST"]} className="-right-16 md:-right-24 top-8 md:top-24 w-72 md:w-96" />
+    <section className="relative py-8 md:py-12 flex flex-col md:flex-row gap-8 md:gap-4 items-center justify-between">
+      <Tape items={["/// WARNING", "/// SELLING FAST"]} className="-right-16 md:-right-24 top-4 md:top-12 w-72 md:w-96" />
 
       <div className="w-full md:w-3/5 z-10 relative">
-        <div className="absolute -top-12 -left-4 text-sm font-bold bg-gigs-teal px-2 py-1 brut-border-2 -rotate-3 z-20">NO. 01</div>
+        <div className="absolute -top-2.5 -left-5 text-xs font-bold bg-gigs-teal px-2 py-0.5 brut-border-2 -rotate-20 z-20">NO. 01</div>
 
-        <h2 className="text-[3.5rem] sm:text-[5rem] md:text-[6rem] lg:text-[9rem] font-black leading-[0.82] tracking-tighter mix-blend-multiply relative z-10">
+        <h2 className="text-[2.75rem] sm:text-[3.75rem] md:text-[4.5rem] lg:text-[5.5rem] font-black leading-[0.85] tracking-tighter mix-blend-multiply relative z-10">
           <div className="flex items-baseline">FIND <span className="text-gigs-pink text-[0.5em] ml-4 pb-4">✸</span></div>
-          <div className="pl-0 md:pl-16">YOUR</div>
-          <div className="relative inline-block text-background bg-foreground px-4 md:px-8 mt-2 -ml-2 brut-shadow">
+          <div className="pl-0 md:pl-12">YOUR</div>
+          <div className="relative inline-block text-background bg-foreground px-4 md:px-6 mt-1 -ml-2 brut-shadow">
             NEXT GIG.
           </div>
         </h2>
 
-        <div className="mt-8 md:mt-12 md:pl-16 max-w-md">
-          <p className="text-xl md:text-2xl font-bold leading-tight mb-8">
+        <div className="mt-6 md:mt-8 md:pl-12 max-w-md">
+          <p className="text-lg md:text-xl font-bold leading-tight mb-6">
             Concerts, festivals, and unforgettable moments.<br />
             Your next story starts here.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <a
               href="#whats-hot"
-              className="bg-gigs-pink text-foreground font-black uppercase text-xl px-8 py-4 brut-border-4 brut-shadow hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all flex items-center justify-between gap-4"
+              className="bg-gigs-pink text-foreground font-black uppercase text-lg px-6 py-3 brut-border-4 brut-shadow hover:translate-y-1 hover:translate-x-1 hover:shadow-none transition-all flex items-center justify-between gap-3"
             >
               EXPLORE EVENTS <ArrowRight strokeWidth={4} />
             </a>
             <a
               href="#coming-up"
-              className="bg-background text-foreground font-bold uppercase text-lg px-6 py-4 brut-border-4 brut-shadow-sm hover:bg-gigs-yellow transition-colors"
+              className="bg-background text-foreground font-bold uppercase text-base px-5 py-3 brut-border-4 brut-shadow-sm hover:bg-gigs-yellow transition-colors"
             >
               {"WHAT'S HAPPENING?"}
             </a>
@@ -79,11 +79,11 @@ function Hero({ heroEvent }) {
         </div>
       </div>
 
-      <div className="w-full md:w-2/5 relative mt-8 md:mt-0 flex justify-center md:justify-end">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gigs-orange text-[12rem] font-black rotate-12 opacity-40 z-0 pointer-events-none select-none">
+      <div className="w-full md:w-2/5 relative mt-6 md:mt-0 flex justify-center md:justify-end">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gigs-orange text-[8rem] font-black rotate-12 opacity-40 z-0 pointer-events-none select-none">
           *
         </div>
-        <div className="relative z-10 bg-gigs-yellow brut-border-4 brut-shadow p-2 w-full max-w-80 md:max-w-sm rotate-3 hover:rotate-0 transition-transform duration-300">
+        <div className="relative z-10 bg-gigs-yellow brut-border-4 brut-shadow p-2 w-full max-w-72 md:max-w-xs rotate-3 hover:rotate-0 transition-transform duration-300">
           <div className="brut-border-2 overflow-hidden aspect-3/4 relative bg-gigs-dark">
             {heroEvent?.image_url ? (
               <img
@@ -92,23 +92,23 @@ function Hero({ heroEvent }) {
                 className="w-full h-full object-cover mix-blend-luminosity opacity-80"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-background/90 font-black uppercase text-4xl tracking-tighter text-center p-6">
+              <div className="w-full h-full flex items-center justify-center text-background/90 font-black uppercase text-3xl tracking-tighter text-center p-4">
                 GIGS PASS
               </div>
             )}
-            <div className="absolute inset-0 bg-linear-to-t from-gigs-dark/80 to-transparent flex flex-col justify-end p-6 text-background">
+            <div className="absolute inset-0 bg-linear-to-t from-gigs-dark/80 to-transparent flex flex-col justify-end p-5 text-background">
               <div className="bg-gigs-pink text-foreground text-xs font-black uppercase px-2 py-1 w-fit mb-2 brut-border-2">TONIGHT</div>
-              <h3 className="text-3xl font-black leading-none mb-1">{heroEvent ? heroEvent.title.toUpperCase() : "NEON NIGHTS"}</h3>
-              {heroEvent && <p className="text-sm font-bold opacity-90">{formatEventDate(heroEvent.event_date)}</p>}
+              <h3 className="text-2xl font-black leading-none mb-1">{heroEvent ? heroEvent.title.toUpperCase() : "NEON NIGHTS"}</h3>
+              {heroEvent && <p className="text-xs font-bold opacity-90">{formatEventDate(heroEvent.event_date)}</p>}
             </div>
           </div>
         </div>
 
-        <div className="absolute -left-4 md:-left-12 bottom-4 md:bottom-16 bg-background brut-border-4 px-4 py-3 -rotate-6 brut-shadow-sm z-20">
-          <p className="font-black text-lg leading-none uppercase text-center">
+        <div className="absolute -left-2 md:-left-8 md: bg-background brut-border-4 px-3 py-2 -rotate-6 brut-shadow-sm z-20">
+          <p className="font-black text-base leading-none uppercase text-center">
             LIVE EVENTS<br />
-            <span className="text-3xl">2026</span><br />
-            <span className="text-sm text-gigs-teal bg-foreground px-1 mt-1 block">JKT / BDG / BALI</span>
+            <span className="text-2xl">2026</span><br />
+            <span className="text-xs text-gigs-teal bg-foreground px-1 mt-1 block">JKT / BDG / BALI</span>
           </p>
         </div>
       </div>
