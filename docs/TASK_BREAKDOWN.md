@@ -7,6 +7,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 ## Status Terkini (Active Context)
 - **Terakhir Dikerjakan:** **Fase 12 item 1 complete** — unit test coverage untuk service kritikal (`ledgerService`, `queueService`, `lockService`) telah dilengkapi (total 238 unit tests pass). Commit: `test: add edge case unit tests for critical services`.
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
+  - `style: scale down hero section components and fix linebreaks` + `style: relocate all access tape to coming up section` — penyesuaian proporsi font & card Hero section pada `Home.jsx` dan penyelarasan spesifikasi di `docs/design/design.md`.
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
   - `fix: resolve sync setState lint errors in page load handlers` + `chore: lint jsx files and fix style violations` — **discovery: `npm run lint` tidak pernah memproses `.jsx`** (default ESLint 8 hanya `.js`); script diubah ke `eslint src/ --ext .js,.jsx --fix`. Semua page dengan pola `load()` handle state di-update (return data + `.then()` + cancellation guard).
   - `refactor: clean up redundant and arbitrary tailwind classes` — konversi bare value v4 (`rotate-[-1deg]`→`-rotate-1`, `aspect-[4/3]`→`aspect-4/3`, `aspect-[3/4]`→`aspect-3/4`, `max-w-[320px]`→`max-w-80`) + hapus `w-full` redundan yang menimpa `w-[calc(100%+2rem)]` di marquee waiting room.
