@@ -5,7 +5,6 @@ import UserNav from "@/components/layout/UserNav";
 const NAV_LINKS = [
   { label: "Discover", badge: "LIVE", href: "/" },
   { label: "Events", href: "/events" },
-  { label: "Categories", href: "/categories" },
 ];
 
 export default function AppLayout() {

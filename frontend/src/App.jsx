@@ -5,6 +5,7 @@ import AppLayout from "@/layouts/AppLayout";
 import OrganizerLayout from "@/layouts/OrganizerLayout";
 import AdminLayout from "@/layouts/AdminLayout";
 import Home from "@/pages/public/Home";
+import EventsPage from "@/pages/public/EventsPage";
 import EventDetailPage from "@/pages/public/EventDetailPage";
 import WaitingRoomPage from "@/pages/buyer/WaitingRoomPage";
 import CheckoutPage from "@/pages/buyer/CheckoutPage";
@@ -25,6 +26,7 @@ function App() {
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:id" element={<EventDetailPage />} />
             <Route path="/events/:eventId/join/:categoryId" element={<WaitingRoomPage />} />
             <Route path="/events/:eventId/checkout/:categoryId" element={<CheckoutPage />} />

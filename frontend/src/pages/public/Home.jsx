@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Calendar } from "lucide-react";
 import { api } from "@/lib/api";
 import { formatEventDate, formatCompact } from "@/lib/format";
+import { EVENT_CATEGORIES } from "@/lib/categories";
 
 function Marquee({ items, className = "" }) {
   const doubled = [...items, ...items];
@@ -206,7 +207,6 @@ const HOT_VARIANTS = ["light", "purple", "teal", "dark"];
 
 export default function Home() {
   const [events, setEvents] = useState([]);
-  const [prices, setPrices] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -218,20 +218,6 @@ export default function Home() {
         const list = data.events || [];
         if (cancelled) return;
         setEvents(list);
-
-        const priceEntries = await Promise.all(
-          list.map(async (event) => {
-            try {
-              const catData = await api.get(`/events/${event.id}/categories`);
-              const cats = catData.categories || [];
-              const pricesList = cats.map((c) => Number(c.price)).filter((p) => Number.isFinite(p));
-              return [event.id, pricesList.length ? Math.min(...pricesList) : null];
-            } catch {
-              return [event.id, null];
-            }
-          }),
-        );
-        if (!cancelled) setPrices(Object.fromEntries(priceEntries));
       } catch (err) {
         if (!cancelled) setError(err.message || "Failed to load events");
       } finally {
@@ -274,7 +260,7 @@ export default function Home() {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">{"WHAT'S HOT "}</h2>
-          <a href="#coming-up" className="font-bold uppercase text-lg border-b-4 border-foreground hover:text-gigs-purple hover:border-gigs-purple pb-1 transition-colors mt-4 md:mt-0">View All</a>
+          <Link to="/events" className="font-bold uppercase text-lg border-b-4 border-foreground hover:text-gigs-purple hover:border-gigs-purple pb-1 transition-colors mt-4 md:mt-0">View All</Link>
         </div>
 
         {events.length === 0 ? (
@@ -285,7 +271,7 @@ export default function Home() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {hot.map((event, idx) => (
-              <HotCard key={event.id} event={event} minPrice={prices[event.id] ?? null} variant={HOT_VARIANTS[idx % HOT_VARIANTS.length]} />
+              <HotCard key={event.id} event={event} minPrice={event.min_price ?? null} variant={HOT_VARIANTS[idx % HOT_VARIANTS.length]} />
             ))}
           </div>
         )}
@@ -295,7 +281,7 @@ export default function Home() {
       <section className="py-16 md:py-24 border-t-4 border-foreground relative">
         <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-8">BROWSE <span className="bg-foreground text-background px-2">VIBES</span></h2>
         <div className="flex flex-wrap gap-4 md:gap-6">
-          {["[MUSIC]", "[FESTIVAL]", "[CONCERT]", "[COMEDY]", "[ART]", "[CULTURE]"].map((cat, idx) => {
+          {EVENT_CATEGORIES.map((cat, idx) => {
             const styles = [
               "hover:text-gigs-pink hover:rotate-2",
               "text-background bg-foreground hover:bg-gigs-yellow hover:text-foreground px-2 md:px-4 -rotate-1 hover:-rotate-3",
@@ -305,9 +291,13 @@ export default function Home() {
               "hover:text-gigs-pink underline decoration-8 underline-offset-8 decoration-gigs-teal hover:rotate-2",
             ];
             return (
-              <a key={cat} href="#coming-up" className={`text-5xl md:text-7xl font-black uppercase tracking-tighter transition-colors ${styles[idx]}`}>
-                {cat}
-              </a>
+              <Link
+                key={cat.slug}
+                to={`/events?category=${cat.slug}`}
+                className={`text-5xl md:text-7xl font-black uppercase tracking-tighter transition-colors ${styles[idx]}`}
+              >
+                [{cat.label.toUpperCase()}]
+              </Link>
             );
           })}
         </div>
@@ -342,7 +332,7 @@ export default function Home() {
                 <div className="col-span-1 md:col-span-5">
                   <h3 className="text-3xl font-black uppercase group-hover:text-gigs-yellow transition-colors">{event.title}</h3>
                 </div>
-                <div className="col-span-1 md:col-span-2 font-bold">{prices[event.id] !== null ? formatCompact(prices[event.id]) : "TBA"}</div>
+                <div className="col-span-1 md:col-span-2 font-bold">{event.min_price !== null ? formatCompact(event.min_price) : "TBA"}</div>
                 <div className="col-span-1 md:col-span-2 md:text-right mt-4 md:mt-0">
                   <span className="bg-gigs-yellow text-foreground px-4 py-2 font-black uppercase text-sm brut-border-2 opacity-0 group-hover:opacity-100 transition-opacity inline-block">TICKETS</span>
                 </div>
