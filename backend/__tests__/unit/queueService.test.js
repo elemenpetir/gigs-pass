@@ -7,15 +7,14 @@ jest.mock("../../src/config/redis", () => ({
   zrank: jest.fn(),
   get: jest.fn(),
   zpopmin: jest.fn(),
-  pipeline: jest.fn(),
+  set: jest.fn(),
+  decr: jest.fn(),
+  del: jest.fn(),
 }));
 
 const queueService = require("../../src/services/queueService");
 const redis = require("../../src/config/redis");
-const {
-  QUEUE_SEQ_KEY,
-  GRANTED_TTL_SECONDS,
-} = require("../../src/config/constants");
+const { QUEUE_SEQ_KEY, LOCK_TTL_SECONDS } = require("../../src/config/constants");
 
 const createCategory = async () => {
   const result = await mockDb.query("INSERT INTO ticket_categories", [
@@ -27,15 +26,6 @@ const createCategory = async () => {
   return result.rows[0];
 };
 
-const mockPipeline = () => {
-  const pipeline = {
-    set: jest.fn().mockReturnThis(),
-    exec: jest.fn().mockResolvedValue([]),
-  };
-  redis.pipeline.mockReturnValue(pipeline);
-  return pipeline;
-};
-
 describe("Queue Service", () => {
   beforeEach(() => {
     mockDb.reset();
@@ -44,7 +34,9 @@ describe("Queue Service", () => {
     redis.zrank.mockReset();
     redis.get.mockReset();
     redis.zpopmin.mockReset();
-    redis.pipeline.mockReset();
+    redis.set.mockReset();
+    redis.decr.mockReset();
+    redis.del.mockReset();
   });
 
   describe("joinQueue", () => {
@@ -135,7 +127,11 @@ describe("Queue Service", () => {
         "buyer-3",
         "3",
       ]);
-      mockPipeline();
+      redis.set.mockResolvedValue("OK");
+      redis.decr
+        .mockResolvedValueOnce(2)
+        .mockResolvedValueOnce(1)
+        .mockResolvedValueOnce(0);
 
       const dequeued = await queueService.dequeueBatch(category.id, 50);
 
@@ -145,34 +141,41 @@ describe("Queue Service", () => {
         { userId: "buyer-2", score: 2 },
         { userId: "buyer-3", score: 3 },
       ]);
+      expect(redis.decr).toHaveBeenCalledTimes(3);
     });
 
-    test("marks granted marker with TTL for each admitted buyer", async () => {
+    test("sets seat lock with TTL and registers expiry for each admitted buyer", async () => {
       const category = await createCategory();
       redis.get.mockResolvedValue("5");
       redis.zpopmin.mockResolvedValue(["buyer-1", "1", "buyer-2", "2"]);
-      const pipeline = mockPipeline();
+      redis.set.mockResolvedValue("OK");
+      redis.decr.mockResolvedValue(4);
 
       await queueService.dequeueBatch(category.id, 50);
 
-      expect(pipeline.set.mock.calls).toEqual([
+      expect(redis.set.mock.calls).toEqual([
         [
-          `granted:category:${category.id}:buyer:buyer-1`,
+          `lock:category:${category.id}:buyer:buyer-1`,
           "1",
           "EX",
-          GRANTED_TTL_SECONDS,
+          LOCK_TTL_SECONDS,
+          "NX",
         ],
         [
-          `granted:category:${category.id}:buyer:buyer-2`,
+          `lock:category:${category.id}:buyer:buyer-2`,
           "1",
           "EX",
-          GRANTED_TTL_SECONDS,
+          LOCK_TTL_SECONDS,
+          "NX",
         ],
       ]);
-      expect(pipeline.exec).toHaveBeenCalledTimes(1);
+      expect(redis.zadd.mock.calls).toEqual([
+        [`lockexpiry:category:${category.id}`, expect.any(Number), "buyer-1"],
+        [`lockexpiry:category:${category.id}`, expect.any(Number), "buyer-2"],
+      ]);
     });
 
-    test("does not set granted marker when no buyers admitted", async () => {
+    test("does not create any lock when no buyers admitted", async () => {
       const category = await createCategory();
       redis.get.mockResolvedValue("5");
       redis.zpopmin.mockResolvedValue([]);
@@ -180,7 +183,8 @@ describe("Queue Service", () => {
       const dequeued = await queueService.dequeueBatch(category.id, 50);
 
       expect(dequeued).toEqual([]);
-      expect(redis.pipeline).not.toHaveBeenCalled();
+      expect(redis.set).not.toHaveBeenCalled();
+      expect(redis.decr).not.toHaveBeenCalled();
     });
 
     test("returns empty when stock is zero", async () => {
@@ -198,12 +202,42 @@ describe("Queue Service", () => {
       const key = queueService.queueKey(category.event_id, category.id);
       redis.get.mockResolvedValue(null);
       redis.zpopmin.mockResolvedValue(["buyer-1", "1"]);
-      mockPipeline();
+      redis.set.mockResolvedValue("OK");
+      redis.decr.mockResolvedValue(4);
 
       const dequeued = await queueService.dequeueBatch(category.id, 5);
 
       expect(redis.zpopmin).toHaveBeenCalledWith(key, 5);
       expect(dequeued).toEqual([{ userId: "buyer-1", score: 1 }]);
+    });
+
+    test("rolls back slot when stock runs out mid-batch", async () => {
+      const category = await createCategory();
+      redis.get.mockResolvedValue("2");
+      redis.zpopmin.mockResolvedValue(["buyer-1", "1", "buyer-2", "2"]);
+      redis.set.mockResolvedValue("OK");
+      redis.decr.mockResolvedValueOnce(1).mockResolvedValueOnce(-1);
+
+      const dequeued = await queueService.dequeueBatch(category.id, 50);
+
+      expect(dequeued).toEqual([{ userId: "buyer-1", score: 1 }]);
+      expect(redis.incr).toHaveBeenCalledTimes(1);
+      expect(redis.del).toHaveBeenCalledTimes(1);
+      expect(redis.del).toHaveBeenCalledWith(
+        `lock:category:${category.id}:buyer:buyer-2`,
+      );
+    });
+
+    test("skips buyer whose lock already exists", async () => {
+      const category = await createCategory();
+      redis.get.mockResolvedValue("5");
+      redis.zpopmin.mockResolvedValue(["buyer-1", "1", "buyer-2", "2"]);
+      redis.set.mockResolvedValueOnce(null).mockResolvedValueOnce("OK");
+      redis.decr.mockResolvedValue(4);
+
+      const dequeued = await queueService.dequeueBatch(category.id, 50);
+
+      expect(dequeued).toEqual([{ userId: "buyer-2", score: 2 }]);
     });
 
     test("throws 404 for unknown category", async () => {

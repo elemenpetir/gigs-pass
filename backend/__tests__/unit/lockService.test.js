@@ -15,6 +15,7 @@ jest.mock("../../src/config/redis", () => ({
   zadd: jest.fn(),
   zrem: jest.fn(),
   zrangebyscore: jest.fn(),
+  pttl: jest.fn(),
 }));
 
 const lockService = require("../../src/services/lockService");
@@ -45,83 +46,8 @@ describe("Lock Service", () => {
     redis.zadd.mockReset();
     redis.zrem.mockReset();
     redis.zrangebyscore.mockReset();
+    redis.pttl.mockReset();
     orderModel.markExpiredByBuyerAndCategory.mockReset();
-  });
-
-  describe("reserveSlot", () => {
-    test("reserves slot and decrements stock", async () => {
-      const category = await createCategory();
-      redis.get.mockResolvedValue("1");
-      redis.set.mockResolvedValue("OK");
-      redis.decr.mockResolvedValue(99);
-
-      const result = await lockService.reserveSlot("buyer-1", category.id);
-
-      expect(redis.set).toHaveBeenCalledWith(
-        `lock:category:${category.id}:buyer:buyer-1`,
-        "1",
-        "EX",
-        LOCK_TTL_SECONDS,
-        "NX",
-      );
-      expect(redis.decr).toHaveBeenCalledWith(`stock:category:${category.id}`);
-      expect(redis.zadd).toHaveBeenCalledWith(
-        `lockexpiry:category:${category.id}`,
-        expect.any(Number),
-        "buyer-1",
-      );
-      expect(result).toEqual({
-        locked: true,
-        expiresInSeconds: LOCK_TTL_SECONDS,
-        remainingStock: 99,
-      });
-    });
-
-    test("throws 403 when buyer is not granted", async () => {
-      const category = await createCategory();
-      redis.get.mockResolvedValue(null);
-
-      await expect(
-        lockService.reserveSlot("buyer-1", category.id),
-      ).rejects.toThrow("Not granted: join the queue first");
-
-      expect(redis.set).not.toHaveBeenCalled();
-      expect(redis.decr).not.toHaveBeenCalled();
-    });
-
-    test("throws 409 on double reservation", async () => {
-      const category = await createCategory();
-      redis.get.mockResolvedValue("1");
-      redis.set.mockResolvedValue(null);
-
-      await expect(
-        lockService.reserveSlot("buyer-1", category.id),
-      ).rejects.toThrow("Slot already reserved");
-
-      expect(redis.decr).not.toHaveBeenCalled();
-    });
-
-    test("rolls back stock when it goes negative", async () => {
-      const category = await createCategory();
-      redis.get.mockResolvedValue("1");
-      redis.set.mockResolvedValue("OK");
-      redis.decr.mockResolvedValue(-1);
-
-      await expect(
-        lockService.reserveSlot("buyer-1", category.id),
-      ).rejects.toThrow("Out of stock");
-
-      expect(redis.incr).toHaveBeenCalledWith(`stock:category:${category.id}`);
-      expect(redis.del).toHaveBeenCalledWith(
-        `lock:category:${category.id}:buyer:buyer-1`,
-      );
-    });
-
-    test("throws 404 for unknown category", async () => {
-      await expect(lockService.reserveSlot("buyer-1", 9999)).rejects.toThrow(
-        "Category not found",
-      );
-    });
   });
 
   describe("confirmSlot", () => {
@@ -210,9 +136,23 @@ describe("Lock Service", () => {
   });
 
   describe("getReservation", () => {
-    test("returns reservation when lock exists", async () => {
+    test("returns remaining ttl when lock exists", async () => {
       const category = await createCategory();
       redis.get.mockResolvedValue("1");
+      redis.pttl.mockResolvedValue(180000);
+
+      const result = await lockService.getReservation("buyer-1", category.id);
+
+      expect(result).toEqual({
+        reserved: true,
+        expiresInSeconds: 180,
+      });
+    });
+
+    test("falls back to full ttl when lock has no expiry", async () => {
+      const category = await createCategory();
+      redis.get.mockResolvedValue("1");
+      redis.pttl.mockResolvedValue(-1);
 
       const result = await lockService.getReservation("buyer-1", category.id);
 

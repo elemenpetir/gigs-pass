@@ -1,7 +1,6 @@
 const categoryModel = require("../models/categoryModel");
 const orderModel = require("../models/orderModel");
 const redis = require("../config/redis");
-const { grantedKey } = require("./queueService");
 const { LOCK_TTL_SECONDS } = require("../config/constants");
 
 const lockKey = (categoryId, userId) =>
@@ -16,51 +15,6 @@ const findCategory = async (categoryId) => {
     throw error;
   }
   return category;
-};
-
-const isGranted = async (userId, categoryId) => {
-  const value = await redis.get(grantedKey(categoryId, userId));
-  return value !== null;
-};
-
-const reserveSlot = async (userId, categoryId) => {
-  const category = await findCategory(categoryId);
-
-  if (!(await isGranted(userId, category.id))) {
-    const error = new Error("Not granted: join the queue first");
-    error.statusCode = 403;
-    throw error;
-  }
-
-  const key = lockKey(category.id, userId);
-
-  const locked = await redis.set(key, "1", "EX", LOCK_TTL_SECONDS, "NX");
-  if (locked !== "OK") {
-    const error = new Error("Slot already reserved");
-    error.statusCode = 409;
-    throw error;
-  }
-
-  const remaining = await redis.decr(`stock:category:${category.id}`);
-  if (remaining < 0) {
-    await redis.incr(`stock:category:${category.id}`);
-    await redis.del(key);
-    const error = new Error("Out of stock");
-    error.statusCode = 409;
-    throw error;
-  }
-
-  await redis.zadd(
-    lockExpiryKey(category.id),
-    Date.now() + LOCK_TTL_SECONDS * 1000,
-    String(userId),
-  );
-
-  return {
-    locked: true,
-    expiresInSeconds: LOCK_TTL_SECONDS,
-    remainingStock: remaining,
-  };
 };
 
 const confirmSlot = async (userId, categoryId) => {
@@ -100,10 +54,18 @@ const releaseSlot = async (userId, categoryId) => {
 
 const getReservation = async (userId, categoryId) => {
   const category = await findCategory(categoryId);
-  const value = await redis.get(lockKey(category.id, userId));
-  return value === null
-    ? null
-    : { reserved: true, expiresInSeconds: LOCK_TTL_SECONDS };
+  const key = lockKey(category.id, userId);
+
+  const value = await redis.get(key);
+  if (value === null) {
+    return null;
+  }
+
+  const ttlMs = await redis.pttl(key);
+  const expiresInSeconds =
+    ttlMs > 0 ? Math.ceil(ttlMs / 1000) : LOCK_TTL_SECONDS;
+
+  return { reserved: true, expiresInSeconds };
 };
 
 const cleanupExpiredLocks = async (categoryId) => {
@@ -128,7 +90,6 @@ const cleanupExpiredLocks = async (categoryId) => {
 };
 
 module.exports = {
-  reserveSlot,
   confirmSlot,
   releaseSlot,
   getReservation,

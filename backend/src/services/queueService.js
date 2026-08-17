@@ -1,14 +1,13 @@
 const categoryModel = require("../models/categoryModel");
 const redis = require("../config/redis");
+const { lockKey, lockExpiryKey } = require("./lockService");
 const {
   QUEUE_BATCH_SIZE,
   QUEUE_SEQ_KEY,
-  GRANTED_TTL_SECONDS,
+  LOCK_TTL_SECONDS,
 } = require("../config/constants");
 
 const queueKey = (eventId, categoryId) => `queue:event:${eventId}:${categoryId}`;
-const grantedKey = (categoryId, userId) =>
-  `granted:category:${categoryId}:buyer:${userId}`;
 
 const parseZpopResult = (flat) => {
   const dequeued = [];
@@ -80,20 +79,28 @@ const dequeueBatch = async (categoryId, count = QUEUE_BATCH_SIZE) => {
   const popped = await redis.zpopmin(key, batchSize);
   const dequeued = parseZpopResult(popped);
 
-  if (dequeued.length > 0) {
-    const pipeline = redis.pipeline();
-    for (const buyer of dequeued) {
-      pipeline.set(
-        grantedKey(category.id, buyer.userId),
-        "1",
-        "EX",
-        GRANTED_TTL_SECONDS,
-      );
+  const admitted = [];
+  for (const buyer of dequeued) {
+    const keyLock = lockKey(category.id, buyer.userId);
+    const locked = await redis.set(keyLock, "1", "EX", LOCK_TTL_SECONDS, "NX");
+    if (locked !== "OK") {
+      continue;
     }
-    await pipeline.exec();
+    const remaining = await redis.decr(`stock:category:${category.id}`);
+    if (remaining < 0) {
+      await redis.incr(`stock:category:${category.id}`);
+      await redis.del(keyLock);
+      continue;
+    }
+    await redis.zadd(
+      lockExpiryKey(category.id),
+      Date.now() + LOCK_TTL_SECONDS * 1000,
+      String(buyer.userId),
+    );
+    admitted.push(buyer);
   }
 
-  return dequeued;
+  return admitted;
 };
 
 module.exports = {
@@ -101,5 +108,4 @@ module.exports = {
   getQueuePosition,
   dequeueBatch,
   queueKey,
-  grantedKey,
 };
