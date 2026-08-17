@@ -20,11 +20,15 @@ const findById = async (id) => {
 const findPublished = async (category) => {
   const hasFilter = Boolean(category);
   const query = `
-    SELECT id, organizer_id, title, description, image_url, event_date, category, status, created_at, updated_at
-    FROM events
-    WHERE status = 'published'
-    ${hasFilter ? "AND category = $1" : ""}
-    ORDER BY event_date ASC;
+    SELECT
+      e.id, e.organizer_id, e.title, e.description, e.image_url, e.event_date, e.category, e.status, e.created_at, e.updated_at,
+      MIN(tc.price) AS min_price
+    FROM events e
+    LEFT JOIN ticket_categories tc ON tc.event_id = e.id
+    WHERE e.status = 'published'
+    ${hasFilter ? "AND e.category = $1" : ""}
+    GROUP BY e.id
+    ORDER BY e.event_date ASC;
   `;
   const params = hasFilter ? [category] : [];
   const result = await pool.query(query, params);

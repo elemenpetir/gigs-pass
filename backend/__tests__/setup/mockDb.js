@@ -81,14 +81,20 @@ const mockDb = {
       return Promise.resolve({ rows: [event], rowCount: 1 });
     }
 
-    if (sql.includes("WHERE status = 'published'")) {
-      const hasFilter = sql.includes("AND category = $1");
+    if (sql.includes("status = 'published'")) {
+      const hasFilter = sql.includes("category = $1");
       const [category] = params;
       let events = this.events.filter((e) => e.status === "published");
       if (hasFilter) {
         events = events.filter((e) => e.category === category);
       }
-      return Promise.resolve({ rows: events, rowCount: events.length });
+      const rows = events.map((e) => {
+        const prices = this.categories
+          .filter((c) => String(c.event_id) === String(e.id))
+          .map((c) => c.price);
+        return { ...e, min_price: prices.length ? Math.min(...prices) : null };
+      });
+      return Promise.resolve({ rows, rowCount: rows.length });
     }
 
     if (sql.includes("UPDATE events") && sql.includes("title = $2")) {

@@ -118,6 +118,29 @@ describe("Event Model", () => {
       expect(events[0].title).toBe("Music Fest");
     });
 
+    test("should include min_price as cheapest ticket category", async () => {
+      const event = await createEvent("org-1", "Priced Event", null, FUTURE_DATE, "music");
+      await updateStatus(event.id, "published");
+      mockDb.categories.push(
+        { id: "c1", event_id: event.id, name: "GA", price: 100, quota: 50 },
+        { id: "c2", event_id: event.id, name: "VIP", price: 500, quota: 10 },
+      );
+
+      const events = await findPublished();
+
+      expect(events).toHaveLength(1);
+      expect(events[0].min_price).toBe(100);
+    });
+
+    test("should set min_price null when event has no categories", async () => {
+      const event = await createEvent("org-1", "No Tier", null, FUTURE_DATE, "music");
+      await updateStatus(event.id, "published");
+
+      const events = await findPublished();
+
+      expect(events[0].min_price).toBeNull();
+    });
+
     test("should return empty array when no published events", async () => {
       const events = await findPublished();
 
