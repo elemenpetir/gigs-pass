@@ -40,7 +40,8 @@ const update = async (req, res) => {
 
 const list = async (req, res) => {
   try {
-    const events = await eventService.listPublishedEvents();
+    const { category } = req.query || {};
+    const events = await eventService.listPublishedEvents(category);
 
     return res.status(200).json({
       status: "success",

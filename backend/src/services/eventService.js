@@ -3,6 +3,7 @@ const orderModel = require("../models/orderModel");
 const ledgerService = require("./ledgerService");
 const db = require("../config/db");
 const cloudinaryService = require("./cloudinaryService");
+const { EVENT_CATEGORIES } = require("../config/constants");
 
 const isFutureDate = (date) => {
   return new Date(date).getTime() > Date.now();
@@ -11,11 +12,21 @@ const isFutureDate = (date) => {
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
+const isValidCategory = (category) => EVENT_CATEGORIES.includes(category);
+
 const createEvent = async (organizerId, data) => {
-  const { title, description, event_date } = data;
+  const { title, description, event_date, category } = data;
 
   if (!title || typeof title !== "string" || title.trim().length === 0) {
     const error = new Error("Title is required");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (!category || !isValidCategory(category)) {
+    const error = new Error(
+      `Category must be one of: ${EVENT_CATEGORIES.join(", ")}`,
+    );
     error.statusCode = 400;
     throw error;
   }
@@ -31,6 +42,7 @@ const createEvent = async (organizerId, data) => {
     title.trim(),
     description || null,
     event_date,
+    category,
   );
 };
 
@@ -48,7 +60,7 @@ const updateEvent = async (userId, eventId, data) => {
     throw error;
   }
 
-  const { title, description, event_date } = data;
+  const { title, description, event_date, category } = data;
 
   if (title !== undefined) {
     if (typeof title !== "string" || title.trim().length === 0) {
@@ -56,6 +68,14 @@ const updateEvent = async (userId, eventId, data) => {
       error.statusCode = 400;
       throw error;
     }
+  }
+
+  if (category !== undefined && !isValidCategory(category)) {
+    const error = new Error(
+      `Category must be one of: ${EVENT_CATEGORIES.join(", ")}`,
+    );
+    error.statusCode = 400;
+    throw error;
   }
 
   if (event_date !== undefined && !isFutureDate(event_date)) {
@@ -68,12 +88,13 @@ const updateEvent = async (userId, eventId, data) => {
   const nextDescription =
     description === undefined ? event.description : description || null;
   const nextEventDate = event_date === undefined ? event.event_date : event_date;
+  const nextCategory = category === undefined ? event.category : category;
 
-  return eventModel.updateEvent(eventId, nextTitle, nextDescription, nextEventDate);
+  return eventModel.updateEvent(eventId, nextTitle, nextDescription, nextEventDate, nextCategory);
 };
 
-const listPublishedEvents = async () => {
-  return eventModel.findPublished();
+const listPublishedEvents = async (category) => {
+  return eventModel.findPublished(category);
 };
 
 const listOrganizerEvents = async (organizerId) => {

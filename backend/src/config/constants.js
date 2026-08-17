@@ -14,6 +14,14 @@ const HOLDING_PERIOD_DAYS = parseInt(process.env.HOLDING_PERIOD_DAYS, 10) || 7;
 const ORDER_LIFECYCLE_INTERVAL_MS =
   parseInt(process.env.ORDER_LIFECYCLE_INTERVAL_MS, 10) ||
   24 * 60 * 60 * 1000;
+const EVENT_CATEGORIES = [
+  "music",
+  "festival",
+  "concert",
+  "comedy",
+  "art",
+  "culture",
+];
 
 module.exports = {
   QUEUE_BATCH_SIZE,
@@ -26,4 +34,5 @@ module.exports = {
   PLATFORM_COMMISSION_PERCENT,
   HOLDING_PERIOD_DAYS,
   ORDER_LIFECYCLE_INTERVAL_MS,
+  EVENT_CATEGORIES,
 };

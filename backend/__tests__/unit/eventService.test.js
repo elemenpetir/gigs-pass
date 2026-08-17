@@ -64,6 +64,7 @@ describe("Event Service", () => {
         title: "Music Festival",
         description: "Annual festival",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       expect(event).toBeDefined();
@@ -93,6 +94,7 @@ describe("Event Service", () => {
       await expect(
         eventService.createEvent("org-1", {
           title: "Music Festival",
+          category: "music",
         }),
       ).rejects.toThrow("Event date must be in the future");
     });
@@ -101,6 +103,7 @@ describe("Event Service", () => {
       await expect(
         eventService.createEvent("org-1", {
           title: "Music Festival",
+          category: "music",
           event_date: PAST_DATE,
         }),
       ).rejects.toThrow("Event date must be in the future");
@@ -110,9 +113,39 @@ describe("Event Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       expect(event.description).toBeNull();
+    });
+
+    test("should reject missing category", async () => {
+      await expect(
+        eventService.createEvent("org-1", {
+          title: "Music Festival",
+          event_date: FUTURE_DATE,
+        }),
+      ).rejects.toThrow("Category must be one of");
+    });
+
+    test("should reject invalid category", async () => {
+      await expect(
+        eventService.createEvent("org-1", {
+          title: "Music Festival",
+          event_date: FUTURE_DATE,
+          category: "sports",
+        }),
+      ).rejects.toThrow("Category must be one of");
+    });
+
+    test("should store valid category", async () => {
+      const event = await eventService.createEvent("org-1", {
+        title: "Jazz Night",
+        event_date: FUTURE_DATE,
+        category: "music",
+      });
+
+      expect(event.category).toBe("music");
     });
   });
 
@@ -121,6 +154,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Original",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       const updated = await eventService.updateEvent("org-1", created.id, {
@@ -134,6 +168,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Original",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -155,6 +190,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Original",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -163,6 +199,34 @@ describe("Event Service", () => {
         }),
       ).rejects.toThrow("Event date must be in the future");
     });
+
+    test("should update category when provided", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Original",
+        event_date: FUTURE_DATE,
+        category: "music",
+      });
+
+      const updated = await eventService.updateEvent("org-1", created.id, {
+        category: "festival",
+      });
+
+      expect(updated.category).toBe("festival");
+    });
+
+    test("should reject invalid category on update", async () => {
+      const created = await eventService.createEvent("org-1", {
+        title: "Original",
+        event_date: FUTURE_DATE,
+        category: "music",
+      });
+
+      await expect(
+        eventService.updateEvent("org-1", created.id, {
+          category: "sports",
+        }),
+      ).rejects.toThrow("Category must be one of");
+    });
   });
 
   describe("listPublishedEvents", () => {
@@ -170,11 +234,13 @@ describe("Event Service", () => {
       await eventService.createEvent("org-1", {
         title: "Draft Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       const published = await eventService.createEvent("org-2", {
         title: "Published Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateStatus(published.id, "published");
 
@@ -189,6 +255,26 @@ describe("Event Service", () => {
 
       expect(events).toEqual([]);
     });
+
+    test("should filter published events by category", async () => {
+      const music = await eventService.createEvent("org-1", {
+        title: "Music Fest",
+        event_date: FUTURE_DATE,
+        category: "music",
+      });
+      const concert = await eventService.createEvent("org-2", {
+        title: "Solo Concert",
+        event_date: FUTURE_DATE,
+        category: "concert",
+      });
+      await eventModel.updateStatus(music.id, "published");
+      await eventModel.updateStatus(concert.id, "published");
+
+      const events = await eventService.listPublishedEvents("music");
+
+      expect(events).toHaveLength(1);
+      expect(events[0].title).toBe("Music Fest");
+    });
   });
 
   describe("getEventById", () => {
@@ -196,6 +282,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Find Me",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       const event = await eventService.getEventById(created.id);
@@ -225,6 +312,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Image Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       const updated = await eventService.uploadEventImage(
@@ -242,6 +330,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Image Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -261,6 +350,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Image Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -272,6 +362,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Image Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -287,6 +378,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Image Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -302,6 +394,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Image Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateImage(created.id, "https://res.cloudinary.com/demo/image/upload/v1/gigspass/events/1/old-image.jpg");
 
@@ -317,6 +410,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Draft Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       const published = await eventService.publishEvent("org-1", created.id);
@@ -329,6 +423,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Draft Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -346,6 +441,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Draft Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateStatus(created.id, "published");
 
@@ -360,6 +456,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Suspension Test",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateStatus(created.id, "published");
 
@@ -379,8 +476,9 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Past Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
-      await eventModel.updateEvent(created.id, "Past Event", null, PAST_DATE);
+      await eventModel.updateEvent(created.id, "Past Event", null, PAST_DATE, "music");
       await eventModel.updateStatus(created.id, "published");
 
       await expect(
@@ -392,6 +490,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Draft Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -405,6 +504,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Cancel Test",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateStatus(created.id, "published");
       const { order } = seedCategoryAndOrder(created.id, "buyer-1");
@@ -430,6 +530,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Cancel Test",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateStatus(created.id, "published");
       seedCategoryAndOrder(created.id, "buyer-1");
@@ -448,6 +549,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Cancel Test",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateStatus(created.id, "published");
       seedCategoryAndOrder(created.id, "buyer-1", "pending");
@@ -465,6 +567,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Suspended Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateStatus(created.id, "published");
       await eventModel.updateStatus(created.id, "suspended");
@@ -481,6 +584,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Cancel Test",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await eventModel.updateStatus(created.id, "published");
 
@@ -505,8 +609,9 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Past Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
-      await eventModel.updateEvent(created.id, "Past Event", null, PAST_DATE);
+      await eventModel.updateEvent(created.id, "Past Event", null, PAST_DATE, "music");
       await eventModel.updateStatus(created.id, "published");
 
       await expect(
@@ -521,6 +626,7 @@ describe("Event Service", () => {
       const created = await eventService.createEvent("org-1", {
         title: "Draft Event",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(

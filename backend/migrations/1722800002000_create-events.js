@@ -23,6 +23,11 @@ exports.up = (pgm) => {
     description: { type: "text" },
     image_url: { type: "varchar(500)" },
     event_date: { type: "timestamptz", notNull: true },
+    category: {
+      type: "varchar(20)",
+      notNull: true,
+      check: "category IN ('music', 'festival', 'concert', 'comedy', 'art', 'culture')",
+    },
     status: {
       type: "varchar(20)",
       notNull: true,

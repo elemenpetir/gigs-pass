@@ -1,36 +1,39 @@
 const pool = require("../config/db");
 
-const createEvent = async (organizerId, title, description, eventDate) => {
+const createEvent = async (organizerId, title, description, eventDate, category) => {
   const query = `
-    INSERT INTO events (organizer_id, title, description, event_date)
-    VALUES ($1, $2, $3, $4)
-    RETURNING id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at;
+    INSERT INTO events (organizer_id, title, description, event_date, category)
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING id, organizer_id, title, description, image_url, event_date, category, status, created_at, updated_at;
   `;
-  const result = await pool.query(query, [organizerId, title, description, eventDate]);
+  const result = await pool.query(query, [organizerId, title, description, eventDate, category]);
   return result.rows[0];
 };
 
 const findById = async (id) => {
   const query =
-    "SELECT id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at FROM events WHERE id = $1";
+    "SELECT id, organizer_id, title, description, image_url, event_date, category, status, created_at, updated_at FROM events WHERE id = $1";
   const result = await pool.query(query, [id]);
   return result.rows[0] || null;
 };
 
-const findPublished = async () => {
+const findPublished = async (category) => {
+  const hasFilter = Boolean(category);
   const query = `
-    SELECT id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at
+    SELECT id, organizer_id, title, description, image_url, event_date, category, status, created_at, updated_at
     FROM events
     WHERE status = 'published'
+    ${hasFilter ? "AND category = $1" : ""}
     ORDER BY event_date ASC;
   `;
-  const result = await pool.query(query);
+  const params = hasFilter ? [category] : [];
+  const result = await pool.query(query, params);
   return result.rows;
 };
 
 const findByOrganizerId = async (organizerId) => {
   const query = `
-    SELECT id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at
+    SELECT id, organizer_id, title, description, image_url, event_date, category, status, created_at, updated_at
     FROM events
     WHERE organizer_id = $1
     ORDER BY created_at DESC;
@@ -42,7 +45,7 @@ const findByOrganizerId = async (organizerId) => {
 const findAll = async () => {
   const query = `
     SELECT
-      e.id, e.organizer_id, e.title, e.description, e.image_url, e.event_date, e.status, e.created_at, e.updated_at,
+      e.id, e.organizer_id, e.title, e.description, e.image_url, e.event_date, e.category, e.status, e.created_at, e.updated_at,
       u.name AS organizer_name
     FROM events e
     JOIN users u ON u.id = e.organizer_id
@@ -52,14 +55,14 @@ const findAll = async () => {
   return result.rows;
 };
 
-const updateEvent = async (id, title, description, eventDate) => {
+const updateEvent = async (id, title, description, eventDate, category) => {
   const query = `
     UPDATE events
-    SET title = $2, description = $3, event_date = $4
+    SET title = $2, description = $3, event_date = $4, category = $5
     WHERE id = $1
-    RETURNING id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at;
+    RETURNING id, organizer_id, title, description, image_url, event_date, category, status, created_at, updated_at;
   `;
-  const result = await pool.query(query, [id, title, description, eventDate]);
+  const result = await pool.query(query, [id, title, description, eventDate, category]);
   return result.rows[0] || null;
 };
 
@@ -68,7 +71,7 @@ const updateStatus = async (id, status, client = pool) => {
     UPDATE events
     SET status = $2
     WHERE id = $1
-    RETURNING id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at;
+    RETURNING id, organizer_id, title, description, image_url, event_date, category, status, created_at, updated_at;
   `;
   const result = await client.query(query, [id, status]);
   return result.rows[0] || null;
@@ -79,7 +82,7 @@ const updateImage = async (id, imageUrl) => {
     UPDATE events
     SET image_url = $2
     WHERE id = $1
-    RETURNING id, organizer_id, title, description, image_url, event_date, status, created_at, updated_at;
+    RETURNING id, organizer_id, title, description, image_url, event_date, category, status, created_at, updated_at;
   `;
   const result = await pool.query(query, [id, imageUrl]);
   return result.rows[0] || null;

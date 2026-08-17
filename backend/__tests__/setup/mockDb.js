@@ -57,9 +57,12 @@ const mockDb = {
     }
 
     if (sql.includes("INSERT INTO events")) {
-      const [organizerId, title, description, eventDate] = params;
+      const [organizerId, title, description, eventDate, category] = params;
       if (!title) {
         return Promise.reject(new Error('null value in column "title" violates not-null constraint'));
+      }
+      if (!category) {
+        return Promise.reject(new Error('null value in column "category" violates not-null constraint'));
       }
       const id = eventIdCounter++;
       const event = {
@@ -69,6 +72,7 @@ const mockDb = {
         description,
         image_url: null,
         event_date: eventDate,
+        category,
         status: "draft",
         created_at: new Date(),
         updated_at: new Date(),
@@ -78,12 +82,17 @@ const mockDb = {
     }
 
     if (sql.includes("WHERE status = 'published'")) {
-      const events = this.events.filter((e) => e.status === "published");
+      const hasFilter = sql.includes("AND category = $1");
+      const [category] = params;
+      let events = this.events.filter((e) => e.status === "published");
+      if (hasFilter) {
+        events = events.filter((e) => e.category === category);
+      }
       return Promise.resolve({ rows: events, rowCount: events.length });
     }
 
     if (sql.includes("UPDATE events") && sql.includes("title = $2")) {
-      const [id, title, description, eventDate] = params;
+      const [id, title, description, eventDate, category] = params;
       const event = this.events.find((e) => e.id === id);
       if (!event) {
         return Promise.resolve({ rows: [], rowCount: 0 });
@@ -91,6 +100,7 @@ const mockDb = {
       event.title = title;
       event.description = description;
       event.event_date = eventDate;
+      event.category = category;
       event.updated_at = new Date();
       return Promise.resolve({ rows: [event], rowCount: 1 });
     }

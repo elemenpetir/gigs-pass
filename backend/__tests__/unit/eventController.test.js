@@ -49,6 +49,7 @@ describe("Event Controller", () => {
           title: "Music Festival",
           description: "Annual festival",
           event_date: FUTURE_DATE,
+          category: "music",
         },
       };
       const res = createMockReqRes();
@@ -66,7 +67,7 @@ describe("Event Controller", () => {
     test("should return 400 for missing title", async () => {
       const req = {
         user: { id: "org-1", role: "organizer" },
-        body: { event_date: FUTURE_DATE },
+        body: { event_date: FUTURE_DATE, category: "music" },
       };
       const res = createMockReqRes();
 
@@ -80,7 +81,7 @@ describe("Event Controller", () => {
     test("should return 400 for past event date", async () => {
       const req = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Old Event", event_date: PAST_DATE },
+        body: { title: "Old Event", event_date: PAST_DATE, category: "music" },
       };
       const res = createMockReqRes();
 
@@ -96,7 +97,7 @@ describe("Event Controller", () => {
     test("should update event and return 200", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Original", event_date: FUTURE_DATE },
+        body: { title: "Original", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -120,7 +121,7 @@ describe("Event Controller", () => {
     test("should return 403 when non-owner updates", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Original", event_date: FUTURE_DATE },
+        body: { title: "Original", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -160,7 +161,7 @@ describe("Event Controller", () => {
     test("should return only published events with 200", async () => {
       const draftReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Draft", event_date: FUTURE_DATE },
+        body: { title: "Draft", event_date: FUTURE_DATE, category: "music" },
       };
       await eventController.create(draftReq, createMockReqRes());
 
@@ -187,7 +188,7 @@ describe("Event Controller", () => {
     test("should return event by id with 200", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Find Me", event_date: FUTURE_DATE },
+        body: { title: "Find Me", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -228,7 +229,7 @@ describe("Event Controller", () => {
     test("should upload image and return 200", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Image Event", event_date: FUTURE_DATE },
+        body: { title: "Image Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -252,7 +253,7 @@ describe("Event Controller", () => {
     test("should return 403 when non-owner uploads", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Image Event", event_date: FUTURE_DATE },
+        body: { title: "Image Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -291,7 +292,7 @@ describe("Event Controller", () => {
     test("should publish event and return 200", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Draft Event", event_date: FUTURE_DATE },
+        body: { title: "Draft Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -314,7 +315,7 @@ describe("Event Controller", () => {
     test("should return 403 when non-owner publishes", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Draft Event", event_date: FUTURE_DATE },
+        body: { title: "Draft Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -352,7 +353,7 @@ describe("Event Controller", () => {
     test("should suspend published event and return 200", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Suspend Event", event_date: FUTURE_DATE },
+        body: { title: "Suspend Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -378,13 +379,13 @@ describe("Event Controller", () => {
     test("should return 400 when suspending a past event", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Past Event", event_date: FUTURE_DATE },
+        body: { title: "Past Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
       const eventId = createRes.body.data.event.id;
 
-      await eventModel.updateEvent(eventId, "Past Event", null, PAST_DATE);
+      await eventModel.updateEvent(eventId, "Past Event", null, PAST_DATE, "music");
       await eventController.publish(
         { user: { id: "org-1", role: "organizer" }, params: { id: eventId } },
         createMockReqRes(),
@@ -416,7 +417,7 @@ describe("Event Controller", () => {
     test("should cancel published event by owner and return 200", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Cancel Event", event_date: FUTURE_DATE },
+        body: { title: "Cancel Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -444,7 +445,7 @@ describe("Event Controller", () => {
     test("should cancel suspended event by admin and return 200", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Suspended Event", event_date: FUTURE_DATE },
+        body: { title: "Suspended Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -471,7 +472,7 @@ describe("Event Controller", () => {
     test("should return 403 when non-owner organizer cancels", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Cancel Event", event_date: FUTURE_DATE },
+        body: { title: "Cancel Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
@@ -498,13 +499,13 @@ describe("Event Controller", () => {
     test("should return 400 when cancelling a past event", async () => {
       const createReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Past Event", event_date: FUTURE_DATE },
+        body: { title: "Past Event", event_date: FUTURE_DATE, category: "music" },
       };
       const createRes = createMockReqRes();
       await eventController.create(createReq, createRes);
       const eventId = createRes.body.data.event.id;
 
-      await eventModel.updateEvent(eventId, "Past Event", null, PAST_DATE);
+      await eventModel.updateEvent(eventId, "Past Event", null, PAST_DATE, "music");
       await eventController.publish(
         { user: { id: "org-1", role: "organizer" }, params: { id: eventId } },
         createMockReqRes(),

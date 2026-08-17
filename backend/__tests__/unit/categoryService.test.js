@@ -23,6 +23,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       const category = await categoryService.createCategory("org-1", event.id, {
@@ -53,6 +54,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -68,6 +70,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -82,6 +85,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -97,6 +101,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       await expect(
@@ -114,6 +119,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       const category = await categoryService.createCategory("org-1", event.id, {
         name: "VIP",
@@ -140,6 +146,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       const category = await categoryService.createCategory("org-1", event.id, {
         name: "VIP",
@@ -159,6 +166,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       const category = await categoryService.createCategory("org-1", event.id, {
         name: "VIP",
@@ -185,6 +193,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       const category = await categoryService.createCategory("org-1", event.id, {
         name: "VIP",
@@ -203,6 +212,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       const category = await categoryService.createCategory("org-1", event.id, {
         name: "VIP",
@@ -221,6 +231,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       const category = await categoryService.createCategory("org-1", event.id, {
         name: "VIP",
@@ -241,6 +252,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
       await categoryService.createCategory("org-1", event.id, {
         name: "VIP",
@@ -264,6 +276,7 @@ describe("Category Service", () => {
       const event = await eventService.createEvent("org-1", {
         title: "Concert",
         event_date: FUTURE_DATE,
+        category: "music",
       });
 
       const categories = await categoryService.listCategoriesByEvent(event.id);

@@ -36,7 +36,7 @@ describe("Category Controller", () => {
     test("should create category and return 201", async () => {
       const createEventReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Festival", event_date: FUTURE_DATE },
+        body: { title: "Festival", event_date: FUTURE_DATE, category: "music" },
       };
       const createEventRes = createMockReqRes();
       await eventController.create(createEventReq, createEventRes);
@@ -61,7 +61,7 @@ describe("Category Controller", () => {
     test("should return 403 when non-owner creates category", async () => {
       const createEventReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Festival", event_date: FUTURE_DATE },
+        body: { title: "Festival", event_date: FUTURE_DATE, category: "music" },
       };
       const createEventRes = createMockReqRes();
       await eventController.create(createEventReq, createEventRes);
@@ -86,7 +86,7 @@ describe("Category Controller", () => {
     test("should update category and return 200", async () => {
       const createEventReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Festival", event_date: FUTURE_DATE },
+        body: { title: "Festival", event_date: FUTURE_DATE, category: "music" },
       };
       const createEventRes = createMockReqRes();
       await eventController.create(createEventReq, createEventRes);
@@ -119,7 +119,7 @@ describe("Category Controller", () => {
     test("should return 403 when non-owner updates category", async () => {
       const createEventReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Festival", event_date: FUTURE_DATE },
+        body: { title: "Festival", event_date: FUTURE_DATE, category: "music" },
       };
       const createEventRes = createMockReqRes();
       await eventController.create(createEventReq, createEventRes);
@@ -168,7 +168,7 @@ describe("Category Controller", () => {
     test("should return categories for event with 200", async () => {
       const createEventReq = {
         user: { id: "org-1", role: "organizer" },
-        body: { title: "Festival", event_date: FUTURE_DATE },
+        body: { title: "Festival", event_date: FUTURE_DATE, category: "music" },
       };
       const createEventRes = createMockReqRes();
       await eventController.create(createEventReq, createEventRes);
