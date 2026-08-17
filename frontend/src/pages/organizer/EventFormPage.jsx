@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ImagePlus } from "lucide-react";
 import { api } from "@/lib/api";
-import { Input, Textarea, Label } from "@/components";
+import { Input, Textarea, Select, Label } from "@/components";
+import { EVENT_CATEGORIES } from "@/lib/categories";
 
 function toDatetimeLocal(iso) {
   const d = new Date(iso);
@@ -18,6 +19,7 @@ export default function EventFormPage() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
@@ -35,6 +37,7 @@ export default function EventFormPage() {
         if (cancelled) return;
         setTitle(data.event.title || "");
         setDescription(data.event.description || "");
+        setCategory(data.event.category || "");
         setEventDate(toDatetimeLocal(data.event.event_date));
         setExistingImage(data.event.image_url || "");
       } catch (err) {
@@ -68,12 +71,14 @@ export default function EventFormPage() {
         await api.put(`/events/${id}`, {
           title,
           description,
+          category,
           event_date: eventDate,
         });
       } else {
         const data = await api.post("/events", {
           title,
           description,
+          category,
           event_date: eventDate,
         });
         eventId = data.event.id;
@@ -124,6 +129,16 @@ export default function EventFormPage() {
         <div>
           <Label htmlFor="title">Title</Label>
           <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="e.g. Neon Nights Festival" />
+        </div>
+
+        <div>
+          <Label htmlFor="category">Category</Label>
+          <Select id="category" value={category} onChange={(e) => setCategory(e.target.value)} required>
+            <option value="" disabled>Pick a vibe</option>
+            {EVENT_CATEGORIES.map((c) => (
+              <option key={c.slug} value={c.slug}>{c.label}</option>
+            ))}
+          </Select>
         </div>
 
         <div>
