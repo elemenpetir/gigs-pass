@@ -32,7 +32,7 @@ frontend/
 │   ├── components/   # Reusable UI (shadcn/ui based)
 │   ├── pages/        # Route-level pages, dipisah per role:
 │   │   ├── auth/        # LoginPage
-│   │   ├── public/      # Home, EventDetailPage (tanpa login)
+│   │   ├── public/      # Home, EventsPage, EventDetailPage (tanpa login)
 │   │   ├── buyer/       # WaitingRoom, Checkout, OrderHistory
 │   │   ├── organizer/   # Events, EventForm, Categories, EventOrders
 │   │   └── admin/       # AdminEvents, AdminOrders, AdminAnalytics
@@ -112,6 +112,13 @@ SETELAH event_date LEWAT:
 - `cancel` → hanya dari status `published`/`suspended`, hanya organizer/admin, dan hanya jika belum digelar
 - `suspended` **tidak** trigger refund (hanya review sementara)
 - `cancelled` **wajib** trigger `refunded` (refund_reason='event_cancelled') di semua orders terkait
+
+### Event Category (genre/vibe)
+- Kolom `events.category` enum **NOT NULL** — 6 vibe: `music`, `festival`, `concert`, `comedy`, `art`, `culture` (CHECK constraint di migration `create-events`).
+- List slug: backend `EVENT_CATEGORIES` di `src/config/constants.js`; frontend mirror di `frontend/src/lib/categories.js` (`EVENT_CATEGORIES` + `categoryLabel`). Tambah/ubah kategori = update KEDUANYA + migration CHECK — jangan sampai diverge.
+- Create event **wajib** `category` (validasi `eventService.createEvent`); update opsional (validasi kalau dikirim).
+- `GET /api/events` dukung `?category=<slug>` (filter server-side di `eventModel.findPublished`) dan return `min_price` per event (LEFT JOIN `ticket_categories` + `MIN(price)` + `GROUP BY e.id`) — harga tiket termurah untuk tampilan "FROM Rp...".
+- Frontend `/events` (EventsPage) memfilter **client-side** (sekali fetch); `?category=` dipakai untuk deep-link dari BROWSE VIBES di Home. Navbar: Discover / Events — tidak ada link Categories terpisah.
 
 ## API Response Convention (envelope format)
 

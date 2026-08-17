@@ -237,6 +237,7 @@ title
 description (rich content / artikel)
 image_url (Cloudinary)
 event_date
+category (music / festival / concert / comedy / art / culture — enum, NOT NULL + CHECK)
 status (draft / published / suspended / cancelled)
 created_at
 updated_at
@@ -299,7 +300,7 @@ GET  /api/auth/me
 
 ### 8.2 Events (Public + Organizer)
 ```txt
-GET    /api/events                 (public, tanpa login)
+GET    /api/events                 (public, tanpa login; dukung ?category= untuk filter vibe; tiap event menyertakan min_price = tiket termurah)
 GET    /api/events/:id             (public, tanpa login)
 POST   /api/events                 (organizer, draft)
 PUT    /api/events/:id             (organizer, hanya pemilik)

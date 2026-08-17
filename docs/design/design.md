@@ -89,7 +89,7 @@ Defined in the Figma export (`src/index.css`) — do not improvise timings:
 ### 7.1 Header (TopNav)
 - Sticky top, `bg-background` with `border-b-4 border-foreground` (brut-border-4, top/left/right none).
 - Brand: oversized `font-black tracking-tighter` — "GIGS" in an inverted black box (bg foreground, text background, slight `-rotate-2`), "PASS" + pink dot ("PASS.") — `text-3xl md:text-5xl`.
-- Nav (desktop): Discover / Events / Categories — `font-bold text-lg uppercase tracking-tight`, hover color per accent; "Discover" carries a tiny rotated yellow `LIVE` badge above it (`brut-border-2 rotate-6 bg-gigs-yellow text-[10px]`).
+- Nav (desktop): Discover / Events — `font-bold text-lg uppercase tracking-tight`, hover color per accent; "Discover" carries a tiny rotated yellow `LIVE` badge above it (`brut-border-2 rotate-6 bg-gigs-yellow text-[10px]`).
 - Right: Search / My Orders as square bordered buttons (`brut-border-2 brut-button bg-background`, hover fills accent), Login as solid `bg-gigs-purple` bordered button.
 
 ### 7.2 Buttons

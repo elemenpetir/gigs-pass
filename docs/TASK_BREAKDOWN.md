@@ -5,7 +5,7 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** **Fase 12 item 1 complete** — unit test coverage untuk service kritikal (`ledgerService`, `queueService`, `lockService`) telah dilengkapi (total 238 unit tests pass). Commit: `test: add edge case unit tests for critical services`.
+- **Terakhir Dikerjakan:** **Event Category feature complete** (enhancement interleaved setelah Fase 12 item 1) — kolom `events.category` (enum 6 vibe, NOT NULL + CHECK), validasi & filter `?category=`, `min_price` via JOIN (N+1 hilang), select kategori di form event, halaman `/events` + filter client-side, navbar Discover/Events. Commit terakhir: `feat: add events listing page with category filter` (total **248** unit tests pass).
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
   - `style: scale down hero section components and fix linebreaks` + `style: relocate all access tape to coming up section` — penyesuaian proporsi font & card Hero section pada `Home.jsx` dan penyelarasan spesifikasi di `docs/design/design.md`.
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
@@ -17,7 +17,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
   - **Frontend buyer flow:** waiting room pakai `@microsoft/fetch-event-source` (Bearer header, auto-reconnect, abort saat granted). Checkout: lock 300s + countdown (denyut <60s), pay mock `{success}`, one-shot admission. Login redirect pakai `location.state.from`. `auth.jsx` pakai lazy-init `useState(() => Boolean(getToken()))` (tanpa setState sinkron dalam effect).
   - **Ritme verifikasi frontend (AGENTS.md):** build wajib 1x di titik commit per unit kerja; lint di sela perubahan besar; docs-only tidak perlu build.
   - **Fase 9 design decision (backend analytics):** paid statuses untuk revenue hanya 4 (`pending`, `holding_period`, `released`, `held`). `refunded` dihitung TERPISAH (`refundedAmount`), `netRevenue = revenue − refundedAmount`. `held` tetap masuk revenue tapi di-breakdown eksplisit (`heldAmount`/`heldCount`). Fund status organizer diambil dari balance ledger account (`organizer_pending`/`organizer_available`), bukan SUM orders. Endpoint: `GET /api/analytics/event/:id/overview` (organizer, owner check) & `GET /api/analytics/platform/overview` (admin).
-- **Status Fase lain:** Fase 0-11 complete, Fase 12 (Item 1) complete (unit test: 238).
+  - **Event Category (enhancement, selesai):** kolom `events.category` enum NOT NULL (`music`/`festival`/`concert`/`comedy`/`art`/`culture`) + CHECK di migration `create-events`. List slug di backend `src/config/constants.js` (`EVENT_CATEGORIES`) + mirror frontend `frontend/src/lib/categories.js` (`EVENT_CATEGORIES` + `categoryLabel`). `GET /api/events` kini dukung `?category=` dan return `min_price` (LEFT JOIN `ticket_categories` + `MIN(price)` + `GROUP BY e.id`) — hapus N+1 harga di Home/EventsPage. Frontend: select kategori di form event, halaman `/events` filter client-side, navbar jadi Discover/Events (Categories dihapus), BROWSE VIBES → `/events?category=...`.
+- **Status Fase lain:** Fase 0-11 complete, Fase 12 (Item 1) complete (unit test: 248), Event Category enhancement complete.
 - **Task Selanjutnya:** **Fase 12 (CI / GitHub Actions Setup)** — setup GitHub Actions workflow untuk unit & integration test.
 
 ## Ringkasan per Minggu
@@ -184,6 +185,15 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 - [x] Lengkapi test coverage untuk semua service kritikal (ledger, queue, lock)
 - [ ] Setup GitHub Actions: jalankan `npm test` **dan** `npm run test:integration` (`--runInBand`) setiap push — pakai `services: postgres:latest` untuk integration test (tanpa Docker lokal)
 - [ ] Matikan auto-deploy, deploy hanya lewat GitHub Actions setelah test lolos (pola sama seperti AssetShield)
+
+---
+
+### Enhancement — Event Category (genre/vibe, selesai)
+
+- [x] Migration: kolom `events.category` (enum `music`/`festival`/`concert`/`comedy`/`art`/`culture`, NOT NULL + CHECK) — edit langsung file `1722800002000_create-events.js` (belum ada data penting, lalu `migrate down/up`)
+- [x] Backend: validasi category di create/update (`EVENT_CATEGORIES` di `src/config/constants.js`), filter `?category=` di `GET /api/events`, unit test category
+- [x] Backend: `GET /api/events` return `min_price` per event (LEFT JOIN `ticket_categories` + `MIN(price)` + `GROUP BY e.id`) — hilangkan N+1 harga di frontend
+- [x] Frontend: select kategori di form event (`frontend/src/lib/categories.js`), halaman `/events` filter client-side + chip, navbar jadi Discover/Events, BROWSE VIBES → `/events?category=...`
 
 ---
 
