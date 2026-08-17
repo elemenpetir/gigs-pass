@@ -5,7 +5,7 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** **Event Category feature complete** (enhancement interleaved setelah Fase 12 item 1) — kolom `events.category` (enum 6 vibe, NOT NULL + CHECK), validasi & filter `?category=`, `min_price` via JOIN (N+1 hilang), select kategori di form event, halaman `/events` + filter client-side, navbar Discover/Events. Commit terakhir: `feat: add events listing page with category filter` (total **248** unit tests pass).
+- **Terakhir Dikerjakan:** **Queue: Admission = Lock complete** (refactor pasca Event Category) — marker `granted` dihapus total; dequeue (`ZPOPMIN`) langsung `SET lock EX 300 NX` + `DECR stock` (+ rollback bila negatif) + `ZADD lockexpiry`; checkout hanya verifikasi via `getReservation` (PTTL sisa waktu akurat); konstanta `GRANTED_TTL_SECONDS` + `isGranted`/`reserveSlot` hilang. Commit terakhir: `refactor: merge admission into seat lock on dequeue` (total **246** unit tests pass).
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
   - `style: scale down hero section components and fix linebreaks` + `style: relocate all access tape to coming up section` — penyesuaian proporsi font & card Hero section pada `Home.jsx` dan penyelarasan spesifikasi di `docs/design/design.md`.
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
@@ -18,7 +18,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
   - **Ritme verifikasi frontend (AGENTS.md):** build wajib 1x di titik commit per unit kerja; lint di sela perubahan besar; docs-only tidak perlu build.
   - **Fase 9 design decision (backend analytics):** paid statuses untuk revenue hanya 4 (`pending`, `holding_period`, `released`, `held`). `refunded` dihitung TERPISAH (`refundedAmount`), `netRevenue = revenue − refundedAmount`. `held` tetap masuk revenue tapi di-breakdown eksplisit (`heldAmount`/`heldCount`). Fund status organizer diambil dari balance ledger account (`organizer_pending`/`organizer_available`), bukan SUM orders. Endpoint: `GET /api/analytics/event/:id/overview` (organizer, owner check) & `GET /api/analytics/platform/overview` (admin).
   - **Event Category (enhancement, selesai):** kolom `events.category` enum NOT NULL (`music`/`festival`/`concert`/`comedy`/`art`/`culture`) + CHECK di migration `create-events`. List slug di backend `src/config/constants.js` (`EVENT_CATEGORIES`) + mirror frontend `frontend/src/lib/categories.js` (`EVENT_CATEGORIES` + `categoryLabel`). `GET /api/events` kini dukung `?category=` dan return `min_price` (LEFT JOIN `ticket_categories` + `MIN(price)` + `GROUP BY e.id`) — hapus N+1 harga di Home/EventsPage. Frontend: select kategori di form event, halaman `/events` filter client-side, navbar jadi Discover/Events (Categories dihapus), BROWSE VIBES → `/events?category=...`.
-- **Status Fase lain:** Fase 0-11 complete, Fase 12 (Item 1) complete (unit test: 248), Event Category enhancement complete.
+  - **Queue: Admission = Lock (selesai):** hapus marker `granted:*` — buyer yang diadmit (dequeue) langsung `SET lock EX 300 NX` + `DECR stock` (rollback `INCR`+`DEL` bila negatif) + `ZADD lockexpiry`. `POST /api/checkout/:id/lock` jadi verifikasi reservasi (`getReservation` + `PTTL`). Satu grant = satu kesempatan; gagal bayar/TTL → antri ulang (one-shot ketat, loophole re-lock tertutup). Trade-off UX: hitung mundur mulai dari admission, bukan klik checkout — frontend auto-redirect saat `granted`, nyaris tak terasa. Circular require lockService↔queueService ikut hilang.
+- **Status Fase lain:** Fase 0-11 complete, Fase 12 (Item 1) complete (unit test: 246), Event Category & Admission=Lock enhancement complete.
 - **Task Selanjutnya:** **Fase 12 (CI / GitHub Actions Setup)** — setup GitHub Actions workflow untuk unit & integration test.
 
 ## Ringkasan per Minggu
@@ -194,6 +195,14 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 - [x] Backend: validasi category di create/update (`EVENT_CATEGORIES` di `src/config/constants.js`), filter `?category=` di `GET /api/events`, unit test category
 - [x] Backend: `GET /api/events` return `min_price` per event (LEFT JOIN `ticket_categories` + `MIN(price)` + `GROUP BY e.id`) — hilangkan N+1 harga di frontend
 - [x] Frontend: select kategori di form event (`frontend/src/lib/categories.js`), halaman `/events` filter client-side + chip, navbar jadi Discover/Events, BROWSE VIBES → `/events?category=...`
+
+---
+
+### Enhancement — Queue: Admission = Lock (merge granted → lock, selesai)
+
+- [x] Hapus marker `granted:*` & `GRANTED_TTL_SECONDS` — `dequeueBatch` langsung `SET lock EX 300 NX` + `DECR stock` (+ rollback bila negatif) + `ZADD lockexpiry` (admission = lock, no over-admission, one-shot ketat)
+- [x] `/api/checkout/:categoryId/lock` jadi verifikasi reservasi (`getReservation` + `PTTL` sisa waktu); hapus `isGranted`/`reserveSlot` (circular require lockService↔queueService ikut hilang)
+- [x] Unit test rework dequeue/reservation (246 pass) + docs sinkron (AGENTS/PRD/TASK_BREAKDOWN)
 
 ---
 

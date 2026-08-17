@@ -112,8 +112,8 @@ Role tetap **hardcode sederhana** (`buyer`, `organizer`, `admin`) — bukan dyna
 
 ### 5.4 Checkout & Reservation (General Admission)
 
-- Tidak ada kursi bernomor — "slot" = satu unit kuota (general admission). Buyer yang lolos dequeue (ditandai `granted:category:{id}:buyer:{uid}` EX 300) berhak mengunci slot.
-- Begitu buyer masuk checkout, slot/kuota tiket dikunci sementara atas nama buyer (`lock:category:{id}:buyer:{uid}` EX 300 NX), stok di-`DECR`.
+- Tidak ada kursi bernomor — "slot" = satu unit kuota (general admission). **Admission = lock**: buyer yang ditarik dari antrian (`ZPOPMIN`) langsung dikunci slotnya (`lock:category:{id}:buyer:{uid}` EX 300 NX) dan stok di-`DECR` — tidak ada marker `granted` terpisah.
+- Halaman checkout hanya **memverifikasi** reservasi yang sudah ada (cek lock + `PTTL` sisa waktu); belum ada/expired → 403 "join the queue first".
 - Jika tidak dibayar dalam waktu tersebut, lock otomatis lepas (Redis expiry), kuota kembali tersedia (`INCR`) — dipastikan oleh cleanup di awal tiap tick `queueDequeuer` (interval 5s, scan `lockexpiry:category:{id}`) yang melepas lock kadaluwarsa + mengembalikan stock + menandai order `awaiting_payment` → `expired`.
 - Order dibuat di PostgreSQL berstatus `awaiting_payment` saat lock berhasil; tercatat final (status `pending`) hanya setelah pembayaran berhasil.
 - One-shot admission: buyer yang gagal bayar / lock-nya expired harus join antrian lagi dari belakang.
@@ -182,24 +182,22 @@ ZRANK queue:event:123:cat:1 <buyer_id>                   → cek posisi
 ZPOPMIN queue:event:123:cat:1 <N>                        → tarik N buyer ke checkout (throttled entry)
 ```
 
-### 6.2 Reservation Lock (General Admission) — String + TTL
+### 6.2 Reservation Lock (Admission = Lock) — String + TTL
 
 ```
 Key   : lock:category:{category_id}:buyer:{user_id}
-Value : "1" (NX menjamin satu buyer max satu lock per kategori)
+Value : "1" (NX; satu buyer max satu lock per kategori)
 TTL   : 300 detik (5 menit)
 
-SET lock:category:1:buyer:789 1 EX 300 NX   → reserve slot (gagal = buyer sudah punya lock)
+SET lock:category:1:buyer:789 1 EX 300 NX  → dikerjakan dequeueBatch saat buyer diadmit (admission = lock; gagal = sudah punya lock)
+DECR stock:category:1                       → seketika bersamaan dengan admission; kalau negatif → rollback INCR + DEL lock (buyer putus, antri ulang)
+GET + PTTL lock:category:1:buyer:789        → verifikasi reservasi di checkout (sisa waktu akurat)
 DEL lock:category:1:buyer:789               → bayar sukses (stock TETAP berkurang)
 DEL lock:category:1:buyer:789 + INCR stock  → bayar gagal / TTL habis (slot balik ke pool)
 
-Granted marker (bukti lolos dequeue, TTL 300):
-  Key   : granted:category:{category_id}:buyer:{user_id}
-  Di-set oleh dequeueBatch; wajib ada sebelum reserveSlot.
-
 Lock expiry tracker (Sorted Set, untuk cleanup lock yang ditinggalkan):
   Key   : lockexpiry:category:{category_id}   (member user_id, score = epoch ms expiry)
-  ZADD  : saat reserveSlot; ZREM saat confirmSlot/releaseSlot
+  ZADD  : saat admission di dequeueBatch; ZREM saat confirmSlot/releaseSlot
   Job   : dipanggil di awal processQueueForCategory (queueDequeuer, tiap 5s) → ZRANGEBYSCORE 0 <now> → DEL lock + INCR stock
           + ZREM + order awaiting_payment di-mark expired
 ```
@@ -212,7 +210,7 @@ DECR stock:category:1   → saat lock berhasil
 INCR stock:category:1   → saat lock expired/dibatalkan
 ```
 
-Redis **hanya** dipakai untuk: antrian, lock + lock expiry tracker, granted marker, dan stock counter — tidak dipakai untuk cache umum atau session, untuk menjaga scope tetap terkendali.
+Redis **hanya** dipakai untuk: antrian, lock + lock expiry tracker, dan stock counter — tidak dipakai untuk cache umum atau session, untuk menjaga scope tetap terkendali.
 
 ---
 

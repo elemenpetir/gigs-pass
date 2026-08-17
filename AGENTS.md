@@ -45,18 +45,17 @@ frontend/
 ### Redis Usage — ONLY for:
 - Virtual queue (Sorted Set): `queue:event:{event_id}:{category_id}`
 - Queue sequence counter: `queue:seq` (monotonic INCR — dipakai sebagai score ZADD agar FIFO ketat, bukan Date.now)
-- Seat lock with TTL: `lock:category:{category_id}:buyer:{user_id}` (general admission — lock per buyer, bukan per seat; TTL 300s)
+- Seat lock with TTL: `lock:category:{category_id}:buyer:{user_id}` (general admission — lock per buyer, bukan per seat; TTL 300s; **diset saat dequeue** = admission)
 - Lock expiry tracker (Sorted Set, untuk cleanup lock yang ditinggalkan): `lockexpiry:category:{category_id}` (member `user_id`, score = epoch ms saat lock akan kedaluwarsa)
-- Granted marker (bukti buyer lolos dequeue): `granted:category:{category_id}:buyer:{user_id}` (TTL 300s)
 - Atomic stock counter: `stock:category:{category_id}`
 
 **NOT used for:** general cache, session storage, or anything else.
 
 ### Queue & SSE Design (Fase 4)
 - `joinQueue` — `ZADD` member `userId`, score dari `INCR queue:seq`. Re-join idempotent (jika sudah ada, tidak ZADD ulang).
-- `dequeueBatch` — `ZPOPMIN` N buyer, cap batch dengan sisa `stock:category:{id}`. Setiap buyer yang di-admit langsung ditandai `granted:category:{id}:buyer:{uid}` (SET EX 300) sebagai bukti lolos antrian. Dipanggil scheduler `src/jobs/queueDequeuer.js` (batch 50, interval 5s, override via env).
-- SSE `GET /api/queue/:categoryId/stream` — **auth via Bearer header** (`authenticate` biasa), BUKAN token di URL. Tidak ada SSE token terpisah — cukup session JWT. Frontend memakai `@microsoft/fetch-event-source` (header custom + auto-reconnect). Event: `position` (perubahan posisi) lalu `granted` (user keluar antrian) lalu koneksi ditutup.
-- Checkout (general admission, Fase 5): `reserveSlot` — cek `granted` ada → `SET lock:category:{id}:buyer:{uid} EX 300 NX` → `DECR stock` → `ZADD lockexpiry:category:{id}` (score = now + 300s). Bayar sukses → `confirmSlot` (hapus lock + ZREM, stock TETAP turun). Gagal/TTL → `releaseSlot` (hapus lock + `INCR stock` + ZREM). One-shot admission: buyer yang gagal bayar harus join antrian lagi.
+- `dequeueBatch` — `ZPOPMIN` N buyer, cap batch dengan sisa `stock:category:{id}`. **Admission = lock**: tiap buyer yang di-admit langsung di-`SET lock:category:{id}:buyer:{uid} EX 300 NX` lalu `DECR stock` (kalau negatif → rollback `INCR stock` + `DEL lock`, buyer putus & harus antri ulang) lalu `ZADD lockexpiry:category:{id}` (score = now + 300s). Return hanya yang admitted. Dipanggil scheduler `src/jobs/queueDequeuer.js` (batch 50, interval 5s, override via env). Tidak ada marker `granted` terpisah — tersedia stok selalu segar karena DECR terjadi seketika saat admission.
+- SSE `GET /api/queue/:categoryId/stream` — **auth via Bearer header** (`authenticate` biasa), BUKAN token di URL. Tidak ada SSE token terpisah — cukup session JWT. Frontend memakai `@microsoft/fetch-event-source` (header custom + auto-reconnect). Event: `position` (perubahan posisi) lalu `granted` (user keluar antrian = sudah masuk & pegang lock) lalu koneksi ditutup.
+- Checkout (general admission, Fase 5): lock sudah ada saat admission, jadi `POST /api/checkout/:categoryId/lock` tinggal **verifikasi** reservasi via `lockService.getReservation` (cek lock + `PTTL` sisa waktu, bukan selalu 300). Belum ada/expired → 403 "join the queue first". Bayar sukses → `confirmSlot` (hapus lock + ZREM, stock TETAP turun). Gagal/TTL → `releaseSlot` (hapus lock + `INCR stock` + ZREM). One-shot admission: buyer yang gagal bayar atau lock-nya expire harus join antrian lagi.
 - Lock cleanup: dipanggil di awal `processQueueForCategory` di `src/jobs/queueDequeuer.js` (bukan job terpisah) — tiap tick (interval 5s, sama dengan dequeue) `ZRANGEBYSCORE lockexpiry:category:{id} 0 <now>` → tiap buyer yang lock-nya kedaluwarsa di-`DEL` lock + `INCR stock` + `ZREM`, dan order `awaiting_payment`-nya di-mark `expired`. Cleanup jalan SEBELUM `dequeueBatch` membaca stock, jadi admission selalu pakai angka stock yang segar. Logika cleanup ada di `lockService.cleanupExpiredLocks`. `queueDequeuer.run()` punya anti-overlap guard (`if (running) return`).
 
 ### Ledger System
