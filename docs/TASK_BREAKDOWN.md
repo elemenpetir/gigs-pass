@@ -21,6 +21,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
   - **Queue: Admission = Lock (selesai):** hapus marker `granted:*` — buyer yang diadmit (dequeue) langsung `SET lock EX 300 NX` + `DECR stock` (rollback `INCR`+`DEL` bila negatif) + `ZADD lockexpiry`. `POST /api/checkout/:id/lock` jadi verifikasi reservasi (`getReservation` + `PTTL`). Satu grant = satu kesempatan; gagal bayar/TTL → antri ulang (one-shot ketat, loophole re-lock tertutup). Trade-off UX: hitung mundur mulai dari admission, bukan klik checkout — frontend auto-redirect saat `granted`, nyaris tak terasa. Circular require lockService↔queueService ikut hilang.
 - **Status Fase lain:** Fase 0-11 complete, Fase 12 (Item 1) complete (unit test: 246), Event Category & Admission=Lock enhancement complete.
 - **Task Selanjutnya:** **Fase 12 (CI / GitHub Actions Setup)** — setup GitHub Actions workflow untuk unit & integration test.
+- **Watch-list (belum diputuskan):** rundingkan interval dequeue 5 detik (opsi: perbesar batch `QUEUE_BATCH_SIZE`, persingkat `QUEUE_DEQUEUE_INTERVAL_MS`, atau admit stock-driven) — hasil diskusi sesi refactor Admission=Lock.
 
 ## Ringkasan per Minggu
 
