@@ -5,7 +5,7 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** **Fase 12 (CI / GitHub Actions Setup) complete** — workflow files `ci.yml` & `cd.yml` ditambahkan, semua unit & integration tests lulus, CI otomatis berjalan pada setiap push.
+- **Terakhir Dikerjakan:** **Fase 13 (Docker Compose) complete** — `backend/Dockerfile` (node:20-alpine, `npm ci --omit=dev`), `frontend/Dockerfile` (multi-stage Vite build → nginx:alpine serve static + SPA routing), `docker-compose.yml` di root (backend bind `127.0.0.1:5000`, frontend `127.0.0.1:3000`, healthcheck `/api/health`, frontend wait backend healthy). Env injection terbukti (DB connect sukses via compose `env_file`; `.env` di-exclude dari image via `.dockerignore`). Test lokal via Docker WSL: build OK, kedua container healthy, health check & Nginx serve 200. Full flow frontend→backend menunggu Nginx reverse proxy EC2 host (Fase 14, arsitektur Opsi B — single port publik).
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
   - `style: scale down hero section components and fix linebreaks` + `style: relocate all access tape to coming up section` — penyesuaian proporsi font & card Hero section pada `Home.jsx` dan penyelarasan spesifikasi di `docs/design/design.md`.
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
@@ -19,8 +19,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
   - **Fase 9 design decision (backend analytics):** paid statuses untuk revenue hanya 4 (`pending`, `holding_period`, `released`, `held`). `refunded` dihitung TERPISAH (`refundedAmount`), `netRevenue = revenue − refundedAmount`. `held` tetap masuk revenue tapi di-breakdown eksplisit (`heldAmount`/`heldCount`). Fund status organizer diambil dari balance ledger account (`organizer_pending`/`organizer_available`), bukan SUM orders. Endpoint: `GET /api/analytics/event/:id/overview` (organizer, owner check) & `GET /api/analytics/platform/overview` (admin).
   - **Event Category (enhancement, selesai):** kolom `events.category` enum NOT NULL (`music`/`festival`/`concert`/`comedy`/`art`/`culture`) + CHECK di migration `create-events`. List slug di backend `src/config/constants.js` (`EVENT_CATEGORIES`) + mirror frontend `frontend/src/lib/categories.js` (`EVENT_CATEGORIES` + `categoryLabel`). `GET /api/events` kini dukung `?category=` dan return `min_price` (LEFT JOIN `ticket_categories` + `MIN(price)` + `GROUP BY e.id`) — hapus N+1 harga di Home/EventsPage. Frontend: select kategori di form event, halaman `/events` filter client-side, navbar jadi Discover/Events (Categories dihapus), BROWSE VIBES → `/events?category=...`.
   - **Queue: Admission = Lock (selesai):** hapus marker `granted:*` — buyer yang diadmit (dequeue) langsung `SET lock EX 300 NX` + `DECR stock` (rollback `INCR`+`DEL` bila negatif) + `ZADD lockexpiry`. `POST /api/checkout/:id/lock` jadi verifikasi reservasi (`getReservation` + `PTTL`). Satu grant = satu kesempatan; gagal bayar/TTL → antri ulang (one-shot ketat, loophole re-lock tertutup). Trade-off UX: hitung mundur mulai dari admission, bukan klik checkout — frontend auto-redirect saat `granted`, nyaris tak terasa. Circular require lockService↔queueService ikut hilang.
-- **Status Fase lain:** Fase 0-11 complete, Fase 12 (Item 1) complete (unit test: 246), Event Category & Admission=Lock enhancement complete.
-- **Task Selanjutnya:** **Fase 13 (Docker Compose)** — setup Dockerfile backend, frontend, dan docker-compose.yml (Redis & PostgreSQL eksternal).
+- **Status Fase lain:** Fase 0-12 complete, Fase 13 complete (unit test: 246, integration: 20), Event Category & Admission=Lock enhancement complete.
+- **Task Selanjutnya:** **Fase 14 (Deployment AWS)** — setup EC2 + Docker Engine, Nginx reverse proxy di EC2 host (Opsi B: `/api/*` → `127.0.0.1:5000` backend, `/*` → `127.0.0.1:3000` frontend; hanya port 80/443 publik), deploy via GitHub Actions setelah test lolos.
 - **Watch-list (belum diputuskan):** rundingkan interval dequeue 5 detik (opsi: perbesar batch `QUEUE_BATCH_SIZE`, persingkat `QUEUE_DEQUEUE_INTERVAL_MS`, atau admit stock-driven) — hasil diskusi sesi refactor Admission=Lock.
 
 ## Ringkasan per Minggu
@@ -209,11 +209,11 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 13 — Docker Compose
 
-- [ ] Dockerfile backend
-- [ ] Dockerfile frontend
-- [ ] `docker-compose.yml` — backend + frontend (Redis & PostgreSQL tetap eksternal di Upstash/Supabase, tidak perlu container sendiri)
-- [ ] Pastikan env vars (termasuk `ARG`/`ENV` untuk Vite) ter-inject dengan benar ke image
-- [ ] Test `docker compose up` jalan lokal end-to-end
+- [x] Dockerfile backend
+- [x] Dockerfile frontend
+- [x] `docker-compose.yml` — backend + frontend (Redis & PostgreSQL tetap eksternal di Upstash/Supabase, tidak perlu container sendiri)
+- [x] Pastikan env vars (termasuk `ARG`/`ENV` untuk Vite) ter-inject dengan benar ke image
+- [x] Test `docker compose up` jalan lokal end-to-end
 
 ---
 
