@@ -9,7 +9,7 @@ const createEvent = async (app, token) => {
   const res = await request(app)
     .post("/api/events")
     .set("Authorization", `Bearer ${token}`)
-    .send({ title: "Festival", description: "Desc", event_date: FUTURE_DATE });
+    .send({ title: "Festival", description: "Desc", event_date: FUTURE_DATE, category: "music" });
   expect(res.status).toBe(201);
   return res.body.data.event.id;
 };

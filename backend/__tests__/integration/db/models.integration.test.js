@@ -46,7 +46,7 @@ describe("Models (integration, real DB constraints)", () => {
       "organizer",
       "Org",
     );
-    const event = await eventModel.createEvent(user.id, "Event", null, FUTURE_DATE);
+    const event = await eventModel.createEvent(user.id, "Event", null, FUTURE_DATE, "music");
 
     await expect(
       categoryModel.createCategory(event.id, "GA", -100, 10),

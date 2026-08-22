@@ -28,7 +28,7 @@ const createPublishedEvent = async (app, token, title = "Festival") => {
   const created = await request(app)
     .post("/api/events")
     .set("Authorization", `Bearer ${token}`)
-    .send({ title, description: "Desc", event_date: FUTURE_DATE });
+    .send({ title, description: "Desc", event_date: FUTURE_DATE, category: "music" });
   expect(created.status).toBe(201);
   const eventId = created.body.data.event.id;
 
@@ -54,7 +54,7 @@ describe("Events (integration, real DB)", () => {
     const res = await request(app)
       .post("/api/events")
       .set("Authorization", `Bearer ${token}`)
-      .send({ title: "Festival", description: "Desc", event_date: FUTURE_DATE });
+      .send({ title: "Festival", description: "Desc", event_date: FUTURE_DATE, category: "music" });
 
     expect(res.status).toBe(201);
     expect(res.body.data.event.status).toBe("draft");
@@ -83,7 +83,7 @@ describe("Events (integration, real DB)", () => {
     const created = await request(app)
       .post("/api/events")
       .set("Authorization", `Bearer ${owner.token}`)
-      .send({ title: "Festival", event_date: FUTURE_DATE });
+      .send({ title: "Festival", event_date: FUTURE_DATE, category: "music" });
     const eventId = created.body.data.event.id;
 
     const res = await request(app)
@@ -118,10 +118,10 @@ describe("Events (integration, real DB)", () => {
     const created = await request(app)
       .post("/api/events")
       .set("Authorization", `Bearer ${token}`)
-      .send({ title: "Festival", event_date: FUTURE_DATE });
+      .send({ title: "Festival", event_date: FUTURE_DATE, category: "music" });
     const eventId = created.body.data.event.id;
 
-    await eventModel.updateEvent(eventId, "Festival", null, PAST_DATE);
+    await eventModel.updateEvent(eventId, "Festival", null, PAST_DATE, "music");
     await request(app)
       .put(`/api/events/${eventId}/publish`)
       .set("Authorization", `Bearer ${token}`);
