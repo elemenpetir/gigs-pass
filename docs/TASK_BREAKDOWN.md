@@ -5,7 +5,7 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** **Queue: Admission = Lock complete** (refactor pasca Event Category) — marker `granted` dihapus total; dequeue (`ZPOPMIN`) langsung `SET lock EX 300 NX` + `DECR stock` (+ rollback bila negatif) + `ZADD lockexpiry`; checkout hanya verifikasi via `getReservation` (PTTL sisa waktu akurat); konstanta `GRANTED_TTL_SECONDS` + `isGranted`/`reserveSlot` hilang. Commit terakhir: `refactor: merge admission into seat lock on dequeue` (total **246** unit tests pass).
+- **Terakhir Dikerjakan:** **Fase 12 (CI / GitHub Actions Setup) complete** — workflow files `ci.yml` & `cd.yml` ditambahkan, semua unit & integration tests lulus, CI otomatis berjalan pada setiap push.
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
   - `style: scale down hero section components and fix linebreaks` + `style: relocate all access tape to coming up section` — penyesuaian proporsi font & card Hero section pada `Home.jsx` dan penyelarasan spesifikasi di `docs/design/design.md`.
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
@@ -20,7 +20,7 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
   - **Event Category (enhancement, selesai):** kolom `events.category` enum NOT NULL (`music`/`festival`/`concert`/`comedy`/`art`/`culture`) + CHECK di migration `create-events`. List slug di backend `src/config/constants.js` (`EVENT_CATEGORIES`) + mirror frontend `frontend/src/lib/categories.js` (`EVENT_CATEGORIES` + `categoryLabel`). `GET /api/events` kini dukung `?category=` dan return `min_price` (LEFT JOIN `ticket_categories` + `MIN(price)` + `GROUP BY e.id`) — hapus N+1 harga di Home/EventsPage. Frontend: select kategori di form event, halaman `/events` filter client-side, navbar jadi Discover/Events (Categories dihapus), BROWSE VIBES → `/events?category=...`.
   - **Queue: Admission = Lock (selesai):** hapus marker `granted:*` — buyer yang diadmit (dequeue) langsung `SET lock EX 300 NX` + `DECR stock` (rollback `INCR`+`DEL` bila negatif) + `ZADD lockexpiry`. `POST /api/checkout/:id/lock` jadi verifikasi reservasi (`getReservation` + `PTTL`). Satu grant = satu kesempatan; gagal bayar/TTL → antri ulang (one-shot ketat, loophole re-lock tertutup). Trade-off UX: hitung mundur mulai dari admission, bukan klik checkout — frontend auto-redirect saat `granted`, nyaris tak terasa. Circular require lockService↔queueService ikut hilang.
 - **Status Fase lain:** Fase 0-11 complete, Fase 12 (Item 1) complete (unit test: 246), Event Category & Admission=Lock enhancement complete.
-- **Task Selanjutnya:** **Fase 12 (CI / GitHub Actions Setup)** — setup GitHub Actions workflow untuk unit & integration test.
+- **Task Selanjutnya:** **Fase 13 (Docker Compose)** — setup Dockerfile backend, frontend, dan docker-compose.yml (Redis & PostgreSQL eksternal).
 - **Watch-list (belum diputuskan):** rundingkan interval dequeue 5 detik (opsi: perbesar batch `QUEUE_BATCH_SIZE`, persingkat `QUEUE_DEQUEUE_INTERVAL_MS`, atau admit stock-driven) — hasil diskusi sesi refactor Admission=Lock.
 
 ## Ringkasan per Minggu
@@ -185,8 +185,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 ### Fase 12 — Unit Test Lanjutan & CI
 
 - [x] Lengkapi test coverage untuk semua service kritikal (ledger, queue, lock)
-- [ ] Setup GitHub Actions: jalankan `npm test` **dan** `npm run test:integration` (`--runInBand`) setiap push — pakai `services: postgres:latest` untuk integration test (tanpa Docker lokal)
-- [ ] Matikan auto-deploy, deploy hanya lewat GitHub Actions setelah test lolos (pola sama seperti AssetShield)
+- [x] Setup GitHub Actions: jalankan `npm test` **dan** `npm run test:integration` (`--runInBand`) setiap push — pakai `services: postgres:latest` untuk integration test (tanpa Docker lokal)
+- [x] Matikan auto-deploy, deploy hanya lewat GitHub Actions setelah test lolos (pola sama seperti AssetShield)
 
 ---
 
