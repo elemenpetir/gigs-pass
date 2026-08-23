@@ -162,7 +162,7 @@ export default function EventDetailPage() {
                       onClick={() => goJoinQueue(cat.id)}
                       className="bg-gigs-pink text-foreground font-black uppercase text-lg px-6 py-4 brut-border-4 brut-shadow brut-button flex items-center justify-between gap-4 w-full"
                     >
-                      JOIN QUEUE <ArrowRight strokeWidth={4} />
+                      GET TICKETS <ArrowRight strokeWidth={4} />
                     </button>
                   </div>
                 </div>
