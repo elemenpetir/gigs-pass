@@ -5,7 +5,8 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan:** **Sesi hardening & design review (pasca-Fase 13)** — CTA kategori tiket direlabel `JOIN QUEUE` → `GET TICKETS`. Design review menyeluruh menghasilkan backlog enhancement dengan desain siap-eksekusi + trigger condition (lihat bagian Enhancement Opsional): broadcast SSE registry, true sell-out, leave queue, `MAX_PENDING_LOCKS`, rate limiting berlapis, ketahanan auth flash crowd, adaptive pass-through, Redis re-init runbook. Implementasi kode: **rate limiting `express-rate-limit`** — 4 limiter (login hitung-gagal / register hitung-semua / join per-user / global kecuali SSE), envelope 429, `TRUST_PROXY`, test-mode unlimited; unit test kini **253**. Watch-list interval dequeue ditutup (final 5s). Keputusan desain tercatat di bagian Keputusan Teknis.
+- **Terakhir Dikerjakan:** **Fase 14 Deployment AWS complete** — EC2 t3.micro (ap-southeast-1) + Docker + Nginx host reverse proxy (Opsi B) live di `http://13.214.56.223`. Verifikasi end-to-end: register/login, organizer create event+publish+ticket category, buyer join queue → queueDequeuer admit → SSE `granted`, rate limiting aktif. Artefak repo: `deploy/nginx/gigspass.conf`, `.github/workflows/cd.yml` hardened, `docs/deployment.md` runbook.
+- **Task Selanjutnya:** **Fase 15 (Stress Testing k6)** — tulis script simulasi join queue + checkout, jalankan 20–50 VU, buktikan no overselling/FIFO/TTL recovery, catat p95/p99, dokumentasi ke README.
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
   - `style: scale down hero section components and fix linebreaks` + `style: relocate all access tape to coming up section` — penyesuaian proporsi font & card Hero section pada `Home.jsx` dan penyelarasan spesifikasi di `docs/design/design.md`.
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
@@ -31,8 +32,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 | -------- | -------------------- | ---------- | -------------------------------------------------------------- |
 | Minggu 1 | 1-7 Agustus          | Fase 0-3   | Setup project, auth, event & ticket category                   |
 | Minggu 2 | 8-14 Agustus         | Fase 4-9   | Virtual queue, seat lock, ledger, alur dana, dashboard backend |
-| Minggu 3 | 15-21 Agustus        | Fase 10-14 | Frontend lengkap, testing & CI, Docker Compose, deploy AWS     |
-| Minggu 4 | 22-31 Agustus        | Fase 15-16 | Stress testing k6, polish, README, buffer                      |
+| Minggu 3 | 15-21 Agustus        | Fase 10-14 | Frontend lengkap, testing & CI, Docker Compose, **deploy AWS ✅** |
+| Minggu 4 | 22-31 Agustus        | **Fase 15-16** | **Stress testing k6**, polish, README, buffer                  |
 
 > Catatan: pembagian ini asumsi mulai coding dari 1 Agustus sesuai PRD. Kalau start aktualmu mundur, geser tanggalnya secara proporsional — urutan fase tetap sama, cuma jendela waktunya yang menyesuaikan.
 
@@ -221,13 +222,13 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 14 — Deployment AWS
 
-- [ ] Setup EC2 instance (t2.micro/t3.micro)
-- [ ] Install Docker Engine di EC2
-- [ ] Setup security group (expose port yang dibutuhkan saja)
-- [ ] Setup reverse proxy (Nginx) untuk backend + frontend *(config siap: `deploy/nginx/gigspass.conf`, tinggal pasang di server sesuai runbook)*
-- [ ] Deploy via `docker compose up -d` di EC2
-- [ ] Verifikasi CORS multi-origin & SSE tetap stabil di production
-- [ ] Cek ulang AWS Budgets alert masih aktif sebelum lanjut ke stress test
+- [x] Setup EC2 instance (t2.micro/t3.micro)
+- [x] Install Docker Engine di EC2
+- [x] Setup security group (expose port yang dibutuhkan saja)
+- [x] Setup reverse proxy (Nginx) untuk backend + frontend *(config siap: `deploy/nginx/gigspass.conf`, tinggal pasang di server sesuai runbook)*
+- [x] Deploy via `docker compose up -d` di EC2
+- [x] Verifikasi CORS multi-origin & SSE tetap stabil di production
+- [x] Cek ulang AWS Budgets alert masih aktif sebelum lanjut ke stress test
 - [ ] *(Opsional — boleh dilewati untuk MVP)* Domain di belakang Cloudflare free tier sebagai edge DDoS/bot shield; **kalaunya diaktifkan**: security group dikunci hanya ke IP-range CF, set `trust proxy` rantai CF+Nginx, verifikasi SSE/CORS lewat proxy, dan jalankan k6 langsung ke origin (bukan lewat CF)
 
 > **Artefak repo Fase 14 sudah siap** (`deploy/nginx/gigspass.conf`, `.github/workflows/cd.yml` hardened, runbook `docs/deployment.md`). Sisa pekerjaan = eksekusi manual AWS mengikuti runbook: EC2 → Docker → env → pasang nginx → deploy → verifikasi bertahap.
