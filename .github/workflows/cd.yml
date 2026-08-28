@@ -12,16 +12,16 @@ on:
           - production
           - staging
 
+  # Auto-deploy setelah CI lulus di main: buka blok di bawah ini
+  # (pastikan job CI bernama sesuai dan secrets EC2 sudah terisi)
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
 concurrency:
   group: deploy-ec2
   cancel-in-progress: false
-
-# Auto-deploy setelah CI lulus di main: buka blok di bawah ini
-# (pastikan job CI bernama sesuai dan secrets EC2 sudah terisi)
-#   workflow_run:
-#     workflows: ["CI"]
-#     types: [completed]
-#     branches: [main]
 
 jobs:
   deploy:

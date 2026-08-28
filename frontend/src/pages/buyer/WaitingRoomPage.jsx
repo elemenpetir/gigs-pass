@@ -48,7 +48,7 @@ export default function WaitingRoomPage() {
         setEvent(eventData.event);
         setCategory((catData.categories || []).find((c) => String(c.id) === String(categoryId)) || null);
 
-        const joinRes = await api.post(`/queue/${categoryId}/join`, null);
+        const joinRes = await api.post(`/queue/${categoryId}/join`);
         if (cancelled) return;
         setPosition(joinRes.position ?? null);
         setJoined(true);
