@@ -31,17 +31,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Inspect OIDC Token Claims
-        run: |
-          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com" | jq -r '.value')
-          echo "=== JWT PAYLOAD ==="
-          echo $TOKEN | cut -d. -f2 | base64 --decode 2>/dev/null | jq '{sub: .sub, aud: .aud, repository: .repository}'
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::196985821420:role/gigspass-ssm-inline-policy
-          aws-region: ap-southeast-1
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
           role-session-name: gigspass-deploy
 
       - name: Deploy via SSM
