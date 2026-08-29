@@ -52,7 +52,7 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["cd /opt/gigspass && git config --global --add safe.directory /opt/gigspass && git pull origin main && docker compose build && docker compose up -d"]' \
+            --parameters 'commands=["export HOME=/root && cd /opt/gigspass && git config --global --add safe.directory /opt/gigspass && git pull origin main && docker compose build && docker compose up -d"]' \
             --comment "Deploy gigspass $(date -u +%Y%m%d-%H%M%S)" \
             --output text --query "Command.CommandId")
           
