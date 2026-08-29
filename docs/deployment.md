@@ -140,14 +140,48 @@ Dari luar: `http://<EC2_IP>/` harus menampilkan halaman frontend.
 
 ## 6. Aktifkan Deploy Otomatis (GitHub Actions)
 
-1. GitHub repo → Settings → Environments → buat `production`.
-2. Settings → Secrets → Actions:
+### 6.1 Auto-Deploy via AWS SSM (Direkomendasikan — tanpa port 22)
+
+**Arsitektur:** GitHub Actions → OIDC → IAM Role → AWS SSM SendCommand → EC2
+
+**Prasyarat sekali jalan (sudah terlaksana di Fase 14):**
+
+| Resource | Konfigurasi |
+|---|---|
+| EC2 IAM Role | `gigspass-ec2-ssm-role` dengan policy `AmazonSSMManagedInstanceCore` |
+| SSM Agent | Terpasang & running di EC2 (Ubuntu 24.04 built-in) |
+| OIDC Provider | `arn:aws:iam::<ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com` |
+| GitHub Actions IAM Role | `gigspass-github-actions-deploy` dengan `SSMExecutionPolicy` inline policy |
+| Trust Policy | `token.actions.githubusercontent.com:sub` → `repo:elemenpetir/gigs-pass:*` |
+
+**GitHub Secrets (Settings → Secrets → Actions):**
+
+| Secret | Value |
+|---|---|
+| `AWS_ROLE_ARN` | `arn:aws:iam::<ACCOUNT_ID>:role/gigspass-github-actions-deploy` |
+| `AWS_REGION` | `ap-southeast-1` |
+| `EC2_INSTANCE_ID` | `i-xxxxxxxxxxxxxxxxx` |
+| `EC2_HOST` | IP publik EC2 (untuk health check) |
+
+**Workflow:** `.github/workflows/cd.yml` sudah dikonfigurasi dengan:
+- `workflow_run` trigger pada CI success
+- `aws-actions/configure-aws-credentials@v4` dengan OIDC
+- `aws ssm send-command` + polling untuk deploy
+- Health check via `curl http://<EC2_HOST>/api/health`
+
+**Deploy:** Push ke `main` → CI jalan → CD auto-trigger → deploy via SSM → health check.
+
+---
+
+### 6.2 Manual Deploy (Fallback SSH)
+
+Jika SSM bermasalah, deploy manual masih tersedia:
+
+1. GitHub repo → Settings → Secrets → Actions:
    - `EC2_HOST` = IP/publik-hostname EC2
    - `EC2_USER` = `ubuntu`
    - `EC2_SSH_PRIVATE_KEY` = isi `gigspass-key.pem`
-3. Actions tab → **Deploy to AWS EC2** → Run workflow → environment `production`.
-4. (Opsional, nyalakan hanya jika sudah stabil) buka blok `workflow_run`
-   di `.github/workflows/cd.yml` agar auto-deploy setelah CI hijau di main.
+2. Actions tab → **Deploy to AWS EC2** → Run workflow → environment `production`.
 
 ## 7. Verifikasi Bertahap
 
@@ -181,6 +215,16 @@ Certbot menambah blok 443 + redirect otomatis pada `gigspass.conf`.
 | 502 Bad Gateway | Container mati / port tidak bind | `docker compose ps` + `docker compose logs backend`; cek bind 127.0.0.1 |
 | Frontend tampil tapi API gagal | `/api/*` tidak dirutekan host nginx | Pastikan location `/api/` ada dan backend healthy |
 | Rate limit tak jalan sama sekali | Config nginx belum dimuat | `nginx -t` + reload; cek zona terpasang |
+
+### SSM Auto-Deploy
+
+| Gejala | Penyebab umum | Perbaikan |
+|---|---|---|
+| `Configure AWS credentials` gagal: `Not authorized to perform sts:AssumeRoleWithWebIdentity` | Trust policy IAM role tidak cocok dengan `sub` claim GitHub | Periksa `sub` claim di OIDC token (format: `repo:elemenpetir@115365252/...`), update Trust Policy `StringLike` |
+| `Deploy via SSM` gagal: `AccessDenied` `ssm:SendCommand` | IAM role GitHub Actions tidak punya policy SSM | Tambah inline policy `SSMExecutionPolicy` dengan `ssm:SendCommand`, `ssm:GetCommandInvocation`, `ssm:ListCommandInvocations` |
+| `git pull` gagal: `detected dubious ownership` | Direktori `/opt/gigspass` owner berbeda dari user SSM | Tambah `git config --global --add safe.directory /opt/gigspass` di command SSM |
+| `git config` gagal: `fatal: $HOME not set` | SSM jalan di non-login shell | Tambah `export HOME=/root` di awal command SSM |
+| CD stuck di `Deploy via SSM` | Command timeout / instance tidak online di SSM | Cek Fleet Manager → instance status "Online"; restart `snap.amazon-ssm-agent.amazon-ssm-agent` |
 
 ## Pengingat Biaya
 
