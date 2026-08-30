@@ -152,17 +152,28 @@ export default function EventDetailPage() {
                         <span className="text-3xl font-black">{Number.isFinite(price) ? formatIDR(price) : "TBA"}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-bold uppercase text-gray-500 block mb-1">QUOTA</span>
-                        <span className="text-2xl font-black">{cat.quota}</span>
+                        <span className="text-xs font-bold uppercase text-gray-500 block mb-1">
+                          {cat.stock === 0 ? "SOLD OUT" : "REMAINING"}
+                        </span>
+                        <span className="text-2xl font-black">
+                          {cat.stock === 0
+                            ? `SOLD OUT (0 / ${cat.quota})`
+                            : `${cat.stock} / ${cat.quota}`}
+                        </span>
                       </div>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => goJoinQueue(cat.id)}
-                      className="bg-gigs-pink text-foreground font-black uppercase text-lg px-6 py-4 brut-border-4 brut-shadow brut-button flex items-center justify-between gap-4 w-full"
+                      disabled={cat.stock === 0}
+                      className={`
+                        bg-gigs-pink text-foreground font-black uppercase text-lg px-6 py-4
+                        brut-border-4 brut-shadow brut-button flex items-center justify-between gap-4 w-full
+                        ${cat.stock === 0 ? "opacity-50 cursor-not-allowed" : ""}
+                      `}
                     >
-                      GET TICKETS <ArrowRight strokeWidth={4} />
+                      {cat.stock === 0 ? "SOLD OUT" : "GET TICKETS"} <ArrowRight strokeWidth={4} />
                     </button>
                   </div>
                 </div>

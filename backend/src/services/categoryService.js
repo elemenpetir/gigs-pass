@@ -111,7 +111,20 @@ const listCategoriesByEvent = async (eventId) => {
     throw error;
   }
 
-  return categoryModel.findByEventId(eventId);
+  const categories = await categoryModel.findByEventId(eventId);
+
+  // Fetch Redis stock for each category
+  const categoriesWithStock = await Promise.all(
+    categories.map(async (cat) => {
+      const stock = await redis.get(`stock:category:${cat.id}`);
+      return {
+        ...cat,
+        stock: stock !== null ? parseInt(stock, 10) : cat.quota,
+      };
+    })
+  );
+
+  return categoriesWithStock;
 };
 
 module.exports = {
