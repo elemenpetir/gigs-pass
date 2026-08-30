@@ -6,6 +6,7 @@ jest.mock("../../src/config/redis", () => ({
   zadd: jest.fn(),
   zrank: jest.fn(),
   get: jest.fn(),
+  pttl: jest.fn(),
   zpopmin: jest.fn(),
   set: jest.fn(),
   decr: jest.fn(),
@@ -33,6 +34,7 @@ describe("Queue Service", () => {
     redis.zadd.mockReset();
     redis.zrank.mockReset();
     redis.get.mockReset();
+    redis.pttl.mockReset();
     redis.zpopmin.mockReset();
     redis.set.mockReset();
     redis.decr.mockReset();
@@ -81,7 +83,7 @@ describe("Queue Service", () => {
       expect(redis.incr).not.toHaveBeenCalled();
     });
 
-    test("rejects join when buyer already has an active order for the tier", async () => {
+    test("allows re-join when buyer has a paid (pending) order", async () => {
       const category = await createCategory();
       mockDb.orders.push({
         id: 1,
@@ -91,13 +93,64 @@ describe("Queue Service", () => {
         created_at: new Date(),
         updated_at: new Date(),
       });
+      redis.zrank.mockResolvedValueOnce(null).mockResolvedValueOnce(0);
+      redis.incr.mockResolvedValue(1);
+      redis.zadd.mockResolvedValue("OK");
+
+      const result = await queueService.joinQueue("buyer-1", category.id);
+
+      expect(result).toEqual({ queued: true, position: 1 });
+      expect(redis.zadd).toHaveBeenCalledWith(
+        queueService.queueKey(category.event_id, category.id),
+        1,
+        "buyer-1",
+      );
+      expect(redis.get).not.toHaveBeenCalled();
+    });
+
+    test("rejects join while buyer still holds a live lock for an unpaid order", async () => {
+      const category = await createCategory();
+      mockDb.orders.push({
+        id: 1,
+        buyer_id: "buyer-1",
+        category_id: category.id,
+        status: "awaiting_payment",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      redis.get.mockResolvedValue("1");
+      redis.pttl.mockResolvedValue(120000);
 
       await expect(
         queueService.joinQueue("buyer-1", category.id),
-      ).rejects.toThrow("You already have an active order for this tier");
+      ).rejects.toThrow(
+        "You still have an unpaid ticket for this tier — finish your payment",
+      );
 
       expect(redis.zadd).not.toHaveBeenCalled();
-      expect(redis.incr).not.toHaveBeenCalled();
+      expect(mockDb.orders[0].status).toBe("awaiting_payment");
+    });
+
+    test("expires stale unpaid order and allows join when its lock is gone", async () => {
+      const category = await createCategory();
+      mockDb.orders.push({
+        id: 1,
+        buyer_id: "buyer-1",
+        category_id: category.id,
+        status: "awaiting_payment",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      redis.get.mockResolvedValue(null);
+      redis.zrank.mockResolvedValueOnce(null).mockResolvedValueOnce(0);
+      redis.incr.mockResolvedValue(1);
+      redis.zadd.mockResolvedValue("OK");
+
+      const result = await queueService.joinQueue("buyer-1", category.id);
+
+      expect(result).toEqual({ queued: true, position: 1 });
+      expect(mockDb.orders[0].status).toBe("expired");
+      expect(redis.zadd).toHaveBeenCalled();
     });
 
     test("allows join when buyer has only expired orders", async () => {

@@ -1,7 +1,7 @@
 const categoryModel = require("../models/categoryModel");
 const orderModel = require("../models/orderModel");
 const redis = require("../config/redis");
-const { lockKey, lockExpiryKey } = require("./lockService");
+const { lockKey, lockExpiryKey, getReservation } = require("./lockService");
 const {
   QUEUE_BATCH_SIZE,
   QUEUE_SEQ_KEY,
@@ -36,14 +36,20 @@ const joinQueue = async (userId, categoryId) => {
   const key = queueKey(category.event_id, category.id);
   const member = String(userId);
 
-  const existingOrder = await orderModel.findActiveByBuyerAndCategory(
+  const existingUnpaid = await orderModel.findUnpaidByBuyerAndCategory(
     userId,
     category.id,
   );
-  if (existingOrder) {
-    const error = new Error("You already have an active order for this tier");
-    error.statusCode = 409;
-    throw error;
+  if (existingUnpaid) {
+    const reservation = await getReservation(userId, category.id);
+    if (reservation) {
+      const error = new Error(
+        "You still have an unpaid ticket for this tier — finish your payment",
+      );
+      error.statusCode = 409;
+      throw error;
+    }
+    await orderModel.markExpiredByBuyerAndCategory(userId, category.id);
   }
 
   const existingPosition = await redis.zrank(key, member);

@@ -67,12 +67,12 @@ const markExpired = async (id) => {
   return result.rows[0] || null;
 };
 
-const findActiveByBuyerAndCategory = async (buyerId, categoryId) => {
+const findUnpaidByBuyerAndCategory = async (buyerId, categoryId) => {
   const query = `
     SELECT ${ORDER_COLUMNS}
     FROM orders
     WHERE buyer_id = $1 AND category_id = $2
-      AND status IN ('awaiting_payment', 'pending')
+      AND status = 'awaiting_payment'
     LIMIT 1;
   `;
   const result = await pool.query(query, [buyerId, categoryId]);
@@ -218,7 +218,7 @@ module.exports = {
   findAll,
   markPaid,
   markExpired,
-  findActiveByBuyerAndCategory,
+  findUnpaidByBuyerAndCategory,
   markExpiredByBuyerAndCategory,
   markRefundedByEventId,
   findPaidOrdersWithPastEvent,

@@ -178,6 +178,21 @@ const mockDb = {
       return Promise.resolve({ rows: [order], rowCount: 1 });
     }
 
+    if (sql.includes("UPDATE orders") && sql.includes("buyer_id = $1")) {
+      const [buyerId, categoryId] = params;
+      const matching = (this.orders || []).filter(
+        (o) =>
+          String(o.buyer_id) === String(buyerId) &&
+          String(o.category_id) === String(categoryId) &&
+          o.status === "awaiting_payment",
+      );
+      matching.forEach((order) => {
+        order.status = "expired";
+        order.updated_at = new Date();
+      });
+      return Promise.resolve({ rows: matching, rowCount: matching.length });
+    }
+
     if (sql.includes("UPDATE orders")) {
       const [eventId] = params;
       const matching = (this.orders || []).filter((order) => {
@@ -218,14 +233,28 @@ const mockDb = {
       return Promise.resolve({ rows, rowCount: rows.length });
     }
 
+    if (sql.includes("UPDATE orders") && sql.includes("buyer_id = $1")) {
+      const [buyerId, categoryId] = params;
+      const matching = (this.orders || []).filter(
+        (o) =>
+          String(o.buyer_id) === String(buyerId) &&
+          String(o.category_id) === String(categoryId) &&
+          o.status === "awaiting_payment",
+      );
+      matching.forEach((order) => {
+        order.status = "expired";
+        order.updated_at = new Date();
+      });
+      return Promise.resolve({ rows: matching, rowCount: matching.length });
+    }
+
     if (sql.includes("FROM orders") && sql.includes("buyer_id = $1")) {
       const [buyerId, categoryId] = params;
-      const active = ["awaiting_payment", "pending"];
       const order = (this.orders || []).find(
         (o) =>
           String(o.buyer_id) === String(buyerId) &&
           String(o.category_id) === String(categoryId) &&
-          active.includes(o.status),
+          o.status === "awaiting_payment",
       );
       return Promise.resolve({
         rows: order ? [order] : [],

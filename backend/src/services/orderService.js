@@ -13,7 +13,7 @@ const createOrder = async (userId, categoryId) => {
     throw error;
   }
 
-  const existing = await orderModel.findActiveByBuyerAndCategory(
+  const existing = await orderModel.findUnpaidByBuyerAndCategory(
     userId,
     categoryId,
   );

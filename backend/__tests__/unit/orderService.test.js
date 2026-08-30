@@ -21,7 +21,7 @@ describe("Order Service", () => {
   describe("createOrder", () => {
     test("creates awaiting_payment order when reservation is active", async () => {
       lockService.getReservation.mockResolvedValue({ reserved: true });
-      orderModel.findActiveByBuyerAndCategory.mockResolvedValue(null);
+      orderModel.findUnpaidByBuyerAndCategory.mockResolvedValue(null);
       categoryModel.findById.mockResolvedValue({ id: "cat-1", price: 150000 });
       const order = {
         id: "o-1",
@@ -55,8 +55,8 @@ describe("Order Service", () => {
 
     test("throws 409 with existing order in error.data", async () => {
       lockService.getReservation.mockResolvedValue({ reserved: true });
-      const existing = { id: "o-1", status: "pending" };
-      orderModel.findActiveByBuyerAndCategory.mockResolvedValue(existing);
+      const existing = { id: "o-1", status: "awaiting_payment" };
+      orderModel.findUnpaidByBuyerAndCategory.mockResolvedValue(existing);
 
       await expect(
         orderService.createOrder("buyer-1", "cat-1"),
@@ -71,7 +71,7 @@ describe("Order Service", () => {
 
     test("throws 404 when category not found", async () => {
       lockService.getReservation.mockResolvedValue({ reserved: true });
-      orderModel.findActiveByBuyerAndCategory.mockResolvedValue(null);
+      orderModel.findUnpaidByBuyerAndCategory.mockResolvedValue(null);
       categoryModel.findById.mockResolvedValue(null);
 
       await expect(
