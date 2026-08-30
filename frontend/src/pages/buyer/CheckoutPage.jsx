@@ -21,7 +21,7 @@ export default function CheckoutPage() {
   const [category, setCategory] = useState(null);
   const [order, setOrder] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(300);
-  const [status, setStatus] = useState("loading"); // loading | locked | paid | alreadyPurchased | expired | failed | soldout | busy
+  const [status, setStatus] = useState("loading"); // loading | locked | paid | expired | failed | soldout | busy
   const [error, setError] = useState("");
   const deadlineRef = useRef(0);
   const timerRef = useRef(null);
@@ -72,10 +72,6 @@ export default function CheckoutPage() {
           if (existing && existing.status === "awaiting_payment") {
             setOrder(existing);
             setStatus("locked");
-            return;
-          }
-          if (existing) {
-            setStatus("alreadyPurchased");
             return;
           }
           setStatus("busy");
@@ -141,20 +137,6 @@ export default function CheckoutPage() {
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">MY ORDERS →</Link>
             <Link to="/" className="bg-background px-6 py-3 font-black uppercase brut-border-2 brut-button hover:bg-gigs-yellow">BACK TO DISCOVER</Link>
-          </div>
-        </div>
-      );
-    }
-
-    if (status === "alreadyPurchased") {
-      return (
-        <div className="border-4 border-foreground bg-gigs-purple p-10 brut-shadow text-center">
-          <span className="bg-foreground text-background px-2 py-1 brut-border-2 text-sm font-black uppercase tracking-widest inline-block mb-4">already yours</span>
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9]">TICKET<br />SECURED.</h2>
-          <p className="mt-6 font-black uppercase text-lg">You already own this tier — one buyer, one ticket.</p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">MY ORDERS →</Link>
-            <Link to={`/events/${eventId}`} className="bg-background px-6 py-3 font-black uppercase brut-border-2 brut-button hover:bg-gigs-yellow">BACK TO EVENT</Link>
           </div>
         </div>
       );

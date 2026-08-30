@@ -53,7 +53,12 @@ export default function WaitingRoomPage() {
         setPosition(joinRes.position ?? null);
         setJoined(true);
       } catch (err) {
-        if (!cancelled) setError(err.message || "Failed to join the queue");
+        if (cancelled) return;
+        if (err.status === 409) {
+          navigate(`/events/${eventId}/checkout/${categoryId}`);
+          return;
+        }
+        setError(err.message || "Failed to join the queue");
       }
     })();
     return () => { cancelled = true; };
