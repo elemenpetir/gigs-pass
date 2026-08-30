@@ -3,8 +3,8 @@
 Tujuan: memverifikasi flow queue → admission → checkout → payment dan design rule kunci:
 
 - **One-shot admission** — buyer yang gagal bayar atau lock-nya TTL harus join antrian lagi (AGENTS.md, "Queue & SSE Design")
-- **Active-order guard per tier** — buyer tidak boleh join bila sudah punya order aktif (`awaiting_payment` / `pending`) untuk tier yang sama
-- **Resume checkout** — order `awaiting_payment` dilanjutkan dari halaman bayar, bukan dibuat duplikat (409 `error.data.order`)
+- **Unpaid-order guard** — join diblokir (`409`) hanya bila buyer punya order `awaiting_payment` untuk tier yang sama **dan** lock masih hidup; order `pending` (sudah bayar) boleh beli lagi — re-buy per tier diizinkan
+- **Resume checkout** — order `awaiting_payment` dilanjutkan dari halaman bayar, bukan dibuat duplikat (409 `error.data.order`); dari WaitingRoom, join 409 → redirect otomatis ke halaman checkout
 - **TTL lock 300s + cleanup** — lock kedaluwarsa melepas slot, stock dikembalikan, order ditandai `expired`
 
 ## Prasyarat / Data Test
@@ -29,17 +29,17 @@ Tujuan: memverifikasi flow queue → admission → checkout → payment dan desi
   - Bayar sukses → order `pending`; My Orders menampilkan 1 order confirmed.
 - **Stock akhir:** **1/2** (turun tepat 1).
 
-### T2 — Double-buy diblokir (buyer sudah `pending`)
+### T2 — Buyer `pending` boleh beli lagi (re-buy per tier diizinkan)
 - **Flow:** Buyer1 (sudah `pending` VIP) → GET TICKETS VIP lagi.
 - **Observables (harus benar):**
-  - Join antrian diblokir: `409` "You already have an active order for this tier" (terampilkan di WaitingRoom; heading masih "queue broke down" — diketahui, bukan bug fungsional).
-  - Bila dipaksa akses checkout langsung: tampil screen "already yours" + link My Orders.
-- **Stock:** tetap **1/2** (tidak bergerak lagi).
+  - Join antrian **berhasil** (`200`) — guard hanya menahan order `awaiting_payment` yang masih pegang lock, bukan order yang sudah dibayar.
+  - Checkout → bayar → order ke-2 `pending`. Persis 2 order valid di My Orders.
+- **Stock akhir:** **0/2** (turun 2 total).
 
 ### T3 — Tinggalkan pembayaran → resume dalam TTL (tanpa duplikat)
 - **Flow:** Buyer2 → GA (stock awal **0/1** diisi skenario ini) → sampai layar bayar (`awaiting_payment`), **keluar app**, balik lagi **< 5 menit** → buka halaman checkout.
 - **Observables (harus benar):**
-  - Join antrian tetap `409` (tidak bisa rejoin).
+  - Join antrian tetap `409`, tapi WaitingRoom **redirect otomatis** ke halaman checkout (resume), bukan menampilkan panel error.
   - Checkout **resume**: `lock` **200** (lock masih hidup), `POST /api/orders` **409** dengan `data.order.status = awaiting_payment` → frontend menampilkan layar bayar lagi (state `locked`), bukan macet.
   - Bayar → `pending`. Persis **1 order**, **1 stock decrement**.
 - **Stock akhir:** **0/1**.
@@ -71,6 +71,13 @@ Tujuan: memverifikasi flow queue → admission → checkout → payment dan desi
 - **Flow:** Buyer baru join, amati Network/source selama WaitingRoom.
 - **Observables (harus benar):** urutan `position` (turun) → `granted` → koneksi ditutup bersih (SSE auth via Bearer header).
 
+### T9 — Order `awaiting_payment` tapi lock mati → eager-expire + rejoin
+- **Flow:** Buyer2 membuat order `awaiting_payment` (lock hidup), lalu lock dihapus paksa dari Redis (mis. `DEL lock:category:{catId}:buyer:{uid}` — simulasi lock hilang tanpa menunggu TTL), kembali ke GET TICKETS → WaitingRoom.
+- **Observables (harus benar):**
+  - Join **`200`** (bukan `409`) — guard mengecek liveness lock (`lockService.getReservation`), bukan sekadar kehadiran order.
+  - Order lama otomatis ditandai **`expired`** (eager-expire oleh `joinQueue`) dan stock lanjut ke buyer ini / diserap antrian — tetap bebas oversell.
+  - Buyer masuk antrian baru (one-shot admission tetap berlaku).
+
 ## Verifikasi setiap skenario
 - My Orders buyer: status benar (`pending` / `expired` / `awaiting_payment`).
 - Badge stock EventDetail `stock/quota` konsisten dengan jumlah order aktif (paid & not refunded).
@@ -79,8 +86,9 @@ Tujuan: memverifikasi flow queue → admission → checkout → payment dan desi
 Saat dibutuhkan tanpa UI:
 
 - `POST /api/checkout/{catId}/lock` **tanpa body** → `200` (ada lock) / `403` (tanpa lock). Regresi bug lama muncul sebagai `400`.
-- `POST /api/orders {categoryId}` tanpa lock → `403 "No active reservation"`; dengan order `pending` → `409` + body memuat `data.order.status`.
-- `POST /api/queue/{catId}/join` dengan order aktif → `409` + pesan guard.
+- `POST /api/orders {categoryId}` tanpa lock → `403 "No active reservation"`; dengan order `awaiting_payment` yang live → `409` + body memuat `data.order.status`; dengan order `pending` + lock valid → `201` (order ke-2, re-buy diizinkan).
+- `POST /api/queue/{catId}/join` dengan order `awaiting_payment` + lock hidup → `409` + pesan guard "finish your payment"; order `pending` → `200`; order `awaiting_payment` tapi lock mati → `200` + order lama `expired`.
+- `GET /orders/{id}` → `200` (resi + JOIN event/category, pemilik saja) / `404` (tidak ada) / `403` (bukan pemilik).
 - `lockService.getReservation` → `pttl` sisa (< 300) saat resume.
 
 ## Lampiran — Automated integration (opsional)
