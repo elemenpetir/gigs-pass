@@ -20,6 +20,7 @@ const createOrder = async (userId, categoryId) => {
   if (existing) {
     const error = new Error("Order already created for this reservation");
     error.statusCode = 409;
+    error.data = { order: existing };
     throw error;
   }
 

@@ -21,7 +21,7 @@ export default function CheckoutPage() {
   const [category, setCategory] = useState(null);
   const [order, setOrder] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(300);
-  const [status, setStatus] = useState("loading"); // loading | locked | paid | expired | failed | soldout | busy
+  const [status, setStatus] = useState("loading"); // loading | locked | paid | alreadyPurchased | expired | failed | soldout | busy
   const [error, setError] = useState("");
   const deadlineRef = useRef(0);
   const timerRef = useRef(null);
@@ -46,29 +46,41 @@ export default function CheckoutPage() {
 
         let reserved = false;
         try {
-          const lockRes = await api.post(`/checkout/${categoryId}/lock`, null);
-          const ttl = Number(lockRes.expiresInSeconds) || 300;
+          const lockRes = await api.post(`/checkout/${categoryId}/lock`);
+          const ttl = Number(lockRes?.expiresInSeconds) || 300;
           deadlineRef.current = Date.now() + ttl * 1000;
           reserved = true;
         } catch (lockErr) {
-          if (lockErr.status === 409 && lockErr.message.toLowerCase().includes("out of stock")) {
-            if (!cancelled) setStatus("soldout");
-            return;
-          }
           if (lockErr.status === 403) {
             if (!cancelled) { setStatus("busy"); setError("Join the queue first — your gate pass expired."); }
             return;
           }
-          // 409 "already reserved": proceed to create order against existing lock
-          if (!cancelled) { reserved = true; deadlineRef.current = Date.now() + 300000; }
+          if (!cancelled) { setStatus("busy"); setError(lockErr.message || "Could not reserve your spot."); }
+          return;
         }
 
         if (!cancelled && !reserved) { setStatus("busy"); setError("Could not reserve your spot."); return; }
 
-        const orderRes = await api.post("/orders", { categoryId });
-        if (cancelled) return;
-        setOrder(orderRes.order);
-        setStatus("locked");
+        try {
+          const orderRes = await api.post("/orders", { categoryId });
+          if (cancelled) return;
+          setOrder(orderRes.order);
+          setStatus("locked");
+        } catch (orderErr) {
+          if (cancelled) return;
+          const existing = orderErr.status === 409 ? orderErr.data?.order : null;
+          if (existing && existing.status === "awaiting_payment") {
+            setOrder(existing);
+            setStatus("locked");
+            return;
+          }
+          if (existing) {
+            setStatus("alreadyPurchased");
+            return;
+          }
+          setStatus("busy");
+          setError(orderErr.message || "Checkout failed");
+        }
       } catch (err) {
         if (!cancelled) {
           setStatus("busy");
@@ -129,6 +141,20 @@ export default function CheckoutPage() {
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">MY ORDERS →</Link>
             <Link to="/" className="bg-background px-6 py-3 font-black uppercase brut-border-2 brut-button hover:bg-gigs-yellow">BACK TO DISCOVER</Link>
+          </div>
+        </div>
+      );
+    }
+
+    if (status === "alreadyPurchased") {
+      return (
+        <div className="border-4 border-foreground bg-gigs-purple p-10 brut-shadow text-center">
+          <span className="bg-foreground text-background px-2 py-1 brut-border-2 text-sm font-black uppercase tracking-widest inline-block mb-4">already yours</span>
+          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9]">TICKET<br />SECURED.</h2>
+          <p className="mt-6 font-black uppercase text-lg">You already own this tier — one buyer, one ticket.</p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">MY ORDERS →</Link>
+            <Link to={`/events/${eventId}`} className="bg-background px-6 py-3 font-black uppercase brut-border-2 brut-button hover:bg-gigs-yellow">BACK TO EVENT</Link>
           </div>
         </div>
       );

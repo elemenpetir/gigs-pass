@@ -53,13 +53,18 @@ describe("Order Service", () => {
       expect(orderModel.createOrder).not.toHaveBeenCalled();
     });
 
-    test("throws 409 when order already exists for reservation", async () => {
+    test("throws 409 with existing order in error.data", async () => {
       lockService.getReservation.mockResolvedValue({ reserved: true });
-      orderModel.findActiveByBuyerAndCategory.mockResolvedValue({ id: "o-1" });
+      const existing = { id: "o-1", status: "pending" };
+      orderModel.findActiveByBuyerAndCategory.mockResolvedValue(existing);
 
       await expect(
         orderService.createOrder("buyer-1", "cat-1"),
-      ).rejects.toThrow("Order already created for this reservation");
+      ).rejects.toMatchObject({
+        message: "Order already created for this reservation",
+        statusCode: 409,
+        data: { order: existing },
+      });
 
       expect(orderModel.createOrder).not.toHaveBeenCalled();
     });

@@ -30,7 +30,9 @@ const create = async (req, res) => {
     const statusCode = error.statusCode || 500;
     const message =
       statusCode === 500 ? "Internal server error" : error.message;
-    return res.status(statusCode).json({ status: "error", message });
+    const payload = { status: "error", message };
+    if (error.data) payload.data = error.data;
+    return res.status(statusCode).json(payload);
   }
 };
 
