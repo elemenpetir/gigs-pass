@@ -81,6 +81,49 @@ describe("Queue Service", () => {
       expect(redis.incr).not.toHaveBeenCalled();
     });
 
+    test("rejects join when buyer already has an active order for the tier", async () => {
+      const category = await createCategory();
+      mockDb.orders.push({
+        id: 1,
+        buyer_id: "buyer-1",
+        category_id: category.id,
+        status: "pending",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+
+      await expect(
+        queueService.joinQueue("buyer-1", category.id),
+      ).rejects.toThrow("You already have an active order for this tier");
+
+      expect(redis.zadd).not.toHaveBeenCalled();
+      expect(redis.incr).not.toHaveBeenCalled();
+    });
+
+    test("allows join when buyer has only expired orders", async () => {
+      const category = await createCategory();
+      mockDb.orders.push({
+        id: 1,
+        buyer_id: "buyer-1",
+        category_id: category.id,
+        status: "expired",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      redis.zrank.mockResolvedValueOnce(null).mockResolvedValueOnce(0);
+      redis.incr.mockResolvedValue(1);
+      redis.zadd.mockResolvedValue("OK");
+
+      const result = await queueService.joinQueue("buyer-1", category.id);
+
+      expect(result).toEqual({ queued: true, position: 1 });
+      expect(redis.zadd).toHaveBeenCalledWith(
+        queueService.queueKey(category.event_id, category.id),
+        1,
+        "buyer-1",
+      );
+    });
+
     test("throws 404 for unknown category", async () => {
       await expect(queueService.joinQueue("buyer-1", 9999)).rejects.toThrow(
         "Category not found",

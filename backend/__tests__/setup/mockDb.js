@@ -218,6 +218,21 @@ const mockDb = {
       return Promise.resolve({ rows, rowCount: rows.length });
     }
 
+    if (sql.includes("FROM orders") && sql.includes("buyer_id = $1")) {
+      const [buyerId, categoryId] = params;
+      const active = ["awaiting_payment", "pending"];
+      const order = (this.orders || []).find(
+        (o) =>
+          String(o.buyer_id) === String(buyerId) &&
+          String(o.category_id) === String(categoryId) &&
+          active.includes(o.status),
+      );
+      return Promise.resolve({
+        rows: order ? [order] : [],
+        rowCount: order ? 1 : 0,
+      });
+    }
+
     if (sql.includes("FROM ticket_categories") && sql.includes("WHERE id = $1")) {
       const [id] = params;
       const category = this.categories.find((c) => c.id === id);

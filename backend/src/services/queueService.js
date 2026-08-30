@@ -1,4 +1,5 @@
 const categoryModel = require("../models/categoryModel");
+const orderModel = require("../models/orderModel");
 const redis = require("../config/redis");
 const { lockKey, lockExpiryKey } = require("./lockService");
 const {
@@ -34,6 +35,16 @@ const joinQueue = async (userId, categoryId) => {
   const category = await findCategory(categoryId);
   const key = queueKey(category.event_id, category.id);
   const member = String(userId);
+
+  const existingOrder = await orderModel.findActiveByBuyerAndCategory(
+    userId,
+    category.id,
+  );
+  if (existingOrder) {
+    const error = new Error("You already have an active order for this tier");
+    error.statusCode = 409;
+    throw error;
+  }
 
   const existingPosition = await redis.zrank(key, member);
   if (existingPosition !== null) {
