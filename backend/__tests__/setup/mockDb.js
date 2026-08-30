@@ -199,6 +199,25 @@ const mockDb = {
       return Promise.resolve({ rows: matching, rowCount: matching.length });
     }
 
+    if (sql.includes("COUNT(*)::int AS sold")) {
+      const [categoryIds] = params;
+      const sold = {};
+      (this.orders || []).forEach((order) => {
+        if (
+          categoryIds.includes(order.category_id) &&
+          ["pending", "holding_period", "released", "held"].includes(order.status)
+        ) {
+          const key = String(order.category_id);
+          sold[key] = (sold[key] || 0) + 1;
+        }
+      });
+      const rows = Object.entries(sold).map(([category_id, count]) => ({
+        category_id,
+        sold: count,
+      }));
+      return Promise.resolve({ rows, rowCount: rows.length });
+    }
+
     if (sql.includes("FROM ticket_categories") && sql.includes("WHERE id = $1")) {
       const [id] = params;
       const category = this.categories.find((c) => c.id === id);

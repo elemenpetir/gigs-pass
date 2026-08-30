@@ -99,4 +99,31 @@ describe("Categories (integration, real DB + real Redis)", () => {
     expect(res.status).toBe(403);
     expect(res.body.status).toBe("error");
   });
+
+  test("list categories self-heals Redis stock after counter is lost", async () => {
+    const { token } = await registerAndLogin(app, {
+      role: "organizer",
+      name: "Org",
+    });
+    const eventId = await createEvent(app, token);
+
+    const created = await request(app)
+      .post(`/api/events/${eventId}/categories`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ name: "VIP", price: 500000, quota: 100 });
+    const categoryId = created.body.data.category.id;
+
+    const res = await request(app).get(`/api/events/${eventId}/categories`);
+    expect(res.status).toBe(200);
+    expect(res.body.data.categories[0].stock).toBe(100);
+
+    await redis.del(`stock:category:${categoryId}`);
+
+    const heal = await request(app).get(`/api/events/${eventId}/categories`);
+    expect(heal.status).toBe(200);
+    expect(heal.body.data.categories[0].stock).toBe(100);
+
+    const restored = await redis.get(`stock:category:${categoryId}`);
+    expect(Number(restored)).toBe(100);
+  });
 });

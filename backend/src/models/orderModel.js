@@ -150,6 +150,18 @@ const markReleased = async (orderId, client = pool) => {
   return result.rows[0] || null;
 };
 
+const countSoldByCategoryIds = async (categoryIds) => {
+  const query = `
+    SELECT category_id::text AS category_id, COUNT(*)::int AS sold
+    FROM orders
+    WHERE category_id = ANY($1::uuid[])
+      AND status IN ('pending', 'holding_period', 'released', 'held')
+    GROUP BY category_id;
+  `;
+  const result = await pool.query(query, [categoryIds]);
+  return result.rows;
+};
+
 const overrideStatus = async (orderId, status, client = pool) => {
   const query = `
     UPDATE orders
@@ -214,4 +226,5 @@ module.exports = {
   markHoldingPeriod,
   markReleased,
   overrideStatus,
+  countSoldByCategoryIds,
 };

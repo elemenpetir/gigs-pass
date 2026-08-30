@@ -4,6 +4,13 @@ jest.mock("../../src/config/db", () => mockDb);
 jest.mock("../../src/config/redis", () => ({
   set: jest.fn().mockResolvedValue("OK"),
   get: jest.fn().mockResolvedValue(null),
+  mget: jest.fn().mockImplementation((...keys) =>
+    Promise.resolve(keys.map(() => null)),
+  ),
+  pipeline: jest.fn(() => ({
+    set: jest.fn(),
+    exec: jest.fn().mockResolvedValue([]),
+  })),
 }));
 
 const categoryService = require("../../src/services/categoryService");
@@ -16,6 +23,8 @@ describe("Category Service", () => {
   beforeEach(() => {
     mockDb.reset();
     redis.set.mockClear();
+    redis.mget.mockClear();
+    redis.pipeline.mockClear();
   });
 
   describe("createCategory", () => {
@@ -288,6 +297,110 @@ describe("Category Service", () => {
       await expect(
         categoryService.listCategoriesByEvent(9999),
       ).rejects.toThrow("Event not found");
+    });
+
+    test("should use Redis stock when counter is present", async () => {
+      const event = await eventService.createEvent("org-1", {
+        title: "Concert",
+        event_date: FUTURE_DATE,
+        category: "music",
+      });
+      await categoryService.createCategory("org-1", event.id, {
+        name: "VIP",
+        price: 100,
+        quota: 100,
+      });
+      redis.mget.mockResolvedValueOnce(["42"]);
+
+      const categories = await categoryService.listCategoriesByEvent(event.id);
+
+      expect(categories[0].stock).toBe(42);
+    });
+
+    test("should self-heal missing stock from paid orders (quota - sold)", async () => {
+      const event = await eventService.createEvent("org-1", {
+        title: "Concert",
+        event_date: FUTURE_DATE,
+        category: "music",
+      });
+      const category = await categoryService.createCategory("org-1", event.id, {
+        name: "VIP",
+        price: 100,
+        quota: 100,
+      });
+      mockDb.orders.push({
+        id: 1,
+        buyer_id: "b1",
+        category_id: category.id,
+        status: "pending",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      redis.mget.mockResolvedValueOnce([null]);
+
+      const categories = await categoryService.listCategoriesByEvent(event.id);
+
+      expect(categories[0].stock).toBe(99);
+      const setMock = redis.pipeline.mock.results[0].value.set;
+      expect(setMock).toHaveBeenCalledWith(
+        `stock:category:${category.id}`,
+        99,
+      );
+    });
+
+    test("should clamp stock to zero when sold exceeds quota", async () => {
+      const event = await eventService.createEvent("org-1", {
+        title: "Concert",
+        event_date: FUTURE_DATE,
+        category: "music",
+      });
+      const category = await categoryService.createCategory("org-1", event.id, {
+        name: "VIP",
+        price: 100,
+        quota: 10,
+      });
+      for (let i = 1; i <= 25; i += 1) {
+        mockDb.orders.push({
+          id: i,
+          buyer_id: `b${i}`,
+          category_id: category.id,
+          status: "pending",
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+      }
+      redis.mget.mockResolvedValueOnce([null]);
+
+      const categories = await categoryService.listCategoriesByEvent(event.id);
+
+      expect(categories[0].stock).toBe(0);
+    });
+
+    test("should fall back to DB stock without writing when Redis is down", async () => {
+      const event = await eventService.createEvent("org-1", {
+        title: "Concert",
+        event_date: FUTURE_DATE,
+        category: "music",
+      });
+      const category = await categoryService.createCategory("org-1", event.id, {
+        name: "VIP",
+        price: 100,
+        quota: 100,
+      });
+      mockDb.orders.push({
+        id: 1,
+        buyer_id: "b1",
+        category_id: category.id,
+        status: "pending",
+        created_at: new Date(),
+        updated_at: new Date(),
+      });
+      redis.mget.mockRejectedValueOnce(new Error("ECONNREFUSED"));
+
+      const categories = await categoryService.listCategoriesByEvent(event.id);
+
+      expect(categories[0].stock).toBe(99);
+      expect(redis.pipeline).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,6 +1,9 @@
 const categoryModel = require("../models/categoryModel");
 const eventModel = require("../models/eventModel");
+const orderModel = require("../models/orderModel");
 const redis = require("../config/redis");
+
+const stockKey = (categoryId) => `stock:category:${categoryId}`;
 
 const createCategory = async (userId, eventId, data) => {
   const event = await eventModel.findById(eventId);
@@ -43,7 +46,7 @@ const createCategory = async (userId, eventId, data) => {
     quota,
   );
 
-  await redis.set(`stock:category:${category.id}`, quota);
+  await redis.set(stockKey(category.id), quota);
 
   return category;
 };
@@ -97,10 +100,20 @@ const updateCategory = async (userId, categoryId, data) => {
   );
 
   if (quota !== undefined) {
-    await redis.set(`stock:category:${categoryId}`, nextQuota);
+    await redis.set(stockKey(categoryId), nextQuota);
   }
 
   return updated;
+};
+
+const computeSoldMap = async (categories) => {
+  const soldRows = await orderModel.countSoldByCategoryIds(
+    categories.map((c) => c.id),
+  );
+  return soldRows.reduce((acc, row) => {
+    acc[String(row.category_id)] = row.sold;
+    return acc;
+  }, {});
 };
 
 const listCategoriesByEvent = async (eventId) => {
@@ -112,19 +125,50 @@ const listCategoriesByEvent = async (eventId) => {
   }
 
   const categories = await categoryModel.findByEventId(eventId);
+  if (categories.length === 0) {
+    return [];
+  }
 
-  // Fetch Redis stock for each category
-  const categoriesWithStock = await Promise.all(
-    categories.map(async (cat) => {
-      const stock = await redis.get(`stock:category:${cat.id}`);
-      return {
-        ...cat,
-        stock: stock !== null ? parseInt(stock, 10) : cat.quota,
-      };
-    })
-  );
+  const resolved = categories.map((cat) => cat);
+  let redisStocks;
+  try {
+    redisStocks = await redis.mget(...categories.map((c) => stockKey(c.id)));
+  } catch (err) {
+    redisStocks = null;
+  }
 
-  return categoriesWithStock;
+  if (redisStocks === null) {
+    const soldMap = await computeSoldMap(categories);
+    return categories.map((cat) => ({
+      ...cat,
+      stock: Math.max(0, cat.quota - (soldMap[String(cat.id)] || 0)),
+    }));
+  }
+
+  const missing = [];
+  redisStocks.forEach((stock, idx) => {
+    if (stock !== null) {
+      resolved[idx] = { ...categories[idx], stock: parseInt(stock, 10) };
+    } else {
+      missing.push(idx);
+    }
+  });
+
+  if (missing.length === 0) {
+    return resolved;
+  }
+
+  const soldMap = await computeSoldMap(categories);
+  const pipeline = redis.pipeline();
+  for (const idx of missing) {
+    const cat = categories[idx];
+    const stock = Math.max(0, cat.quota - (soldMap[String(cat.id)] || 0));
+    resolved[idx] = { ...cat, stock };
+    pipeline.set(stockKey(cat.id), stock);
+  }
+  await pipeline.exec();
+
+  return resolved;
 };
 
 module.exports = {
