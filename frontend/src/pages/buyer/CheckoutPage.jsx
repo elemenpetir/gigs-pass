@@ -223,7 +223,7 @@ export default function CheckoutPage() {
             onClick={() => pay(false)}
             className="flex-1 bg-background text-foreground font-bold uppercase text-lg px-6 py-4 brut-border-4 brut-button hover:bg-gigs-yellow"
           >
-            PAYMENT FAILED
+            SIMULATE FAILED PAYMENT
           </button>
         </div>
         <p className="mt-6 text-xs font-bold uppercase tracking-wide text-foreground/60">
