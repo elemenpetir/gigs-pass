@@ -45,6 +45,21 @@ const findByBuyerId = async (buyerId) => {
   return result.rows;
 };
 
+const findByIdWithDetails = async (id) => {
+  const query = `
+    SELECT o.id, o.buyer_id, o.category_id, o.status, o.amount, o.paid_at,
+           o.holding_until, o.refund_reason, o.created_at, o.updated_at,
+           c.name AS category_name, c.event_id,
+           e.title AS event_title, e.event_date, e.image_url
+    FROM orders o
+    JOIN ticket_categories c ON c.id = o.category_id
+    JOIN events e ON e.id = c.event_id
+    WHERE o.id = $1;
+  `;
+  const result = await pool.query(query, [id]);
+  return result.rows[0] || null;
+};
+
 const markPaid = async (id, client = pool) => {
   const query = `
     UPDATE orders
@@ -214,6 +229,7 @@ module.exports = {
   createOrder,
   findById,
   findByBuyerId,
+  findByIdWithDetails,
   findByEventId,
   findAll,
   markPaid,

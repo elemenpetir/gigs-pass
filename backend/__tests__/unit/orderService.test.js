@@ -80,6 +80,39 @@ describe("Order Service", () => {
     });
   });
 
+  describe("getOrderById", () => {
+    test("returns order details for the owner", async () => {
+      const detailed = { id: "o-1", buyer_id: "buyer-1", status: "pending" };
+      orderModel.findByIdWithDetails.mockResolvedValue(detailed);
+
+      await expect(
+        orderService.getOrderById("buyer-1", "o-1"),
+      ).resolves.toEqual(detailed);
+    });
+
+    test("throws 404 when order does not exist", async () => {
+      orderModel.findByIdWithDetails.mockResolvedValue(null);
+
+      await expect(
+        orderService.getOrderById("buyer-1", "o-999"),
+      ).rejects.toMatchObject({ message: "Order not found", statusCode: 404 });
+    });
+
+    test("throws 403 when order belongs to another buyer", async () => {
+      orderModel.findByIdWithDetails.mockResolvedValue({
+        id: "o-1",
+        buyer_id: "buyer-9",
+      });
+
+      await expect(
+        orderService.getOrderById("buyer-1", "o-1"),
+      ).rejects.toMatchObject({
+        message: "Forbidden: not your order",
+        statusCode: 403,
+      });
+    });
+  });
+
   describe("payOrder", () => {
     const baseOrder = {
       id: "o-1",

@@ -101,7 +101,7 @@ export default function OrderHistoryPage() {
           {orders.map((order) => (
             <div key={order.id} className="group grid grid-cols-1 md:grid-cols-12 gap-4 py-6 border-b-2 border-foreground/30 items-center hover:bg-surface-card transition-colors">
               <div className="col-span-1 md:col-span-4">
-                <Link to={`/events/${order.event_id}`} className="group-hover:text-gigs-pink transition-colors">
+                <Link to={`/orders/${order.id}`} className="group-hover:text-gigs-pink transition-colors">
                   <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-tight">{order.event_title}</h3>
                   <p className="text-sm font-bold text-foreground/70 mt-1">{formatEventDate(order.event_date)}</p>
                 </Link>

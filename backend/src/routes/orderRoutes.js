@@ -12,6 +12,13 @@ router.get(
   orderController.list,
 );
 
+router.get(
+  "/:id",
+  authenticate,
+  authorize(["buyer"]),
+  orderController.findOne,
+);
+
 router.post(
   "/",
   authenticate,

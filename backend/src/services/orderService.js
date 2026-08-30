@@ -38,6 +38,23 @@ const listBuyerOrders = async (userId) => {
   return orderModel.findByBuyerId(userId);
 };
 
+const getOrderById = async (userId, orderId) => {
+  const order = await orderModel.findByIdWithDetails(orderId);
+  if (!order) {
+    const error = new Error("Order not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (order.buyer_id !== userId) {
+    const error = new Error("Forbidden: not your order");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return order;
+};
+
 const payOrder = async (userId, orderId, success) => {
   const order = await orderModel.findById(orderId);
   if (!order) {
@@ -135,6 +152,7 @@ const overrideOrder = async ({ role }, orderId, status) => {
 module.exports = {
   createOrder,
   listBuyerOrders,
+  getOrderById,
   payOrder,
   overrideOrder,
 };

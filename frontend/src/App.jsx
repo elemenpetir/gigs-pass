@@ -10,6 +10,7 @@ import EventDetailPage from "@/pages/public/EventDetailPage";
 import WaitingRoomPage from "@/pages/buyer/WaitingRoomPage";
 import CheckoutPage from "@/pages/buyer/CheckoutPage";
 import OrderHistoryPage from "@/pages/buyer/OrderHistoryPage";
+import OrderDetailPage from "@/pages/buyer/OrderDetailPage";
 import LoginPage from "@/pages/auth/LoginPage";
 import OrganizerEventsPage from "@/pages/organizer/OrganizerEventsPage";
 import EventFormPage from "@/pages/organizer/EventFormPage";
@@ -31,6 +32,7 @@ function App() {
             <Route path="/events/:eventId/join/:categoryId" element={<WaitingRoomPage />} />
             <Route path="/events/:eventId/checkout/:categoryId" element={<CheckoutPage />} />
             <Route path="/orders" element={<OrderHistoryPage />} />
+            <Route path="/orders/:id" element={<OrderDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
           </Route>
 

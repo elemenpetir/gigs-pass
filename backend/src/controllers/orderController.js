@@ -14,6 +14,23 @@ const list = async (req, res) => {
   }
 };
 
+const findOne = async (req, res) => {
+  try {
+    const order = await orderService.getOrderById(req.user.id, req.params.id);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Order retrieved",
+      data: { order },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+    const message =
+      statusCode === 500 ? "Internal server error" : error.message;
+    return res.status(statusCode).json({ status: "error", message });
+  }
+};
+
 const create = async (req, res) => {
   try {
     const order = await orderService.createOrder(
@@ -60,6 +77,7 @@ const pay = async (req, res) => {
 
 module.exports = {
   list,
+  findOne,
   create,
   pay,
 };
