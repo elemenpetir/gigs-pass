@@ -33,7 +33,7 @@ frontend/
 │   ├── pages/        # Route-level pages, dipisah per role:
 │   │   ├── auth/        # LoginPage
 │   │   ├── public/      # Home, EventsPage, EventDetailPage (tanpa login)
-│   │   ├── buyer/       # WaitingRoom, Checkout, OrderHistory
+│   │   ├── buyer/       # WaitingRoom, Checkout, OrderHistory, OrderDetail
 │   │   ├── organizer/   # Events, EventForm, Categories, EventOrders
 │   │   └── admin/       # AdminEvents, AdminOrders, AdminAnalytics
 │   ├── hooks/        # Custom hooks (SSE connection, etc)

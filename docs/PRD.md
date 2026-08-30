@@ -217,6 +217,7 @@ Redis **hanya** dipakai untuk: antrian, lock + lock expiry tracker, dan stock co
 ## 7. Data Model Awal
 
 ### 7.1 users
+
 ```txt
 id (uuid)
 name
@@ -228,6 +229,7 @@ updated_at
 ```
 
 ### 7.2 events
+
 ```txt
 id (uuid)
 organizer_id (FK -> users)
@@ -242,6 +244,7 @@ updated_at
 ```
 
 ### 7.3 ticket_categories
+
 ```txt
 id (uuid)
 event_id (FK -> events)
@@ -253,6 +256,7 @@ updated_at
 ```
 
 ### 7.4 orders
+
 ```txt
 id (uuid)
 buyer_id (FK -> users)
@@ -266,6 +270,7 @@ updated_at
 ```
 
 ### 7.5 ledger_accounts
+
 ```txt
 id (uuid)
 owner_id (FK -> users, nullable untuk akun platform)
@@ -274,6 +279,7 @@ created_at
 ```
 
 ### 7.6 ledger_entries
+
 ```txt
 id (uuid)
 order_id (FK -> orders)
@@ -283,6 +289,7 @@ amount
 description
 created_at
 ```
+
 Immutable — tidak ada kolom `updated_at`, tidak pernah di-UPDATE.
 
 ---
@@ -290,6 +297,7 @@ Immutable — tidak ada kolom `updated_at`, tidak pernah di-UPDATE.
 ## 8. API Endpoint Draft
 
 ### 8.1 Auth
+
 ```txt
 POST /api/auth/register
 POST /api/auth/login
@@ -297,6 +305,7 @@ GET  /api/auth/me
 ```
 
 ### 8.2 Events (Public + Organizer)
+
 ```txt
 GET    /api/events                 (public, tanpa login; dukung ?category= untuk filter vibe; tiap event menyertakan min_price = tiket termurah)
 GET    /api/events/:id             (public, tanpa login)
@@ -309,6 +318,7 @@ POST   /api/events/:id/image       (organizer, hanya pemilik)
 ```
 
 ### 8.3 Ticket Categories
+
 ```txt
 GET    /api/events/:id/categories
 POST   /api/events/:id/categories  (organizer)
@@ -316,6 +326,7 @@ PUT    /api/categories/:id         (organizer)
 ```
 
 ### 8.4 Virtual Queue
+
 ```txt
 POST /api/queue/:categoryId/join (buyer masuk antrian, wajib login)
 GET /api/queue/:categoryId/stream (SSE endpoint, update real-time; auth via Bearer header)
@@ -323,14 +334,18 @@ GET /api/queue/:categoryId/stream (SSE endpoint, update real-time; auth via Bear
 ```
 
 ### 8.5 Checkout & Order
+
 ```txt
 POST /api/checkout/:categoryId/lock    (kunci slot/reservasi, mulai TTL)
 POST /api/orders                       (buat order setelah lock berhasil)
 POST /api/orders/:id/pay               (mock/simulate payment)
+GET /api/orders                      (riwayat order buyer)
+GET /api/orders/:id                  (detail resi order, auth + ownership)
 GET  /api/orders                       (riwayat order buyer)
 ```
 
 ### 8.6 Ledger & Payout
+
 ```txt
 GET  /api/organizer/:id/ledger-summary
 POST /api/organizer/events/:id/cancel        (organizer lapor batal resmi -> refunded, refund_reason='event_cancelled')
@@ -339,6 +354,7 @@ GET  /api/admin/ledger/transactions
 ```
 
 ### 8.7 Analytics
+
 ```txt
 GET /api/analytics/event/:id/overview
 GET /api/analytics/platform/overview   (admin)
@@ -349,6 +365,7 @@ GET /api/analytics/platform/overview   (admin)
 ## 9. Testing Scope
 
 ### 9.1 Unit / Integration Test
+
 - Auth login/register.
 - Event & kategori tiket CRUD.
 - Virtual queue join & posisi.
@@ -361,6 +378,7 @@ GET /api/analytics/platform/overview   (admin)
 Dijalankan bertahap (mulai 20-50 VU, naik bertahap), idealnya generator traffic dari luar AWS (misal GitHub Actions) agar tidak membebani biaya compute sendiri.
 
 Hal yang harus dibuktikan:
+
 1. **No overselling** — simulasi banyak concurrent request rebutan kuota terbatas, jumlah order sukses harus tepat sama dengan kuota.
 2. **Queue ordering tetap benar** di bawah beban tinggi (FIFO konsisten).
 3. **TTL expiry bekerja** — slot yang tidak dibayar benar-benar ter-release balik ke stok.
@@ -381,6 +399,7 @@ Hasil stress test (angka konkret) didokumentasikan di README sebagai bukti empir
 - README harus menjelaskan problem, arsitektur, tech stack, setup, API, ERD, dan hasil stress test.
 
 ### Prinsip Anti-Overengineering (disepakati eksplisit)
+
 - Ledger cukup 4 jenis akun, tidak generik.
 - Role tetap hardcode (buyer/organizer/admin), bukan dynamic RBAC.
 - Tidak ada dispute window otomatis dari customer.
