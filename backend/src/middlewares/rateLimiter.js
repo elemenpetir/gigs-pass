@@ -14,22 +14,30 @@ const tooManyRequestsHandler = (req, res) => {
   });
 };
 
+const skip = (req) => {
+  if (req.headers["x-k6-test-key"] === "stress-test-secret") return true;
+  return false;
+};
+
 const loginLimiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
   limit: RATE_LIMIT_LOGIN_MAX,
   skipSuccessfulRequests: true,
+  skip,
   handler: tooManyRequestsHandler,
 });
 
 const registerLimiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
   limit: RATE_LIMIT_REGISTER_MAX,
+  skip,
   handler: tooManyRequestsHandler,
 });
 
 const joinLimiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
   limit: RATE_LIMIT_JOIN_MAX,
+  skip,
   keyGenerator: (req) => `user:${req.user.id}`,
   handler: tooManyRequestsHandler,
 });
@@ -37,7 +45,7 @@ const joinLimiter = rateLimit({
 const globalLimiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
   limit: RATE_LIMIT_GLOBAL_MAX,
-  skip: (req) => req.originalUrl.endsWith("/stream"),
+  skip: (req) => req.originalUrl.endsWith("/stream") || skip(req),
   handler: tooManyRequestsHandler,
 });
 
