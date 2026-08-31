@@ -1,0 +1,16 @@
+name: Stress Test
+on:
+  workflow_dispatch:
+
+jobs:
+  k6-stress-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run k6
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/load/k6-script.js
+          flags: --env TARGET_URL=http://13.214.56.223
