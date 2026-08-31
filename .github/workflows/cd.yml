@@ -41,12 +41,20 @@ jobs:
       - name: Deploy via SSM
         env:
           INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          ACTOR: ${{ github.actor }}
         run: |
           set -e
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --parameters 'commands=["export HOME=/root && cd /opt/gigspass && docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GHCR_TOKEN }} && docker compose pull && docker compose up -d"]' \
+            --parameters "commands=[
+              'export HOME=/root',
+              'cd /opt/gigspass',
+              'echo \"$GHCR_TOKEN\" | docker login ghcr.io -u \"$ACTOR\" --password-stdin',
+              'docker compose pull',
+              'docker compose up -d'
+            ]" \
             --comment "Deploy gigspass $(date -u +%Y%m%d-%H%M%S)" \
             --output text --query "Command.CommandId")
           
