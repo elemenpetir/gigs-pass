@@ -4,6 +4,7 @@ import { RequireRole } from "@/lib/guard";
 import AppLayout from "@/layouts/AppLayout";
 import OrganizerLayout from "@/layouts/OrganizerLayout";
 import AdminLayout from "@/layouts/AdminLayout";
+import ScrollToTop from "@/components/ScrollToTop";
 import Home from "@/pages/public/Home";
 import EventsPage from "@/pages/public/EventsPage";
 import EventDetailPage from "@/pages/public/EventDetailPage";
@@ -23,6 +24,7 @@ import AdminAnalyticsPage from "@/pages/admin/AdminAnalyticsPage";
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <Routes>
           <Route element={<AppLayout />}>
