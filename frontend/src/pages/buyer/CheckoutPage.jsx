@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowRight, Clock, Ticket } from "lucide-react";
+import { ArrowRight, Clock, Ticket, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { formatEventDate, formatIDR } from "@/lib/format";
@@ -131,9 +131,10 @@ export default function CheckoutPage() {
     if (status === "paid") {
       return (
         <div className="border-4 border-foreground bg-gigs-teal p-10 brut-shadow text-center">
-          <span className="bg-foreground text-background px-2 py-1 brut-border-2 text-sm font-black uppercase tracking-widest inline-block mb-4">ticket secured</span>
-          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85]">SEE YOU<br />THERE.</h2>
-          <p className="mt-6 font-black uppercase text-lg">Your ticket is paid & locked in.</p>
+          <CheckCircle2 size={64} className="mx-auto mb-4 stroke-[3]" />
+          <span className="bg-foreground text-background px-2 py-1 brut-border-2 text-sm font-black uppercase tracking-widest inline-block mb-4">payment successful</span>
+          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85]">TICKET<br />CONFIRMED.</h2>
+          <p className="mt-6 font-black uppercase text-lg">Your ticket is secured (Order: #{order?.id}).</p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">MY ORDERS →</Link>
             <Link to="/" className="bg-background px-6 py-3 font-black uppercase brut-border-2 brut-button hover:bg-gigs-yellow">BACK TO DISCOVER</Link>

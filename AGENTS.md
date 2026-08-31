@@ -1,3 +1,5 @@
+Always respond in Bahasa Indonesia, regardless of the language used in this file.
+
 # Gigs Pass — Agent Instructions
 
 ## Project Overview
