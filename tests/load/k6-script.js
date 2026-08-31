@@ -35,10 +35,24 @@ export function setup() {
 export default function (data) {
   const { token } = data;
   
+  if (!token) {
+    console.log('Token missing in iteration');
+    return;
+  }
+
   // 3. Join Queue
-  const res = http.post(`${BASE_URL}/api/queue/${CATEGORY_ID}/join`, null, {
-    headers: { Authorization: `Bearer ${token}`, 'X-K6-TEST-KEY': TEST_KEY },
+  const res = http.post(`${BASE_URL}/api/queue/${CATEGORY_ID}/join`, JSON.stringify({}), {
+    headers: { 
+      Authorization: `Bearer ${token}`, 
+      'X-K6-TEST-KEY': TEST_KEY,
+      'Content-Type': 'application/json' 
+    },
   });
+  
+  if (res.status !== 200 && res.status !== 409) {
+    console.log(`Join Queue Failed: ${res.status} - ${res.body}`);
+  }
+  
   check(res, { 'join queue ok': (r) => r.status === 200 || r.status === 409 });
   
   sleep(1);
