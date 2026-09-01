@@ -55,6 +55,6 @@ export default function (data) {
   
   check(res, { 'join queue ok': (r) => r.status === 200 || r.status === 409 });
   
-  // Sleep 0.5s to respect nginx rate limits while keeping concurrency high
-  sleep(0.5);
+  // Sleep 1.0s to respect nginx rate limits while keeping concurrency high
+  sleep(1.0);
 }
