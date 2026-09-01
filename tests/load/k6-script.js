@@ -41,11 +41,13 @@ export default function (data) {
   }
 
   // 3. Join Queue
+  const randomIp = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
   const res = http.post(`${BASE_URL}/api/queue/${CATEGORY_ID}/join`, JSON.stringify({}), {
     headers: { 
       Authorization: `Bearer ${token}`, 
       'X-K6-TEST-KEY': TEST_KEY,
-      'Content-Type': 'application/json' 
+      'Content-Type': 'application/json',
+      'X-Forwarded-For': randomIp
     },
   });
   
