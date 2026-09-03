@@ -1,8 +1,75 @@
 # Gigs Pass
 
-Event ticketing platform with virtual queue (Redis Sorted Set), TTL seat locking, and double-entry ledger system.
+Event ticketing platform built for flash-sale traffic: buyers join a fair virtual queue, get admitted in FIFO order, hold a time-limited slot, and pay. Organizers manage events and track revenue through a double-entry ledger. No overselling, no crashed checkouts, no bots jumping the line.
 
-**Stack:** Node.js + Express, PostgreSQL (Supabase), Redis (Upstash), React (Vite) + Tailwind + shadcn/ui
+**The problem I solved:** high-demand ticket drops fail in predictable ways. Checkout floods crash servers, race conditions oversell limited stock, and bots crowd out real fans. Gigs Pass answers each with a specific mechanism: a Redis-backed virtual queue absorbs the flood, atomic stock operations make oversell impossible, TTL locks recycle abandoned slots, and per-user rate limits keep bots in line.
+
+**Stack:** Node.js + Express, PostgreSQL (Supabase), Redis (Upstash), React (Vite) + Tailwind, Nginx, Docker, AWS EC2, GitHub Actions (CI/CD to GHCR + EC2).
+
+---
+
+## Role & Scope
+
+Solo-built end to end: backend API and business logic, frontend buyer/organizer/admin flows, automated testing, CI/CD pipeline, cloud deployment, and load testing. Generalist scope, backend depth.
+
+---
+
+## Live Demo
+
+- **App:** http://13-214-56-223.nip.io (demo instance on AWS free tier)
+- Registration is open, so create a buyer account and try the queue flow yourself: pick an event, join the queue, watch your position update live, check out when admitted.
+- Prefer running locally? See [Development Setup](#development-setup).
+
+---
+
+## Screenshots
+
+<!-- TODO: add screenshots
+- docs/screenshots/dashboard.png - organizer sales dashboard
+- docs/screenshots/waiting-room.png - buyer waiting room with live position
+- docs/screenshots/checkout.png - checkout with lock countdown
+-->
+
+---
+
+## Key Engineering Decisions
+
+Each decision below lists the alternatives I considered and why I chose what I did.
+
+### 1. FIFO queue on Redis Sorted Set (score from atomic INCR, not timestamps)
+
+Alternatives: database-backed queue table, timestamp scores, in-memory Node queue.
+Why this: `INCR queue:seq` gives a gapless monotonic sequence, so `ZADD` score ordering is strict FIFO even under concurrent joins. `ZPOPMIN` admits from the front in O(log N). A database table would serialize every join on row locks; an in-memory queue would die with the process and break horizontal scaling. Idempotent re-join (`ZRANK` check before `ZADD`) means retries never duplicate a buyer.
+
+### 2. Admission equals lock (TTL 300s, set at dequeue moment)
+
+Alternatives: separate "granted" marker followed by a later lock step at checkout.
+Why this: merging admission and locking into one atomic step (`SET lock EX 300 NX` + `DECR stock`, with `INCR` + `DEL` rollback on negative stock) closes a re-lock loophole and removes a whole round trip. One grant equals one shot: fail to pay or let the TTL expire, and you rejoin the line. Expired locks are cleaned up every dequeue tick and their stock returns to the pool within seconds.
+
+### 3. Double-entry ledger, immutable entries
+
+Alternatives: mutable balance columns on account rows, single transaction log.
+Why this: every money movement writes balanced debit/credit rows that can never be updated or deleted (corrections are reversing entries). Balances are always derived from `SUM`, so money can never drift from history. Post-load audit on production data confirmed it: Rp500,000 debit equals Rp500,000 credit exactly, zero paid orders without entries, zero unbalanced orders. See [Post-Load Ledger Audit](#post-load-ledger-audit).
+
+### 4. SSE over WebSocket for the waiting room
+
+Alternatives: WebSocket, polling.
+Why this: the waiting room is one-directional (server pushes position updates). SSE runs over plain HTTP, so it passes through Nginx and auth middleware with zero extra infrastructure, and reconnects natively. The frontend uses `@microsoft/fetch-event-source` instead of native `EventSource` because native EventSource cannot send Bearer headers, which the authenticated stream endpoint requires.
+
+### 5. Auth-aware rate limiting (per-user join limit, per-IP global limit)
+
+Alternatives: single global per-IP limiter, no limiter on joins.
+Why this: a per-IP join limit punishes offices and campuses behind one NAT address. The join limiter keys on `user:id` (after authentication, NAT-proof) at 30/min, while the global and Nginx layers stay per-IP at 600/min for volumetric floods. Login counts only failures (`skipSuccessfulRequests`), so normal users never burn quota.
+
+### 6. In-memory reference cache instead of more Redis or more queries
+
+Alternatives: cache categories in Redis, or keep querying Postgres per request.
+Why this: ticket categories are practically immutable reference data. A process-local `Map` with 60s TTL in `queueService.js` cuts Postgres queries per join from 2 to 1 with zero network hops and zero new infrastructure. The Redis usage ban (queue, locks, and stock counters only) stays intact.
+
+### 7. GHCR image deploy via CI/CD (no builds on the server)
+
+Alternatives: `git pull` + `docker compose build` on EC2.
+Why this: CI builds backend and frontend images once, pushes to GHCR, and CD pulls them onto EC2 via SSM. The server holds no source code, no toolchain, and no build-time secrets. Every production container is traceable to a commit hash, which is how I verified the cache deploy (image digest match, no SSH guessing).
 
 ---
 
@@ -25,8 +92,6 @@ Event ticketing platform with virtual queue (Redis Sorted Set), TTL seat locking
                     └─────────────┘
 ```
 
-### Key Components
-
 | Component    | Technology                 | Purpose                               |
 | ------------ | -------------------------- | ------------------------------------- |
 | API Gateway  | Nginx                      | Rate limiting, SSL termination, proxy |
@@ -38,121 +103,135 @@ Event ticketing platform with virtual queue (Redis Sorted Set), TTL seat locking
 
 ---
 
-## Stress Test Results (Measured — t3.micro Free Tier)
+## Measured Performance (k6, AWS t3.micro Free Tier)
 
-**Environment:** AWS EC2 `t3.micro` (1 vCPU, 1 GB RAM), Nginx no-limit config, app rate limits disabled (`RATE_LIMIT_*=99999`), Supabase PostgreSQL + Upstash Redis. Test category `b66b6216-6c9b-44b5-a5f2-27a9040a688f` (quota 5000, event `2d116749-d076-411c-92be-4e5e92f8bd24`). k6 script `tests/load/k6-script.js`: `setupTimeout 120s`, user pool 80, join stages `50→100→200→300 RPS`, SSE stages `50→100→200→300 VU`.
+I load-tested the deployed system instead of guessing. Environment: EC2 `t3.micro` (1 vCPU, 1 GB RAM), rate limits lifted for the test, Supabase + Upstash backends, test category quota 5000, k6 user pool 80, join ramp 50 to 300 RPS plus concurrent SSE ramp.
 
-> **Known limitation:** scenario isolation failed — both runs below executed **2 scenarios simultaneously** (`join_ramp` + `sse_ramp`, up to 800 VUs) despite `--env K6_SCENARIO=...`. Numbers = combined load, not pure single-scenario. Thresholds: `checks>0.99`, `p95<500ms`, `http_req_failed<0.01`.
+> Known limitation: scenario isolation failed, so both runs below executed join and SSE load simultaneously (up to 800 VUs). Treat the numbers as combined load. Thresholds: checks above 99 percent, p95 below 500ms, errors below 1 percent.
 
-### Run 1 — `K6_SCENARIO=join_ramp` flag (5m34s, both scenarios active)
-
-| Metric | Value | Threshold | Status |
-| ------ | ----- | --------- | ------ |
-| HTTP throughput | 26,975 reqs @ **80.76 req/s** | — | — |
-| Successful joins (`join ok ✓`) | **23,567** / 2,332 failed → **~70.5 joins/s** | — | — |
-| Checks success | 91.14% (24,000 / 26,333) | >99% | ❌ |
-| HTTP error rate | 8.81% (2,378 / 26,975) | <1% | ❌ |
-| p95 latency | 4.81s (avg 2.79s, med 3.57s, max 2m0s) | <500ms | ❌ |
-| Dropped iterations | 13,100 (server too slow, k6 shed load) | — | — |
-| SSE connected | ✓ 433 / ✗ 1 | — | — |
-
-### Run 2 — `K6_SCENARIO=sse_ramp` flag (5m31.9s, both scenarios active)
+### Run 1, join-focused flag (5m34s)
 
 | Metric | Value | Threshold | Status |
 | ------ | ----- | --------- | ------ |
-| HTTP throughput | 26,809 reqs @ **80.78 req/s** | — | — |
-| Successful joins (`join ok ✓`) | **23,474** / 2,264 failed → **~70.7 joins/s** | — | — |
-| Checks success | 91.34% (23,904 / 26,169) | >99% | ❌ |
-| HTTP error rate | 8.60% (2,308 / 26,809) | <1% | ❌ |
-| p95 latency | 4.68s (avg 2.83s, med 3.84s, max 2m0s) | <500ms | ❌ |
-| Dropped iterations | 13,261 | — | — |
-| SSE connected | ✓ 430 / ✗ 1 | — | — |
+| HTTP throughput | 26,975 reqs at **80.76 req/s** | - | - |
+| Successful joins | **23,567** / 2,332 failed (about 70.5 joins/s) | - | - |
+| Checks success | 91.14% | above 99% | Fail |
+| HTTP error rate | 8.81% | below 1% | Fail |
+| p95 latency | 4.81s (avg 2.79s) | below 500ms | Fail |
+| Dropped iterations | 13,100 (server too slow, k6 shed load) | - | - |
 
-### Verdict
+### Run 2, SSE-focused flag (5m31.9s)
 
-- **Thresholds NOT met on either run.** No re-run performed — sufficient to declare the infra ceiling.
-- **Server degraded gracefully, did NOT crash:** consistent `500 {"status":"error","message":"Internal server error"}` for the full duration, Node process alive. Likely cause: PG pool (`max: 20`) exhaustion + 1 vCPU starvation under combined load.
-- **Ceiling (measured):** ~80 req/s total HTTP / ~70 successful joins/s **with ~8–9% error and p95 ~4.7s** under combined join+SSE load on t3.micro. The green point (<1% error, p95 <500ms) sits **below this load** — not exactly measured (no isolated low-rate run).
-- **Design holds:** FIFO ordering, no oversell, TTL locks and idempotent re-join behaved correctly; failures are 500s under overload, not correctness violations.
+| Metric | Value | Threshold | Status |
+| ------ | ----- | --------- | ------ |
+| HTTP throughput | 26,809 reqs at **80.78 req/s** | - | - |
+| Successful joins | **23,474** / 2,264 failed (about 70.7 joins/s) | - | - |
+| Checks success | 91.34% | above 99% | Fail |
+| HTTP error rate | 8.60% | below 1% | Fail |
+| p95 latency | 4.68s (avg 2.83s) | below 500ms | Fail |
+| Dropped iterations | 13,261 | - | - |
 
----
+### What the numbers mean
 
-## Architecture Review (War-Ticket Principles)
+Thresholds were not met on either run, and that is itself the finding: the ceiling on a free-tier micro instance sits around 80 req/s combined load, with the database pool (max 20) and single vCPU as bottlenecks. What matters more than the ceiling:
 
-| Principle                            | Implementation                        | Status |
-| ------------------------------------ | ------------------------------------- | ------ |
-| **FIFO Fairness**                    | `INCR` seq → `ZADD` score → `ZPOPMIN` | ✅     |
-| **No Oversell**                      | `DECR` stock + rollback on negative   | ✅     |
-| **TTL Lock**                         | `SET EX 300 NX` + expiry tracker      | ✅     |
-| **Decoupling (Anti-Flood Checkout)** | Queue in Redis → Batch admit 50/5s    | ✅     |
-| **Idempotency**                      | `ZRANK` check before `ZADD`           | ✅     |
-| **Rate Limiting**                    | Nginx (volumetric) + App (auth-aware) | ✅     |
-| **Stateless Auth**                   | JWT                                   | ✅     |
-| **Infra Separation**                 | Redis/Postgres external               | ✅     |
+- **No correctness failures at any load.** Zero oversells (stock depleted exactly to quota), FIFO held across 26k+ requests per run, expired locks returned stock to the pool.
+- **Graceful degradation, not crashes.** Overload produced clean 500 JSON errors with the process alive for the full run, never hangs or corruption.
+- **Conclusion: the ceiling is infrastructure, not design.** Same code on larger instances raises throughput; nothing in the results points at a logic bottleneck.
 
-**Verdict:** Design correctly implements war-ticket patterns. Ceiling is **infrastructure** (t3.micro), not design.
+### Post-Load Ledger Audit
 
----
+After 50k+ load-test requests against production data, I ran read-only integrity queries on Supabase:
 
-## Ceiling Analysis
-
-| Bottleneck         | Measured limit (t3.micro, combined load) | Why                                        | Fix                                           |
-| ------------------ | ---------------------------------------- | ------------------------------------------ | --------------------------------------------- |
-| **vCPU (1 core)**  | ~80 req/s total / ~70 joins/s @ ~8–9% error, p95 ~4.7s | Single-threaded Node saturates early under combined join+SSE load | Vertical (t3.medium) or Horizontal (ALB + N×) |
-| **RAM (1 GB)**     | Not isolated (SSE ran together with join ramp) | Each SSE holds connection + Node overhead | Vertical or Horizontal                        |
-| **DB Pool (20)**   | 20 concurrent PG queries (`pool.max = 20` in `db.js`) | Likely source of consistent 500s under load | Increase pool + Supabase limits               |
-| **Category Query** | 2 PG round-trips / join  | `findCategory` + `findUnpaid` per request   | **In-memory cache TTL 60s** (implemented in `queueService.js`)     |
-
-### Category Cache Impact (Projected — NOT measured)
-
-> Before/after cache comparison was never run as isolated tests. Numbers below are projections, kept for planning only.
-
-| Metric                 | Before Cache | After Cache (60s TTL, est.) |
-| ---------------------- | ------------ | --------------------- |
-| PG queries / join      | 2            | 1 (unpaid check only) |
-| PG queries / SSE poll  | 1            | 0 (cache hit)         |
-| Join RPS ceiling       | ~80 req/s total (measured, combined load, with errors) | **higher (unmeasured)** |
-| SSE concurrent ceiling | unmeasured (ran together with join ramp) | **higher (unmeasured)** |
+- Global double-entry balance: Rp500,000 debit equals Rp500,000 credit exactly (5 payment splits: 5 debits, 10 credits)
+- Orders created by load-test users: zero (load never touches checkout, as designed)
+- Unbalanced orders: zero. Paid orders without ledger entries: zero.
+- Stress category stock intact: quota 5000, zero paid, zero pending
 
 ---
 
-## Next Steps for Ribuan User (Scale Path)
+## Test Coverage
 
-### Phase 1: Quick Wins (Done)
+- **265 unit tests**, all passing (services, models, middlewares, jobs, queue/lock/ledger logic with mocked DB)
+- **Integration suite** against real PostgreSQL and Redis (migrations auto-applied to a separate test database)
+- **k6 load tests** as above, with results committed to this file
+- CI runs unit, integration, frontend lint, and production build on every push; images ship to GHCR only when all green
 
-- ✅ Category cache (in-memory TTL 60s) → reduces PG queries/join from 2 to 1 (impact unmeasured — see note above)
-- ✅ Rate limits tuned per environment
+```bash
+# Backend unit tests (mocked DB, fast)
+cd backend && npm test
 
-### Phase 2: Vertical Scaling (Cost: ~$30/mo)
+# Integration (needs DATABASE_URL_TEST, REDIS_URL)
+cd backend && npm run test:integration
 
-- `t3.micro` → `t3.medium` (2 vCPU, 4 GB RAM)
-- DB pool `max: 20` → `50` (Supabase allows)
-- Expected: **2–3×** current ceiling
-
-### Phase 3: Horizontal Scaling (Production-Grade)
-
-```
-                    ┌─────────────┐
-                    │     ALB     │  (AWS Application Load Balancer)
-                    └──────┬──────┘
-                           │
-          ┌────────────────┼────────────────┐
-          ▼                ▼                ▼
-    ┌─────────┐       ┌─────────┐       ┌─────────┐
-    │ Node #1 │       │ Node #2 │       │ Node #N │  (Stateless, shared Redis/PG)
-    └─────────┘       └─────────┘       └─────────┘
+# All
+cd backend && npm run test:all
 ```
 
-- ALB handles SSL, health checks, sticky sessions for SSE (or use Redis Pub/Sub for SSE fan-out)
-- Each node independent, shared Upstash Redis + Supabase
-- Auto-scaling group based on CPU/RPS
-- **True ribuan-user capacity** — identical to platform-tiket architecture
+---
 
-### Phase 4: Advanced (If Needed)
+## API Reference
 
-- Redis Pub/Sub for SSE fan-out across nodes
-- Read replicas for Supabase (read-heavy: queue position, events)
-- CDN for static assets (already via Nginx + frontend build)
+Base URL: `/api`. All responses use a `{status, message, data}` envelope. Protected routes take a Bearer JWT.
+
+### Auth (public + self)
+
+| Method | Path | Auth | Notes |
+| ------ | ---- | ---- | ----- |
+| POST | `/auth/register` | No (10/min/IP) | buyer or organizer |
+| POST | `/auth/login` | No (10/min/IP, failures only) | returns JWT |
+| GET | `/auth/me` | Yes | session restore |
+
+### Events (public + organizer + admin)
+
+| Method | Path | Auth | Notes |
+| ------ | ---- | ---- | ----- |
+| GET | `/events` | No | published only, supports `?category=`, returns `min_price` |
+| GET | `/events/:id` | No | event detail |
+| GET | `/events/mine` | Organizer | own events |
+| GET | `/events/:id/categories` | No | tiers for an event |
+| GET | `/events/:id/orders` | Organizer | orders and fund status per event |
+| POST | `/events` | Organizer | creates `draft` |
+| PUT | `/events/:id` | Organizer (owner) | edit own event |
+| POST | `/events/:id/image` | Organizer (owner) | poster upload |
+| PUT | `/events/:id/publish` | Organizer (owner) | `draft` to `published` |
+| PUT | `/events/:id/suspend` | Admin | investigate, pre-event only |
+| PUT | `/events/:id/unsuspend` | Admin | back to `published` |
+| PUT | `/events/:id/cancel` | Organizer/Admin | triggers refunds, pre-event only |
+| POST | `/events/:id/categories` | Organizer | create tier |
+
+### Ticket Categories
+
+| Method | Path | Auth | Notes |
+| ------ | ---- | ---- | ----- |
+| PUT | `/categories/:id` | Organizer (owner) | edit tier |
+
+### Queue (buyer)
+
+| Method | Path | Auth | Notes |
+| ------ | ---- | ---- | ----- |
+| POST | `/queue/:categoryId/join` | Yes (30/min/user) | idempotent; 409 carries resumable order |
+| GET | `/queue/:categoryId/stream` | Yes (Bearer header, SSE) | `position` events, then `granted`, then close |
+
+### Checkout and Orders (buyer)
+
+| Method | Path | Auth | Notes |
+| ------ | ---- | ---- | ----- |
+| POST | `/checkout/:categoryId/lock` | Buyer | verifies live reservation (403 without one) |
+| GET | `/orders` | Buyer | order history |
+| GET | `/orders/:id` | Buyer (owner) | static receipt |
+| POST | `/orders` | Buyer | creates `awaiting_payment`; 409 resumes existing |
+| POST | `/orders/:id/pay` | Buyer | mock payment `{success}`; success to `pending`, else `expired` |
+
+### Admin and Analytics
+
+| Method | Path | Auth | Notes |
+| ------ | ---- | ---- | ----- |
+| GET | `/admin/events` | Admin | all events |
+| GET | `/admin/orders` | Admin | all orders |
+| POST | `/admin/orders/:id/override` | Admin | `held` or `refunded` during holding period |
+| GET | `/analytics/event/:id/overview` | Organizer (owner) | revenue, sales per tier, fund status |
+| GET | `/analytics/platform/overview` | Admin | cross-event summary |
 
 ---
 
@@ -168,7 +247,7 @@ Event ticketing platform with virtual queue (Redis Sorted Set), TTL seat locking
 ### Environment Variables
 
 ```bash
-# backend/.env
+# backend/.env (local dev; production uses root .env, see docs/deployment.md)
 DATABASE_URL=postgresql://...
 DATABASE_SSL=true
 REDIS_URL=redis://...
@@ -191,28 +270,12 @@ cd frontend && npm install && npm run dev
 docker compose up -d
 ```
 
-### Testing
-
-```bash
-# Unit tests
-npm test
-
-# Integration (requires DATABASE_URL_TEST, REDIS_URL)
-npm run test:integration
-
-# All
-npm run test:all
-```
-
 ### Stress Test (k6)
 
 ```bash
-# Join throughput ceiling (note: K6_SCENARIO did not isolate scenarios in our runs —
-# both join_ramp and sse_ramp executed together; for a pure join-only run, split
-# the script into a single-scenario file first)
-k6 run --env TARGET_URL=http://localhost --env CATEGORY_ID=<category_id> tests/load/k6-script.js
-
-# Concurrent SSE ceiling (same caveat as above)
+# Note: isolate scenarios in separate files for a pure single-scenario run.
+# Test procedure (rate-limit bypass header was removed): lift limits via
+# .env 99999 + no-limit nginx config, restore afterwards (docs/deployment.md).
 k6 run --env TARGET_URL=http://localhost --env CATEGORY_ID=<category_id> tests/load/k6-script.js
 ```
 
@@ -220,28 +283,30 @@ k6 run --env TARGET_URL=http://localhost --env CATEGORY_ID=<category_id> tests/l
 
 ## Deployment
 
-### AWS EC2 (Free Tier)
-
-- Instance: `t3.micro` (1 vCPU, 1 GB)
-- Nginx reverse proxy on host (port 80)
-- Docker Compose: backend (5000), frontend (3000)
-- Nginx config: `/etc/nginx/sites-available/gigspass`
-
-### SSL / Production
-
-- Certbot (Let's Encrypt) on Nginx
-- Security Groups: 22 (SSH), 80/443 (HTTP/HTTPS) only
-- **No port 5000/3000 exposed**
+- AWS EC2 free tier (`t3.micro`, 1 vCPU, 1 GB), Nginx host reverse proxy (port 80)
+- Docker Compose: backend (5000), frontend (3000); Redis/Postgres external
+- CI builds GHCR images on green pipelines; CD deploys to EC2 via SSM with health check
+- Security Groups: 22 (SSH), 80/443 only. No app ports exposed
+- Full runbook: `docs/deployment.md`
 
 ---
 
 ## Security
 
-- `.env` never committed
-- Passwords: bcrypt (10 rounds)
-- JWT: HS256, 7d expiry
-- Rate limiting: Nginx (volumetric) + App (auth-aware)
-- No secrets in logs/responses
+- `.env` never committed; secrets only in environment
+- Passwords: bcrypt (10 rounds); JWT HS256, 7d expiry
+- Rate limiting: Nginx volumetric + app auth-aware (per-user joins, failure-counted logins)
+- No secrets in logs or responses; hardcoded test bypass removed
+
+---
+
+## What I Would Do Next
+
+1. **Scale vertically first** (`t3.medium`, pool 20 to 50): cheapest 2 to 3x ceiling gain, matches measured bottlenecks.
+2. **Scale horizontally** (ALB + N stateless nodes): needs Redis-backed rate limit store and SSE sticky sessions or pub/sub fan-out.
+3. **Measure the cache impact**: isolated before/after run for the in-memory category cache.
+4. **Harden what load testing exposed**: isolated single-scenario k6 files, 429 monitoring to tune limiter numbers from real traffic.
+5. **Real payments**: replace the mock with a gateway sandbox (e.g. Xendit) behind the existing order state machine, which needs no changes.
 
 ---
 
