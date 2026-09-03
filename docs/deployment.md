@@ -143,6 +143,21 @@ curl -I http://127.0.0.1/             # frontend 200
 
 Dari luar: `http://<EC2_IP>/` harus menampilkan halaman frontend.
 
+## 5a. Mode Stress Test (sementara — kembalikan via §5b setelah selesai)
+
+> Header bypass `x-k6-test-key` sudah DIHAPUS dari codebase — satu-satunya cara menonaktifkan limiter untuk load test adalah prosedur ini:
+
+```bash
+sudo cp deploy/nginx/gigspass-no-limit.conf /etc/nginx/sites-available/gigspass
+sudo nginx -t && sudo systemctl reload nginx
+nano /opt/gigspass/.env
+# RATE_LIMIT_JOIN_MAX=99999
+# RATE_LIMIT_GLOBAL_MAX=99999
+cd /opt/gigspass && docker compose up -d
+```
+
+Jalankan k6 dari mesin penguji (bukan dari EC2), lalu **wajib restore via §5b** (limiter produksi 30/600 + hapus port 5000 di SG bila dibuka).
+
 ## 5b. Restore ke Produksi (setelah stress test / maintenance)
 
 ```bash
