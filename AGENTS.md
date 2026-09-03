@@ -53,6 +53,8 @@ frontend/
 
 **NOT used for:** general cache, session storage, or anything else.
 
+**Pengecualian cache (disetujui):** cache **in-memory process-local** (Node `Map` + TTL) untuk **data referensi yang praktis imutabel** (contoh: `ticket_categories` via `getCachedCategory`, TTL 60s di `queueService.js`) **diizinkan** — mengurangi query PG berulang tanpa menyentuh Redis. Larangan di atas tetap berlaku penuh untuk Redis.
+
 ### Queue & SSE Design (Fase 4)
 - `joinQueue` — `ZADD` member `userId`, score dari `INCR queue:seq`. Re-join idempotent (jika sudah ada, tidak ZADD ulang).
 - **Unpaid-order guard (anti double-unpaid per tier):** `joinQueue` menolak (`409` "You still have an unpaid ticket for this tier — finish your payment") HANYA bila buyer punya order `awaiting_payment` untuk tier yang sama DAN lock masih hidup (`lockService.getReservation`). Begitu lock mati (TTL expire / dihapus), join diizinkan dan order unpaid lama di-**eager-expire** via `orderModel.markExpiredByBuyerAndCategory` (tanpa sentuh Redis/stock — cleanup dequeuer yang mengembalikan stock, jadi tetap bebas oversell). Order `pending` (sudah bayar) TIDAK memblokir — re-buy per tier diizinkan.
@@ -253,6 +255,8 @@ Must prove:
 4. Response time acceptable (p95/p99)
 
 Document results in README with concrete numbers.
+
+**Pelajaran metodologi (insiden terukur):** `--env K6_SCENARIO=<nama>` TIDAK mengisolasi skenario — k6 mengeksekusi SEMUA skenario di `options.scenarios` (terbukti: flag `join_ramp`/`sse_ramp` tetap menjalankan keduanya, 800 VU gabungan). Untuk run terpisah, pisah jadi file single-scenario (mis. `k6-join-only.js`, `k6-sse-only.js`). Angka ceiling hanya valid bila beban yang diukur memang terisolasi — selalu catat caveat bila tidak.
 
 ## Security
 
