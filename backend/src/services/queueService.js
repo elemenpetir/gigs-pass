@@ -10,6 +10,25 @@ const {
 
 const queueKey = (eventId, categoryId) => `queue:event:${eventId}:${categoryId}`;
 
+// ===== Category Cache (TTL 60s) =====
+const categoryCache = new Map();
+const CACHE_TTL_MS = 60_000;
+
+const getCachedCategory = async (categoryId) => {
+  const now = Date.now();
+  const hit = categoryCache.get(categoryId);
+  if (hit && now - hit.ts < CACHE_TTL_MS) return hit.data;
+  // fetch fresh
+  const category = await categoryModel.findById(categoryId);
+  if (!category) {
+    const error = new Error("Category not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  categoryCache.set(categoryId, { data: category, ts: now });
+  return category;
+};
+
 const parseZpopResult = (flat) => {
   const dequeued = [];
   for (let i = 0; i < flat.length; i += 2) {
@@ -21,18 +40,8 @@ const parseZpopResult = (flat) => {
   return dequeued;
 };
 
-const findCategory = async (categoryId) => {
-  const category = await categoryModel.findById(categoryId);
-  if (!category) {
-    const error = new Error("Category not found");
-    error.statusCode = 404;
-    throw error;
-  }
-  return category;
-};
-
 const joinQueue = async (userId, categoryId) => {
-  const category = await findCategory(categoryId);
+  const category = await getCachedCategory(categoryId);
   const key = queueKey(category.event_id, category.id);
   const member = String(userId);
 
@@ -66,7 +75,7 @@ const joinQueue = async (userId, categoryId) => {
 };
 
 const getQueuePosition = async (userId, categoryId) => {
-  const category = await findCategory(categoryId);
+  const category = await getCachedCategory(categoryId);
   const key = queueKey(category.event_id, category.id);
   const member = String(userId);
 
@@ -79,7 +88,7 @@ const getQueuePosition = async (userId, categoryId) => {
 };
 
 const dequeueBatch = async (categoryId, count = QUEUE_BATCH_SIZE) => {
-  const category = await findCategory(categoryId);
+  const category = await getCachedCategory(categoryId);
   const key = queueKey(category.event_id, category.id);
 
   const stockValue = await redis.get(`stock:category:${category.id}`);
