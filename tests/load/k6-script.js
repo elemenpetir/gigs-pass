@@ -55,11 +55,11 @@ export function setup() {
     const reg = http.post(`${BASE_URL}/api/auth/register`, JSON.stringify({
       email, password, role: 'buyer', name: `Load User ${i}`
     }), {
-      headers: { 'Content-Type': 'application/json', 'X-K6-TEST-KEY': 'stress-test-secret' }
+      headers: { 'Content-Type': 'application/json' }
     });
     if (reg.status === 200 || reg.status === 201) {
       const login = http.post(`${BASE_URL}/api/auth/login`, JSON.stringify({ email, password }), {
-        headers: { 'Content-Type': 'application/json', 'X-K6-TEST-KEY': 'stress-test-secret' }
+        headers: { 'Content-Type': 'application/json' }
       });
       if (login.status === 200) {
         users.push({ token: login.json('data.token'), email, password });
@@ -81,7 +81,6 @@ export default function ({ users, categoryId }) {
     headers: {
       Authorization: `Bearer ${u.token}`,
       'Content-Type': 'application/json',
-      'X-K6-TEST-KEY': 'stress-test-secret',
     },
   });
 
@@ -98,11 +97,12 @@ export function sse_ramp({ users, categoryId }) {
   if (!u?.token) return;
 
   // 1. Join queue first
+  // NOTE: rate-limit bypass via header was removed (see rateLimiter.js) —
+  // stress runs must use .env 99999 limits + no-limit nginx config instead.
   const joinRes = http.post(`${BASE_URL}/api/queue/${categoryId}/join`, JSON.stringify({}), {
     headers: {
       Authorization: `Bearer ${u.token}`,
       'Content-Type': 'application/json',
-      'X-K6-TEST-KEY': 'stress-test-secret',
     },
   });
   if (joinRes.status !== 200 && joinRes.status !== 409) return;

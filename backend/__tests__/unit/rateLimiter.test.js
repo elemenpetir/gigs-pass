@@ -118,8 +118,7 @@ describe("Rate Limiters", () => {
     });
   });
 
-  describe("globalLimiter", () => {
-    const app = express();
+  describe("globalLimiter", () => {    const app = express();
     app.set("trust proxy", true);
     app.use(globalLimiter);
     app.get("/live/stream", okHandler);
@@ -151,6 +150,26 @@ describe("Rate Limiters", () => {
         .get("/live/stream")
         .set("X-Forwarded-For", "10.4.0.2")
         .expect(200);
+    });
+  });
+
+  describe("bypass header dihapus (regresi keamanan)", () => {
+    const app = buildApp(registerLimiter, okHandler);
+
+    it("header X-K6-TEST-KEY tidak lagi membebaskan dari limiter", async () => {
+      for (let i = 0; i < 3; i++) {
+        await request(app)
+          .post("/hit")
+          .set("X-Forwarded-For", "10.9.0.1")
+          .set("X-K6-TEST-KEY", "stress-test-secret")
+          .expect(200);
+      }
+      const res = await request(app)
+        .post("/hit")
+        .set("X-Forwarded-For", "10.9.0.1")
+        .set("X-K6-TEST-KEY", "stress-test-secret")
+        .expect(429);
+      expect(res.body.status).toBe("error");
     });
   });
 });
