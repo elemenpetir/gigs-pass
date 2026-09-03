@@ -80,7 +80,9 @@ git clone https://github.com/elemenpetir/gigs-pass.git /opt/gigspass
 cd /opt/gigspass
 ```
 
-### 3.1 `backend/.env` (produksi)
+### 3.1 `.env` di ROOT `/opt/gigspass` (produksi — SATU-SATUNYA yang live)
+
+> **Aturan satu-.env:** `docker-compose.yml` memakai `env_file: .env` (relatif terhadap folder compose) → **hanya `/opt/gigspass/.env` yang dibaca container**. File `backend/.env` di server adalah **file mati** (compose tidak mount volume apa pun; image GHCR di-build CI dari checkout bersih dan `.dockerignore` mengecualikan `.env`) — JANGAN buat/duplikat `.env` di dalam `backend/` di server. Insiden nyata: duplikat basi berisi `?sslmode=require` + rate limit `99999` pernah meracuni container karena operator mengira itu yang live.
 
 ```env
 NODE_ENV=production
@@ -125,10 +127,10 @@ sudo nginx -t          # wajib: syntax OK
 sudo systemctl reload nginx
 ```
 
-## 5. Deploy Pertama
+## 5. Deploy Pertama (GHCR image-based — TANPA build lokal)
 
 ```bash
-docker compose build
+docker compose pull    # tarik image :latest dari GHCR (jangan `build` — repo tidak punya konteks build di server)
 docker compose up -d
 docker compose ps                  # kedua service Up (backend "healthy")
 curl -f http://127.0.0.1:5000/api/health
@@ -136,7 +138,28 @@ curl -f http://127.0.0.1/api/health   # via Nginx
 curl -I http://127.0.0.1/             # frontend 200
 ```
 
+> **Gotcha env:** `docker compose restart` TIDAK memuat ulang `.env` yang diubah — selalu pakai `docker compose up -d` (recreate) setelah edit `.env`.
+> **Gotcha SSL:** jangan tambahkan `?sslmode=require` di `DATABASE_URL` — query param itu meng-override `ssl` config di `db.js` dan pernah mematahkan koneksi Supabase pooler. Bentuk benar: URL polos + `DATABASE_SSL=true`.
+
 Dari luar: `http://<EC2_IP>/` harus menampilkan halaman frontend.
+
+## 5b. Restore ke Produksi (setelah stress test / maintenance)
+
+```bash
+sudo cp deploy/nginx/gigspass.conf /etc/nginx/sites-available/gigspass
+sudo nginx -t && sudo systemctl reload nginx
+nano /opt/gigspass/.env
+# RATE_LIMIT_JOIN_MAX=30
+# RATE_LIMIT_GLOBAL_MAX=600
+# TRUST_PROXY=true (wajib — tanpanya semua client terbaca 127.0.0.1)
+# pastikan tidak ada NODE_TLS_REJECT_UNAUTHORIZED=0
+cd /opt/gigspass && docker compose up -d
+curl -s http://localhost/api/health
+docker ps --format '{{.Names}} {{.Status}}'
+docker exec gigs-backend sh -c 'echo TRUST_PROXY=$TRUST_PROXY JOIN_MAX=$RATE_LIMIT_JOIN_MAX GLOBAL_MAX=$RATE_LIMIT_GLOBAL_MAX'
+```
+
+Lalu di AWS Console → Security Group: hapus inbound port 5000 (sisakan 22/80/443). Verifikasi dari luar: `:5000` harus closed, `/api/health` via port 80 harus `ok`.
 
 ## 6. Aktifkan Deploy Otomatis (GitHub Actions)
 
@@ -164,7 +187,7 @@ Dari luar: `http://<EC2_IP>/` harus menampilkan halaman frontend.
 | `EC2_HOST` | IP publik EC2 (untuk health check) |
 
 **Workflow:** `.github/workflows/cd.yml` sudah dikonfigurasi dengan:
-- `workflow_run` trigger pada CI success
+- `workflow_run` trigger pada CI **completed** (catatan: tanpa cek conclusion — CI gagal pun CD tetap jalan; backlog: tambah guard `conclusion == success`)
 - `aws-actions/configure-aws-credentials@v4` dengan OIDC
 - `aws ssm send-command` + polling untuk deploy
 - Health check via `curl http://<EC2_HOST>/api/health`
