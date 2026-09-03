@@ -175,6 +175,8 @@ Follow `docs/TASK_BREAKDOWN.md` phase order — do not skip phases unless indepe
 
 Each checklist item = 1 unit of work = 1 commit.
 
+> **CI hemat:** commit yang hanya menyentuh docs (`**.md`, `docs/**`, `deploy/**`, `tests/load/**`) otomatis **melewati CI/CD** via `paths-ignore` di `.github/workflows/ci.yml` — tidak ada run Actions dan tidak ada redeploy. Kalau tidak ada run setelah push docs-only, itu normal, bukan error.
+
 ### Before Committing
 1. Run tests (when available): `npm test` (unit) dan `npm run test:integration` (real DB) — atau `npm run test:all` untuk keduanya
 2. Run lint (when available): `npm run lint` (sudah include `.jsx` via `eslint src/ --ext .js,.jsx --fix` — jangan diubah ke `eslint src/` polos, itu tidak akan melint file `.jsx`)
