@@ -9,6 +9,7 @@
     "migrate:up": "node-pg-migrate up",
     "migrate:down": "node-pg-migrate down",
     "migrate:create": "node-pg-migrate create",
+    "seed:e2e": "node scripts/seed-e2e.js",
     "lint": "eslint src/ __tests__/ --fix",
     "test": "jest",
     "test:integration": "jest --config jest.config.integration.js --runInBand",
