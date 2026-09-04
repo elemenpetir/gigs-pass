@@ -62,8 +62,8 @@ test("buyer full flow: join, granted, checkout, pay, history", async ({
   console.log("[E2E] Pay API body:", JSON.stringify(payBody));
   expect(payResponse.ok(), `Pay API failed: ${payResponse.status()} - ${JSON.stringify(payBody)}`).toBeTruthy();
 
-  // Success state: "TICKET CONFIRMED." mungkin punya <br /> di tengah, pakai regex
-  await expect(page.getByText(/TICKET\s+CONFIRMED\./)).toBeVisible({ timeout: 10000 });
+  // Success state: pakai data-testid (lebih robust, handle <br /> di JSX)
+  await expect(page.getByTestId("payment-success-heading")).toBeVisible({ timeout: 10000 });
   await page.getByRole("link", { name: /MY ORDERS/ }).click();
   await expect(page).toHaveURL("/orders");
   await expect(page.getByText("CONFIRMED")).toBeVisible();
