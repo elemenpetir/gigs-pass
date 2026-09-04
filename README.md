@@ -307,9 +307,8 @@ k6 run --env TARGET_URL=http://localhost --env CATEGORY_ID=<category_id> tests/l
 
 1. **Scale vertically first** (`t3.medium`, pool 20 to 50): cheapest 2 to 3x ceiling gain, matches measured bottlenecks.
 2. **Scale horizontally** (ALB + N stateless nodes): needs Redis-backed rate limit store and SSE sticky sessions or pub/sub fan-out.
-3. **Measure the cache impact**: isolated before/after run for the in-memory category cache.
-4. **Harden what load testing exposed**: isolated single-scenario k6 files; app rate-limit defaults (10/10/30/600) already validated synthetically (`rateLimiter.defaults.test.js` - legit patterns pass with zero 429s, abuse patterns blocked), nginx/CGNAT tuning still needs real multi-IP traffic.
-5. **Real payments**: replace the mock with a gateway sandbox (e.g. Xendit) behind the existing order state machine, which needs no changes.
+3. **Harden what load testing exposed**: isolated single-scenario k6 files, which double as the harness for a before/after run measuring the in-memory category cache impact; app rate-limit defaults (10/10/30/600) already validated synthetically (`rateLimiter.defaults.test.js` - legit patterns pass with zero 429s, abuse patterns blocked), nginx/CGNAT tuning still needs real multi-IP traffic.
+4. **Real payments**: replace the mock with a gateway sandbox (e.g. Xendit) behind the existing order state machine, which needs no changes.
 
 ---
 

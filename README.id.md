@@ -307,9 +307,8 @@ k6 run --env TARGET_URL=http://localhost --env CATEGORY_ID=<category_id> tests/l
 
 1. **Scale vertikal dulu** (`t3.medium`, pool dari 20 ke 50): cara paling murah untuk mendapat kenaikan ceiling 2–3x, dan sesuai dengan bottleneck yang terukur.
 2. **Scale horizontal** (ALB + N node stateless): butuh rate limit store berbasis Redis dan SSE sticky session atau fan-out pub/sub.
-3. **Ukur dampak cache**: jalankan tes terisolasi before/after untuk cache kategori in-memory.
-4. **Perkuat temuan dari load testing**: file k6 single-scenario yang terisolasi; default rate-limit app (10/10/30/600) sudah divalidasi secara sintetis (`rateLimiter.defaults.test.js`: pola sah lolos dengan nol 429, pola abuse diblokir), tuning nginx/CGNAT masih butuh trafik multi-IP nyata.
-5. **Pembayaran asli**: ganti mock dengan gateway sandbox (mis. Xendit) di belakang state machine order yang ada, tanpa perubahan pada arsitektur yang sudah ada.
+3. **Perkuat temuan dari load testing**: file k6 single-scenario yang terisolasi, yang sekaligus berfungsi sebagai harness untuk run before/after mengukur dampak cache kategori in-memory; default rate-limit app (10/10/30/600) sudah divalidasi secara sintetis (`rateLimiter.defaults.test.js` - pola sah lolos dengan nol 429, pola abuse diblokir), tuning nginx/CGNAT masih butuh trafik multi-IP nyata.
+4. **Pembayaran asli**: ganti mock dengan gateway sandbox (mis. Xendit) di belakang state machine order yang ada, tanpa perubahan pada arsitektur yang sudah ada.
 
 ---
 
