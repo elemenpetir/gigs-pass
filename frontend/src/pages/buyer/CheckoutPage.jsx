@@ -130,10 +130,10 @@ export default function CheckoutPage() {
   const renderTicketPanel = () => {
     if (status === "paid") {
       return (
-        <div className="border-4 border-foreground bg-gigs-teal p-10 brut-shadow text-center">
-          <CheckCircle2 size={64} className="mx-auto mb-4 stroke-[3]" />
+        <div data-testid="payment-success" className="border-4 border-foreground bg-gigs-teal p-10 brut-shadow text-center">
+          <CheckCircle2 size={64} className="mx-auto mb-4 stroke-3" />
           <span className="bg-foreground text-background px-2 py-1 brut-border-2 text-sm font-black uppercase tracking-widest inline-block mb-4">payment successful</span>
-          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85]">TICKET<br />CONFIRMED.</h2>
+          <h2 data-testid="payment-success-heading" className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85]">TICKET<br />CONFIRMED.</h2>
           <p className="mt-6 font-black uppercase text-lg">Your ticket is secured (Order: #{order?.id}).</p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">MY ORDERS →</Link>

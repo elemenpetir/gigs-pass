@@ -49,8 +49,21 @@ test("buyer full flow: join, granted, checkout, pay, history", async ({
     { timeout: 15000 },
   );
   await expect(page.getByText("PAY WITHIN")).toBeVisible();
+
+  // Capture pay API response untuk diagnostik
+  const payResponsePromise = page.waitForResponse(
+    (resp) => resp.url().includes("/orders/") && resp.url().includes("/pay"),
+    { timeout: 15000 }
+  );
   await page.getByRole("button", { name: "PAY NOW" }).click();
-  await expect(page.getByText("TICKET CONFIRMED.")).toBeVisible();
+  const payResponse = await payResponsePromise;
+  console.log(`[E2E] Pay API response: ${payResponse.status()} ${payResponse.statusText()}`);
+  const payBody = await payResponse.json().catch(() => null);
+  console.log("[E2E] Pay API body:", JSON.stringify(payBody));
+  expect(payResponse.ok(), `Pay API failed: ${payResponse.status()} - ${JSON.stringify(payBody)}`).toBeTruthy();
+
+  // Success state: "TICKET CONFIRMED." mungkin punya <br /> di tengah, pakai regex
+  await expect(page.getByText(/TICKET\s+CONFIRMED\./)).toBeVisible({ timeout: 10000 });
   await page.getByRole("link", { name: /MY ORDERS/ }).click();
   await expect(page).toHaveURL("/orders");
   await expect(page.getByText("CONFIRMED")).toBeVisible();
