@@ -1,5 +1,7 @@
 # Gigs Pass
 
+**Baca dalam Bahasa Indonesia:** [README.id.md](./README.id.md)
+
 Event ticketing platform built for flash-sale traffic: buyers join a fair virtual queue, get admitted in FIFO order, hold a time-limited slot, and pay. Organizers manage events and track revenue through a double-entry ledger. No overselling, no crashed checkouts, no bots jumping the line.
 
 **The problem I solved:** high-demand ticket drops fail in predictable ways. Checkout floods crash servers, race conditions oversell limited stock, and bots crowd out real fans. Gigs Pass answers each with a specific mechanism: a Redis-backed virtual queue absorbs the flood, atomic stock operations make oversell impossible, TTL locks recycle abandoned slots, and per-user rate limits keep bots in line.
