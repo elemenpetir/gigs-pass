@@ -181,6 +181,7 @@ export default function EventFormPage() {
         <div className="flex flex-col sm:flex-row gap-4 pt-2">
           <button
             type="submit"
+            data-testid="event-form-submit"
             disabled={submitting}
             className="inline-flex items-center justify-center gap-2 border-2 border-foreground bg-gigs-pink text-foreground font-black uppercase text-lg px-8 py-4 brut-shadow brut-button disabled:opacity-50"
           >

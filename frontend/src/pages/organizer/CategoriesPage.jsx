@@ -147,6 +147,7 @@ export default function CategoriesPage() {
 
           <button
             type="submit"
+            data-testid="category-form-submit"
             disabled={creating}
             className="w-full border-2 border-foreground bg-foreground text-background font-black uppercase text-lg px-6 py-3 brut-shadow brut-button disabled:opacity-50"
           >
@@ -187,6 +188,7 @@ export default function CategoriesPage() {
                       <div className="col-span-1 md:col-span-3 flex gap-2 md:justify-end">
                         <button
                           type="button"
+                          data-testid={`category-save-${cat.id}`}
                           disabled={savingEdit}
                           onClick={() => saveEdit(cat.id)}
                           className="inline-flex items-center gap-2 bg-gigs-teal text-ink px-4 py-2 font-black uppercase text-sm brut-border-2 brut-button disabled:opacity-50"

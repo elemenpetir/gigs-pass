@@ -77,6 +77,7 @@ export default function OrganizerEventsPage() {
         </div>
         <Link
           to="/organizer/events/new"
+          data-testid="organizer-new-event-link"
           className="inline-flex items-center gap-2 bg-gigs-pink text-foreground px-6 py-3 font-black uppercase brut-border-2 brut-shadow brut-button"
         >
           <Plus size={20} strokeWidth={3} /> New Event
@@ -123,6 +124,7 @@ export default function OrganizerEventsPage() {
                 {event.status === "draft" && (
                   <button
                     type="button"
+                    data-testid={`event-publish-${event.id}`}
                     onClick={() => publish(event.id)}
                     className="inline-flex items-center gap-2 bg-gigs-teal text-ink px-4 py-2 font-black uppercase text-sm brut-border-2 brut-button"
                   >

@@ -157,6 +157,7 @@ export default function AdminEventsPage() {
                     {event.status === "published" && (
                       <button
                         type="button"
+                        data-testid={`admin-suspend-${event.id}`}
                         onClick={() => suspend(event.id)}
                         className="inline-flex items-center gap-1 bg-gigs-orange text-ink px-3 py-1 font-black uppercase text-xs brut-border-2 brut-button"
                       >
@@ -166,6 +167,7 @@ export default function AdminEventsPage() {
                     {event.status === "suspended" && (
                       <button
                         type="button"
+                        data-testid={`admin-unsuspend-${event.id}`}
                         onClick={() => unsuspend(event.id)}
                         className="inline-flex items-center gap-1 bg-gigs-teal text-ink px-3 py-1 font-black uppercase text-xs brut-border-2 brut-button"
                       >
@@ -175,6 +177,7 @@ export default function AdminEventsPage() {
                     {(event.status === "published" || event.status === "suspended") && (
                       <button
                         type="button"
+                        data-testid={`admin-cancel-${event.id}`}
                         onClick={() => cancel(event.id)}
                         className="inline-flex items-center gap-1 bg-error text-background px-3 py-1 font-black uppercase text-xs brut-border-2 brut-button"
                       >

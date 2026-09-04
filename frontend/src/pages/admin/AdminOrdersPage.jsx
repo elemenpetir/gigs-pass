@@ -149,6 +149,7 @@ export default function AdminOrdersPage() {
                     <div className="inline-flex flex-wrap gap-2 justify-end">
                       <button
                         type="button"
+                        data-testid={`admin-hold-${o.id}`}
                         onClick={() => override(o.id, "held")}
                         className="inline-flex items-center gap-1 bg-gigs-orange text-ink px-3 py-1 font-black uppercase text-xs brut-border-2 brut-button"
                       >
@@ -156,6 +157,7 @@ export default function AdminOrdersPage() {
                       </button>
                       <button
                         type="button"
+                        data-testid={`admin-refund-${o.id}`}
                         onClick={() => override(o.id, "refunded")}
                         className="inline-flex items-center gap-1 bg-error text-background px-3 py-1 font-black uppercase text-xs brut-border-2 brut-button"
                       >

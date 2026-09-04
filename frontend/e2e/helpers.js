@@ -64,3 +64,31 @@ export async function loginViaUI(page, email, password) {
   await page.locator("#password").fill(password);
   await page.getByRole("button", { name: /EXPLORE EVENTS/ }).click();
 }
+
+export async function getAdminToken(request) {
+  const res = await request.post(`${API_URL}/auth/login`, {
+    data: { email: "admin@e2e.local", password: "AdminPass123!" },
+  });
+  expect(res.ok()).toBeTruthy();
+  const body = await res.json();
+  return body.data.token;
+}
+
+export async function createEventViaUI(page, { title, category, eventDate, description }) {
+  await page.goto("/organizer/events/new");
+  await page.locator("#title").fill(title);
+  await page.locator("#category").selectOption(category);
+  await page.locator("#event-date").fill(eventDate);
+  await page.locator("#description").fill(description);
+  await page.getByTestId("event-form-submit").click();
+  // Wait for redirect to organizer events list
+  await page.waitForURL("/organizer/events");
+}
+
+export async function loginAsAdminViaUI(page) {
+  await page.goto("/login");
+  await page.locator("#email").fill("admin@e2e.local");
+  await page.locator("#password").fill("AdminPass123!");
+  await page.getByRole("button", { name: /EXPLORE EVENTS/ }).click();
+  await expect(page).toHaveURL("/admin/events");
+}
