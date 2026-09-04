@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { uniqueEmail, registerViaAPI } from "./helpers.js";
+import { registerViaAPI, uniqueEmail } from "./helpers.js";
 
 test("register buyer via UI lands on home", async ({ page }) => {
   const email = uniqueEmail("auth");
