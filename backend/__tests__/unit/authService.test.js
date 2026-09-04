@@ -109,4 +109,50 @@ describe("Auth Service", () => {
       expect(() => verifyJWT(malformedToken)).toThrow();
     });
   });
+
+  describe("JWT secret guard", () => {
+    const originalNodeEnv = process.env.NODE_ENV;
+    const originalSecret = process.env.JWT_SECRET;
+
+    afterEach(() => {
+      if (originalNodeEnv === undefined) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = originalNodeEnv;
+      }
+      if (originalSecret === undefined) {
+        delete process.env.JWT_SECRET;
+      } else {
+        process.env.JWT_SECRET = originalSecret;
+      }
+      jest.resetModules();
+    });
+
+    test("production tanpa JWT_SECRET menolak dimuat", () => {
+      process.env.NODE_ENV = "production";
+      delete process.env.JWT_SECRET;
+      jest.resetModules();
+      expect(() => require("../../src/services/authService")).toThrow(
+        "JWT_SECRET must be set in production",
+      );
+    });
+
+    test("production dengan JWT_SECRET dimuat normal", () => {
+      process.env.NODE_ENV = "production";
+      process.env.JWT_SECRET = "test-prod-secret";
+      jest.resetModules();
+      const service = require("../../src/services/authService");
+      const token = service.generateJWT("user1", "buyer");
+      expect(service.verifyJWT(token).userId).toBe("user1");
+    });
+
+    test("non-production tanpa JWT_SECRET tetap pakai fallback dev", () => {
+      process.env.NODE_ENV = "development";
+      delete process.env.JWT_SECRET;
+      jest.resetModules();
+      const service = require("../../src/services/authService");
+      const token = service.generateJWT("user1", "buyer");
+      expect(service.verifyJWT(token).userId).toBe("user1");
+    });
+  });
 });
