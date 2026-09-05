@@ -178,14 +178,14 @@ const countSoldByCategoryIds = async (categoryIds) => {
 };
 
 const overrideStatus = async (orderId, status, client = pool) => {
+  const refundReason = status === "refunded" ? "admin_override" : null;
   const query = `
     UPDATE orders
-    SET status = $2,
-        refund_reason = CASE WHEN $2 = 'refunded' THEN 'admin_override' ELSE NULL END
+    SET status = $2, refund_reason = $3
     WHERE id = $1 AND status = 'holding_period'
     RETURNING ${ORDER_COLUMNS}, holding_until;
   `;
-  const result = await client.query(query, [orderId, status]);
+  const result = await client.query(query, [orderId, status, refundReason]);
   return result.rows[0] || null;
 };
 

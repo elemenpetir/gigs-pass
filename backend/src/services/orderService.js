@@ -84,29 +84,14 @@ const payOrder = async (userId, orderId, success) => {
     }
 
     return db.withTransaction(async (client) => {
-      try {
-        const paid = await orderModel.markPaid(orderId, client);
-        if (!paid) {
-          const error = new Error("Order is not awaiting payment");
-          error.statusCode = 409;
-          throw error;
-        }
-        await ledgerService.recordPaymentSplit(client, paid);
-        return paid;
-      } catch (err) {
-        if (process.env.NODE_ENV === "test") {
-          console.error("[E2E] Order transaction payfailed:", {
-            orderId,
-            userId,
-            error: err.message,
-            stack: err.stack,
-            code: err.code,
-            detail: err.detail,
-            constraint: err.constraint,
-          });
-        }
-        throw err;
+      const paid = await orderModel.markPaid(orderId, client);
+      if (!paid) {
+        const error = new Error("Order is not awaiting payment");
+        error.statusCode = 409;
+        throw error;
       }
+      await ledgerService.recordPaymentSplit(client, paid);
+      return paid;
     });
   }
 

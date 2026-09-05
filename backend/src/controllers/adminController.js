@@ -50,18 +50,6 @@ const overrideOrder = async (req, res) => {
       data: { order },
     });
   } catch (error) {
-    if (process.env.NODE_ENV === "test") {
-      console.error("[E2E] overrideOrder failed:", {
-        orderId: req.params.id,
-        status: req.body && req.body.status,
-        role: req.user && req.user.role,
-        error: error.message,
-        stack: error.stack,
-        code: error.code,
-        detail: error.detail,
-        constraint: error.constraint,
-      });
-    }
     const statusCode = error.statusCode || 500;
     const message =
       statusCode === 500 ? "Internal server error" : error.message;
