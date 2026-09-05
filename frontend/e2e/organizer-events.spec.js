@@ -22,7 +22,7 @@ test("organizer full flow: create event, edit, publish", async ({
   });
 
   await loginViaUI(page, orgEmail, "Password123!");
-  await expect(page).toHaveURL("/organizer/events");
+  await page.goto("/organizer/events");
 
   // Create new event
   const eventTitle = `E2E Event ${stamp}`;

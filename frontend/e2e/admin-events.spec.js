@@ -27,9 +27,9 @@ test("admin manages events: suspend, unsuspend, cancel", async ({
   });
   const event = await createPublishedEvent(request, orgToken);
 
-  // Login as admin
+  // Login as admin, lalu buka halaman kontrol event
   await loginAsAdminViaUI(page);
-  await expect(page).toHaveURL("/admin/events");
+  await page.goto("/admin/events");
 
   // Verify event appears in admin list
   await expect(page.getByText("E2E Mega Gig")).toBeVisible();

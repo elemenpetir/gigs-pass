@@ -5,15 +5,21 @@ import {
   loginAsAdminViaUI,
   createPublishedEvent,
   createCategory,
+  buyTicketViaAPI,
+  waitForOrderStatus,
+  API_URL,
 } from "./helpers.js";
 
-// Admin: Override orders (hold, refund)
+// Admin: Override orders (hold dan refund).
+// Dua buyer membeli via flow antrean asli, event_date digeser dekat lewat
+// job orderLifecycle (interval 2 detik di workflow E2E) mempromosikan
+// pending ke holding_period, lalu admin override via UI.
 test("admin overrides orders: hold and refund", async ({ page, request }) => {
   const stamp = Date.now();
   const orgEmail = `org-admin-ord-${stamp}@test.local`;
-  const buyerEmail = `buyer-admin-${stamp}@test.local`;
+  const buyerAEmail = `buyer-a-${stamp}@test.local`;
+  const buyerBEmail = `buyer-b-${stamp}@test.local`;
 
-  // Setup: organizer creates event, buyer buys ticket
   await registerViaAPI(request, {
     email: orgEmail,
     password: "Password123!",
@@ -21,61 +27,64 @@ test("admin overrides orders: hold and refund", async ({ page, request }) => {
     name: "E2E Organizer",
   });
   await registerViaAPI(request, {
-    email: buyerEmail,
+    email: buyerAEmail,
     password: "Password123!",
     role: "buyer",
-    name: "E2E Buyer",
+    name: "Buyer A",
+  });
+  await registerViaAPI(request, {
+    email: buyerBEmail,
+    password: "Password123!",
+    role: "buyer",
+    name: "Buyer B",
   });
   const orgToken = await loginViaAPI(request, {
     email: orgEmail,
     password: "Password123!",
   });
-  const buyerToken = await loginViaAPI(request, {
-    email: buyerEmail,
+  const buyerAToken = await loginViaAPI(request, {
+    email: buyerAEmail,
     password: "Password123!",
   });
+  const buyerBToken = await loginViaAPI(request, {
+    email: buyerBEmail,
+    password: "Password123!",
+  });
+  const adminLogin = await request.post(`${API_URL}/auth/login`, {
+    data: { email: "admin@e2e.local", password: "AdminPass123!" },
+  });
+  if (!adminLogin.ok()) {
+    throw new Error(`admin login failed: ${adminLogin.status()}`);
+  }
+  const adminToken = (await adminLogin.json()).data.token;
 
   const event = await createPublishedEvent(request, orgToken);
   const category = await createCategory(request, orgToken, event.id);
 
-  // Buyer joins queue, gets granted, pays
-  // Note: This is complex - we'll create order directly via API for testing
-  // In real flow: join queue -> granted -> checkout -> pay
-  // For E2E, we simulate by creating order and marking paid
-  await loginViaAPI(request, { email: buyerEmail, password: "Password123!" });
-  // Create order via checkout
-  const orderRes = await request.post("/orders", {
-    headers: { Authorization: `Bearer ${buyerToken}` },
-    data: { categoryId: category.id },
-  });
-  const order = (await orderRes.json()).data.order;
-  // Pay order
-  await request.post(`/orders/${order.id}/pay`, {
-    headers: { Authorization: `Bearer ${buyerToken}` },
-    data: { success: true },
-  });
+  const orderA = await buyTicketViaAPI(request, buyerAToken, category.id);
+  const orderB = await buyTicketViaAPI(request, buyerBToken, category.id);
 
-  // Now login as admin and override
+  // Geser event_date ke dekat (3 detik) agar lifecycle mempromosikan ke holding.
+  const soon = new Date(Date.now() + 3000).toISOString();
+  const dateRes = await request.put(`${API_URL}/events/${event.id}`, {
+    headers: { Authorization: `Bearer ${orgToken}` },
+    data: { event_date: soon },
+  });
+  if (!dateRes.ok()) {
+    throw new Error(`set event date failed: ${dateRes.status()}`);
+  }
+  await waitForOrderStatus(request, adminToken, orderA.id, "holding_period");
+  await waitForOrderStatus(request, adminToken, orderB.id, "holding_period");
+
+  // Override via UI: order A di-hold, order B di-refund.
   await loginAsAdminViaUI(page);
   await page.goto("/admin/orders");
-
-  // Verify order appears with pending status
-  await expect(page.getByText("CONFIRMED")).toBeVisible();
-
-  // We need holding_period status for override - simulate by manually setting
-  // In real flow, this happens after event_date passes
-  // For E2E, we'll test the override flow on an order that can be overridden
-  // Note: override only works on holding_period status
-  // This test verifies the UI elements exist
   await expect(page.getByText("ORDER OVERRIDE")).toBeVisible();
-  await expect(page.getByText("Review and manually intervene on orders.")).toBeVisible();
 
-  // Verify table columns
-  await expect(page.getByText("Buyer")).toBeVisible();
-  await expect(page.getByText("Event")).toBeVisible();
-  await expect(page.getByText("Category")).toBeVisible();
-  await expect(page.getByText("Amount")).toBeVisible();
-  await expect(page.getByText("Status")).toBeVisible();
-  await expect(page.getByText("Holding Until")).toBeVisible();
-  await expect(page.getByText("Actions")).toBeVisible();
+  await page.getByTestId(`admin-hold-${orderA.id}`).click();
+  await expect(page.getByText("HELD").first()).toBeVisible();
+
+  await page.getByTestId(`admin-refund-${orderB.id}`).click();
+  await expect(page.getByText("REFUNDED").first()).toBeVisible();
+  await expect(page.getByText("ADMIN PUTUSAN").first()).toBeVisible();
 });

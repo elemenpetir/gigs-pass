@@ -63,6 +63,9 @@ export async function loginViaUI(page, email, password) {
   await page.locator("#email").fill(email);
   await page.locator("#password").fill(password);
   await page.getByRole("button", { name: /EXPLORE EVENTS/ }).click();
+  // Tunggu login selesai (mendarat di from default "/") sebelum lanjut,
+  // agar token session pasti tersimpan dan tidak balapan dengan goto berikut.
+  await page.waitForURL("/");
 }
 
 export async function getAdminToken(request) {
@@ -90,5 +93,79 @@ export async function loginAsAdminViaUI(page) {
   await page.locator("#email").fill("admin@e2e.local");
   await page.locator("#password").fill("AdminPass123!");
   await page.getByRole("button", { name: /EXPLORE EVENTS/ }).click();
-  await expect(page).toHaveURL("/admin/events");
+  await page.waitForURL("/");
+}
+
+// Flow beli tiket penuh via API (jalur asli: join antrean, tunggu granted
+// lewat stream yang ditutup server, verifikasi lock, create order, pay).
+// Kembalian: order yang sudah pending (lunas).
+export async function buyTicketViaAPI(request, buyerToken, categoryId) {
+  const joinRes = await request.post(`${API_URL}/queue/${categoryId}/join`, {
+    headers: { Authorization: `Bearer ${buyerToken}` },
+  });
+  if (!joinRes.ok()) {
+    throw new Error(`join failed: ${joinRes.status()}`);
+  }
+  // Stream ditutup server saat granted; GET selesai = sudah di-admit.
+  const streamRes = await request.get(`${API_URL}/queue/${categoryId}/stream`, {
+    headers: { Authorization: `Bearer ${buyerToken}` },
+    timeout: 30000,
+  });
+  if (![200, 408].includes(streamRes.status())) {
+    throw new Error(`stream failed: ${streamRes.status()}`);
+  }
+  const lockRes = await request.post(
+    `${API_URL}/checkout/${categoryId}/lock`,
+    { headers: { Authorization: `Bearer ${buyerToken}` } },
+  );
+  if (!lockRes.ok()) {
+    throw new Error(`lock verify failed: ${lockRes.status()}`);
+  }
+  const orderRes = await request.post(`${API_URL}/orders`, {
+    headers: { Authorization: `Bearer ${buyerToken}` },
+    data: { categoryId },
+  });
+  if (!orderRes.ok()) {
+    throw new Error(`create order failed: ${orderRes.status()}`);
+  }
+  const order = (await orderRes.json()).data.order;
+  const payRes = await request.post(`${API_URL}/orders/${order.id}/pay`, {
+    headers: { Authorization: `Bearer ${buyerToken}` },
+    data: { success: true },
+  });
+  if (!payRes.ok()) {
+    throw new Error(`pay failed: ${payRes.status()}`);
+  }
+  return (await payRes.json()).data.order;
+}
+
+// Poll daftar order admin sampai order target mencapai status tertentu.
+// Dipakai menunggu job orderLifecycle mempromosikan pending ke holding_period.
+export async function waitForOrderStatus(
+  request,
+  adminToken,
+  orderId,
+  status,
+  timeoutMs = 30000,
+) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const res = await request.get(`${API_URL}/admin/orders`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    if (!res.ok()) {
+      throw new Error(`admin orders failed: ${res.status()}`);
+    }
+    const orders = (await res.json()).data.orders || [];
+    const found = orders.find((o) => o.id === orderId);
+    if (found && found.status === status) {
+      return found;
+    }
+    if (Date.now() > deadline) {
+      throw new Error(
+        `timeout waiting order ${orderId} -> ${status}`,
+      );
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
 }

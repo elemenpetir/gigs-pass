@@ -27,7 +27,7 @@ test("organizer views orders and analytics", async ({ page, request }) => {
   await createCategory(request, orgToken, event.id);
 
   // Login via UI and go to orders page
-  await loginViaUI(page, `${orgEmail}@test.local`.replace("@test.local@test.local", "@test.local"));
+  await loginViaUI(page, orgEmail, "Password123!");
   await page.goto(`/organizer/events/${event.id}/orders`);
 
   // Verify analytics cards render
