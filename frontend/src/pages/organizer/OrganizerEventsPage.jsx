@@ -58,6 +58,19 @@ export default function OrganizerEventsPage() {
     }
   };
 
+  const cancel = async (id, title) => {
+    setError("");
+    if (!window.confirm(`Cancel "${title}"? Ticket holders will be refunded. This cannot be undone.`)) {
+      return;
+    }
+    try {
+      await api.put(`/events/${id}/cancel`);
+      setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, status: "cancelled" } : e)));
+    } catch (err) {
+      setError(err.message || "Cancel failed");
+    }
+  };
+
   if (loading) {
     return (
       <section className="py-20 flex justify-center">
@@ -129,6 +142,16 @@ export default function OrganizerEventsPage() {
                     className="inline-flex items-center gap-2 bg-gigs-teal text-ink px-4 py-2 font-black uppercase text-sm brut-border-2 brut-button"
                   >
                     Publish
+                  </button>
+                )}
+                {(event.status === "published" || event.status === "suspended") && (
+                  <button
+                    type="button"
+                    data-testid={`event-cancel-${event.id}`}
+                    onClick={() => cancel(event.id, event.title)}
+                    className="inline-flex items-center gap-2 bg-error text-background px-4 py-2 font-black uppercase text-sm brut-border-2 brut-button"
+                  >
+                    Cancel
                   </button>
                 )}
                 <Link

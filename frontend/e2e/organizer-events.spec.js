@@ -74,4 +74,9 @@ test("organizer full flow: create event, edit, publish", async ({
   // Publish event
   await page.getByTestId(`event-publish-${eventId}`).click();
   await expect(page.getByText("PUBLISHED")).toBeVisible();
+
+  // Cancel event (confirm dialog disetujui, badge jadi CANCELLED)
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByTestId(`event-cancel-${eventId}`).click();
+  await expect(page.getByText("CANCELLED")).toBeVisible();
 });
