@@ -158,6 +158,7 @@ Setelah 50k+ request load-test terhadap data produksi, saya menjalankan query in
 - **271 unit test**, semuanya lolos (service, model, middleware, job, logika queue/lock/ledger dengan DB mock)
 - **Suite integrasi** terhadap PostgreSQL dan Redis asli (migration otomatis diterapkan ke database test terpisah)
 - **k6 load test** seperti di atas, dengan hasil yang sudah dicommit ke file ini
+- **Playwright E2E (10 test, workflow manual)** melawan backend live + PostgreSQL/Redis asli (auth, buyer queue-checkout, organizer, admin override); picu via tab Actions, workflow E2E, Run workflow
 - CI menjalankan unit, integrasi, lint frontend, dan production build setiap push; image dikirim ke GHCR hanya jika semuanya hijau
 
 ```bash
@@ -169,6 +170,9 @@ cd backend && npm run test:integration
 
 # All
 cd backend && npm run test:all
+
+# E2E (butuh PostgreSQL + Redis lokal, backend di :5000, lalu frontend preview)
+cd frontend && npm run test:e2e
 ```
 
 ---

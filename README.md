@@ -158,6 +158,7 @@ After 50k+ load-test requests against production data, I ran read-only integrity
 - **265 unit tests**, all passing (services, models, middlewares, jobs, queue/lock/ledger logic with mocked DB)
 - **Integration suite** against real PostgreSQL and Redis (migrations auto-applied to a separate test database)
 - **k6 load tests** as above, with results committed to this file
+- **Playwright E2E (10 tests, manual workflow)** against live backend + real PostgreSQL/Redis (auth, buyer queue-checkout, organizer, admin override); trigger via Actions tab, E2E workflow, Run workflow
 - CI runs unit, integration, frontend lint, and production build on every push; images ship to GHCR only when all green
 
 ```bash
@@ -169,6 +170,9 @@ cd backend && npm run test:integration
 
 # All
 cd backend && npm run test:all
+
+# E2E (needs local PostgreSQL + Redis, backend on :5000, then frontend preview)
+cd frontend && npm run test:e2e
 ```
 
 ---
