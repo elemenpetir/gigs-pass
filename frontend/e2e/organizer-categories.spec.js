@@ -34,7 +34,7 @@ test("organizer manages ticket categories", async ({ page, request }) => {
   await page.locator("#cat-quota").fill("100");
   await page.getByTestId("category-form-submit").click();
   await expect(page.getByText("Early Bird")).toBeVisible();
-  await expect(page.getByText("250000")).toBeVisible();
+  await expect(page.getByText(/Rp\s*250\.000/)).toBeVisible();
 
   // Add second tier
   await page.locator("#cat-name").fill("VIP");
@@ -48,5 +48,5 @@ test("organizer manages ticket categories", async ({ page, request }) => {
   await page.locator('input[value="250000"]').fill("300000");
   // Save edit - find by dynamic testid
   await page.getByTestId(/category-save-/).first().click();
-  await expect(page.getByText("300000")).toBeVisible();
+  await expect(page.getByText(/Rp\s*300\.000/)).toBeVisible();
 });

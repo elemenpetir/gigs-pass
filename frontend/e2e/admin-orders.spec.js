@@ -81,10 +81,30 @@ test("admin overrides orders: hold and refund", async ({ page, request }) => {
   await page.goto("/admin/orders");
   await expect(page.getByText("ORDER OVERRIDE")).toBeVisible();
 
+  // Override via UI: order A di-hold, order B di-refund.
+  // Respons API ditangkap agar kegagalan backend terlihat di log.
+  const holdRespPromise = page.waitForResponse(
+    (resp) => resp.url().includes(`/admin/orders/${orderA.id}/override`),
+    { timeout: 15000 },
+  );
   await page.getByTestId(`admin-hold-${orderA.id}`).click();
-  await expect(page.getByText("HELD").first()).toBeVisible();
+  const holdResp = await holdRespPromise;
+  console.log(`[E2E] Override hold response: ${holdResp.status()}`);
+  if (!holdResp.ok()) {
+    throw new Error(`override hold failed: ${holdResp.status()}`);
+  }
+  await expect(page.getByText("HELD").first()).toBeVisible({ timeout: 15000 });
 
+  const refundRespPromise = page.waitForResponse(
+    (resp) => resp.url().includes(`/admin/orders/${orderB.id}/override`),
+    { timeout: 15000 },
+  );
   await page.getByTestId(`admin-refund-${orderB.id}`).click();
-  await expect(page.getByText("REFUNDED").first()).toBeVisible();
+  const refundResp = await refundRespPromise;
+  console.log(`[E2E] Override refund response: ${refundResp.status()}`);
+  if (!refundResp.ok()) {
+    throw new Error(`override refund failed: ${refundResp.status()}`);
+  }
+  await expect(page.getByText("REFUNDED").first()).toBeVisible({ timeout: 15000 });
   await expect(page.getByText("ADMIN PUTUSAN").first()).toBeVisible();
 });

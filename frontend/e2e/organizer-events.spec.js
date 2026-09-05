@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test";
 import {
   registerViaAPI,
+  loginViaAPI,
   loginViaUI,
   createEventViaUI,
+  API_URL,
 } from "./helpers.js";
 
 // Organizer: Create, Edit, Publish event
@@ -41,10 +43,27 @@ test("organizer full flow: create event, edit, publish", async ({
   await expect(page.getByText(eventTitle)).toBeVisible();
   await expect(page.getByText("DRAFT")).toBeVisible();
 
-  // Get event ID from URL after creation (via clicking edit)
-  await page.getByRole("link", { name: /EDIT/ }).first().click();
-  const eventUrl = page.url();
-  const eventId = eventUrl.match(/events\/([^/]+)\/edit/)[1];
+  // Ambil id event via API (lebih deterministik daripada klik EDIT
+  // untuk membaca id dari URL).
+  const orgToken = await loginViaAPI(request, {
+    email: orgEmail,
+    password: "Password123!",
+  });
+  const mineRes = await request.get(`${API_URL}/events/mine`, {
+    headers: { Authorization: `Bearer ${orgToken}` },
+  });
+  if (!mineRes.ok()) {
+    throw new Error(`events mine failed: ${mineRes.status()}`);
+  }
+  const mine = (await mineRes.json()).data.events || [];
+  const created = mine.find((e) => e.title === eventTitle);
+  if (!created) {
+    throw new Error("created event missing from /events/mine");
+  }
+  const eventId = created.id;
+
+  // Edit event title
+  await page.goto(`/organizer/events/${eventId}/edit`);
 
   // Edit event title
   await page.locator("#title").fill(`${eventTitle} - Updated`);

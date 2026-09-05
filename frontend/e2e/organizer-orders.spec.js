@@ -38,8 +38,8 @@ test("organizer views orders and analytics", async ({ page, request }) => {
 
   // Verify status breakdown
   await expect(page.getByText("Order Breakdown")).toBeVisible();
-  await expect(page.getByText("Sold")).toBeVisible();
-  await expect(page.getByText("Awaiting")).toBeVisible();
+  await expect(page.getByText("Sold", { exact: true })).toBeVisible();
+  await expect(page.getByText("Awaiting", { exact: true })).toBeVisible();
 
   // Verify charts render
   await expect(page.getByText("Revenue by Category")).toBeVisible();
