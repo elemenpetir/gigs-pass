@@ -2,7 +2,7 @@
 
 Tujuan: memverifikasi flow queue → admission → checkout → payment dan design rule kunci:
 
-- **One-shot admission** — buyer yang gagal bayar atau lock-nya TTL harus join antrian lagi (AGENTS.md, "Queue & SSE Design")
+- **One-shot admission**: buyer yang gagal bayar atau lock-nya TTL harus join antrian lagi (docs/DECISIONS.md #1)
 - **Unpaid-order guard** — join diblokir (`409`) hanya bila buyer punya order `awaiting_payment` untuk tier yang sama **dan** lock masih hidup; order `pending` (sudah bayar) boleh beli lagi — re-buy per tier diizinkan
 - **Resume checkout** — order `awaiting_payment` dilanjutkan dari halaman bayar, bukan dibuat duplikat (409 `error.data.order`); dari WaitingRoom, join 409 → redirect otomatis ke halaman checkout
 - **TTL lock 300s + cleanup** — lock kedaluwarsa melepas slot, stock dikembalikan, order ditandai `expired`
@@ -77,6 +77,15 @@ Tujuan: memverifikasi flow queue → admission → checkout → payment dan desi
   - Join **`200`** (bukan `409`) — guard mengecek liveness lock (`lockService.getReservation`), bukan sekadar kehadiran order.
   - Order lama otomatis ditandai **`expired`** (eager-expire oleh `joinQueue`) dan stock lanjut ke buyer ini / diserap antrian — tetap bebas oversell.
   - Buyer masuk antrian baru (one-shot admission tetap berlaku).
+
+### T10 - Event lampau tidak bisa dibeli (docs/DECISIONS.md #5)
+- **Flow:** Buka event yang `event_date`-nya sudah lewat (halaman detail, list tidak difilter).
+- **Observables (harus benar):**
+  - Badge `NOW ON SALE` menjadi `EVENT ENDED`; tombol tier berlabel `EVENT ENDED` dan disabled (sejajar pola `SOLD OUT`).
+  - Klik tombol tidak navigasi ke mana pun (guard `goJoinQueue`).
+  - `POST /api/queue/:categoryId/join` langsung → `410 "Event has already ended"`, tanpa tulis Redis.
+  - Tombol Suspend/Cancel tidak tampil di halaman admin maupun organizer untuk event lampau (backend pasti menolak).
+  - Kartu event tetap tampil di Home/Events (arsip navigasi, tanpa aksi beli).
 
 ## Verifikasi setiap skenario
 - My Orders buyer: status benar (`pending` / `expired` / `awaiting_payment`).

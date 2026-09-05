@@ -50,6 +50,7 @@ Aturan bisnis lengkap tinggal di dua file itu. Wajib dibaca sebelum menulis kode
 
 Contekan invarian (tidak boleh dilanggar, detail di dua file di atas):
 - Redis HANYA untuk: virtual queue (Sorted Set), counter `queue:seq`, lock TTL 300s, tracker `lockexpiry`, counter `stock`. Bukan cache/session. Pengecualian: cache in-memory process-local untuk referensi praktis imutabel (mis. `ticket_categories`, TTL 60s).
+- `joinQueue` menolak event lampau: `410 "Event has already ended"` (lihat DECISIONS #5).
 - Ledger immutable: tanpa UPDATE/DELETE, koreksi via reversing entry. 4 akun tetap: `buyer_wallet`, `organizer_pending`, `organizer_available`, `platform_revenue`. Status dana di `orders.status`, bukan di ledger.
 - Role hardcoded: `buyer`, `organizer`, `admin`. Bukan dynamic RBAC.
 - Response envelope success/error untuk semua endpoint. Tanpa password/hash di respons.
