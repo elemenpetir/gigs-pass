@@ -17,9 +17,24 @@ const queueService = require("../../src/services/queueService");
 const redis = require("../../src/config/redis");
 const { QUEUE_SEQ_KEY, LOCK_TTL_SECONDS } = require("../../src/config/constants");
 
-const createCategory = async () => {
-  const result = await mockDb.query("INSERT INTO ticket_categories", [
+const createEvent = async (eventDate) => {
+  const result = await mockDb.query("INSERT INTO events", [
     1,
+    "E2E Gig",
+    "desc",
+    eventDate,
+    "music",
+  ]);
+  return result.rows[0];
+};
+
+const futureDate = () => new Date(Date.now() + 30 * 24 * 3600 * 1000);
+const pastDate = () => new Date(Date.now() - 24 * 3600 * 1000);
+
+const createCategory = async (eventDate = futureDate()) => {
+  const event = await createEvent(eventDate);
+  const result = await mockDb.query("INSERT INTO ticket_categories", [
+    event.id,
     "VIP",
     500000,
     100,
@@ -153,8 +168,21 @@ describe("Queue Service", () => {
       expect(redis.zadd).toHaveBeenCalled();
     });
 
-    test("allows join when buyer has only expired orders", async () => {
-      const category = await createCategory();
+    test("rejects join with 410 when the event has already ended", async () => {
+      const category = await createCategory(pastDate());
+
+      const err = await queueService
+        .joinQueue("buyer-1", category.id)
+        .catch((e) => e);
+
+      expect(err).toBeInstanceOf(Error);
+      expect(err.message).toBe("Event has already ended");
+      expect(err.statusCode).toBe(410);
+      expect(redis.zadd).not.toHaveBeenCalled();
+      expect(redis.incr).not.toHaveBeenCalled();
+    });
+
+    test("allows join when buyer has only expired orders", async () => {      const category = await createCategory();
       mockDb.orders.push({
         id: 1,
         buyer_id: "buyer-1",

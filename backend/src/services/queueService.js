@@ -1,4 +1,5 @@
 const categoryModel = require("../models/categoryModel");
+const eventModel = require("../models/eventModel");
 const orderModel = require("../models/orderModel");
 const redis = require("../config/redis");
 const { lockKey, lockExpiryKey, getReservation } = require("./lockService");
@@ -42,6 +43,17 @@ const parseZpopResult = (flat) => {
 
 const joinQueue = async (userId, categoryId) => {
   const category = await getCachedCategory(categoryId);
+  const event = await eventModel.findById(category.event_id);
+  if (!event) {
+    const error = new Error("Event not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  if (new Date(event.event_date) <= new Date()) {
+    const error = new Error("Event has already ended");
+    error.statusCode = 410;
+    throw error;
+  }
   const key = queueKey(category.event_id, category.id);
   const member = String(userId);
 
