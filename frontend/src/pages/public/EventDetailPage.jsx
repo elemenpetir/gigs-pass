@@ -48,7 +48,12 @@ export default function EventDetailPage() {
     return () => { cancelled = true; };
   }, [id]);
 
+  const isPast = event ? new Date(event.event_date) <= new Date() : false;
+
   const goJoinQueue = (categoryId) => {
+    if (isPast) {
+      return;
+    }
     if (!user) {
       navigate("/login", { state: { from: `/events/${id}/join/${categoryId}` } });
       return;
@@ -102,7 +107,7 @@ export default function EventDetailPage() {
 
         {/* Title + meta */}
         <div className="lg:col-span-3 relative">
-          <div className="text-sm font-bold bg-gigs-teal px-2 py-1 brut-border-2 -rotate-2 inline-block mb-6">NOW ON SALE</div>
+          <div className="text-sm font-bold bg-gigs-teal px-2 py-1 brut-border-2 -rotate-2 inline-block mb-6">{isPast ? "EVENT ENDED" : "NOW ON SALE"}</div>
           <h1 className="text-6xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter">{event.title}</h1>
           <div className="mt-8 flex flex-wrap items-center gap-3 font-black uppercase">
             <span className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2 brut-border-2">
@@ -166,14 +171,14 @@ export default function EventDetailPage() {
                     <button
                       type="button"
                       onClick={() => goJoinQueue(cat.id)}
-                      disabled={cat.stock === 0}
+                      disabled={cat.stock === 0 || isPast}
                       className={`
                         bg-gigs-pink text-foreground font-black uppercase text-lg px-6 py-4
                         brut-border-4 brut-shadow brut-button flex items-center justify-between gap-4 w-full
-                        ${cat.stock === 0 ? "opacity-50 cursor-not-allowed" : ""}
+                        ${cat.stock === 0 || isPast ? "opacity-50 cursor-not-allowed" : ""}
                       `}
                     >
-                      {cat.stock === 0 ? "SOLD OUT" : "GET TICKETS"} <ArrowRight strokeWidth={4} />
+                      {cat.stock === 0 ? "SOLD OUT" : isPast ? "EVENT ENDED" : "GET TICKETS"} <ArrowRight strokeWidth={4} />
                     </button>
                   </div>
                 </div>
