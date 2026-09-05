@@ -7,6 +7,13 @@ export function formatEventDate(value) {
   return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+export function isPastEvent(value) {
+  if (!value) return false;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return false;
+  return d <= new Date();
+}
+
 export function formatIDR(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return "";

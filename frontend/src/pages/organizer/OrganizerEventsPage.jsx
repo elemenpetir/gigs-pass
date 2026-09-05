@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Plus, Ticket, Coins, Pencil } from "lucide-react";
 import { api } from "@/lib/api";
-import { formatEventDate } from "@/lib/format";
+import { formatEventDate, isPastEvent } from "@/lib/format";
 
 const STATUS_STYLES = {
   draft: { label: "DRAFT", cls: "bg-canvas text-foreground/60 border-foreground" },
@@ -144,7 +144,7 @@ export default function OrganizerEventsPage() {
                     Publish
                   </button>
                 )}
-                {(event.status === "published" || event.status === "suspended") && (
+                {(event.status === "published" || event.status === "suspended") && !isPastEvent(event.event_date) && (
                   <button
                     type="button"
                     data-testid={`event-cancel-${event.id}`}

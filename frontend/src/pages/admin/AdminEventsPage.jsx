@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, AlertCircle, Pencil } from "lucide-react";
 import { api } from "@/lib/api";
-import { formatEventDate } from "@/lib/format";
+import { formatEventDate, isPastEvent } from "@/lib/format";
 
 const STATUS_STYLES = {
   draft: { label: "DRAFT", cls: "bg-canvas text-foreground border-foreground" },
@@ -154,7 +154,7 @@ export default function AdminEventsPage() {
                 <td className="py-3 px-3 whitespace-nowrap">{statusBadge(event.status)}</td>
                 <td className="py-3 px-3 whitespace-nowrap text-right">
                   <div className="inline-flex flex-wrap gap-2 justify-end">
-                    {event.status === "published" && (
+                    {event.status === "published" && !isPastEvent(event.event_date) && (
                       <button
                         type="button"
                         data-testid={`admin-suspend-${event.id}`}
@@ -174,7 +174,7 @@ export default function AdminEventsPage() {
                         Unsuspend
                       </button>
                     )}
-                    {(event.status === "published" || event.status === "suspended") && (
+                    {(event.status === "published" || event.status === "suspended") && !isPastEvent(event.event_date) && (
                       <button
                         type="button"
                         data-testid={`admin-cancel-${event.id}`}
