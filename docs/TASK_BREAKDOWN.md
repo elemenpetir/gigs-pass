@@ -5,17 +5,16 @@ Urutan mengikuti dependency (jangan lompat fase kecuali memang tidak bergantung)
 Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca detail teknis di sana.
 
 ## Status Terkini (Active Context)
-- **Terakhir Dikerjakan (sesi penutup):** hardening `x-k6-test-key` bypass (hapus total, commit `673efc5`, 1 unit test regresi, live prod via CI/CD) + follow-up docs (`deployment.md` §5a mode test, `AGENTS.md` cache exception + pelajaran k6, `TASK_BREAKDOWN` Fase 15 done) + CI `paths-ignore` untuk docs-only + rewrite README jadi portfolio job-seeker (pitch, decisions, API 29 endpoint, demo nip.io, placeholder screenshots) + audit endpoint 29/29 terpakai (nihil mati) + audit ledger pasca-beban HIJAU 5/5 (debit=kredit Rp500.000, nol order liar) + restore produksi terverifikasi + dedup `.env` basi. Repo bersih, produksi di image terbaru (cache live, hash match).
-- **Task Selanjutnya:** **screenshots README** (menunggu gambar dari user: dashboard, waiting room, checkout). Sisa Fase 16 lain selesai (API docs di README, endpoint review nihil, log cleanup nihil). Item **monitoring 429** pasca-event DITUTUP sebagai validasi sintetis: default app limiter (10/10/30/600) tervalidasi via `backend/__tests__/unit/rateLimiter.defaults.test.js` (6 test - pola sah 0% 429, pola abuse diblokir); tuning nginx/CGNAT tetap butuh trafik multi-IP nyata, di luar lingkup portfolio.
+- **Terakhir Dikerjakan:** E2E Playwright 10 hijau (smoke, auth, buyer full flow, organizer, admin hold/refund; workflow manual) + 2 bug nyata temuan E2E (konflik tipe PG `overrideStatus` + refund reason hilang di dashboard, keduanya fix + regression test) + trek guard tanggal 3 unit (tolak join 410, state `EVENT ENDED`, hide suspend/cancel event lampau) + tombol Cancel organizer + legenda donat + README screenshots live (3 PNG) + migrasi `docs/DECISIONS.md` (19 entri) + ramping `AGENTS.md`. Repo bersih, produksi live.
+- **Task Selanjutnya:** tidak ada task wajib tersisa (Fase 0-16 complete, monitoring 429 ditutup, screenshots live). Sisa backlog opsional bila waktu ada (Xendit, WebSocket, Leave Queue, dsb.).
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
   - `style: scale down hero section components and fix linebreaks` + `style: relocate all access tape to coming up section` — penyesuaian proporsi font & card Hero section pada `Home.jsx` dan penyelarasan spesifikasi di `docs/design/design.md`.
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
   - `fix: resolve sync setState lint errors in page load handlers` + `chore: lint jsx files and fix style violations` — **discovery: `npm run lint` tidak pernah memproses `.jsx`** (default ESLint 8 hanya `.js`); script diubah ke `eslint src/ --ext .js,.jsx --fix`. Semua page dengan pola `load()` handle state di-update (return data + `.then()` + cancellation guard).
   - `refactor: clean up redundant and arbitrary tailwind classes` — konversi bare value v4 (`rotate-[-1deg]`→`-rotate-1`, `aspect-[4/3]`→`aspect-4/3`, `aspect-[3/4]`→`aspect-3/4`, `max-w-[320px]`→`max-w-80`) + hapus `w-full` redundan yang menimpa `w-[calc(100%+2rem)]` di marquee waiting room.
-- **Keputusan Teknis / Catatan:** pindah ke `docs/DECISIONS.md` (18 entri, format Tanggal/Konteks/Keputusan/Konsekuensi). Yang tersisa di sini hanya status kerja; aturan bisnis mengikat ada di PRD + DECISIONS.
+- **Keputusan Teknis / Catatan:** pindah ke `docs/DECISIONS.md` (19 entri, format Tanggal/Konteks/Keputusan/Konsekuensi). Yang tersisa di sini hanya status kerja; aturan bisnis mengikat ada di PRD + DECISIONS.
 - **Desain dan ritme yang masih berlaku di file ini:** source of truth desain `docs/design/figma-export/` (di-gitignore), `docs/design/design.md` (cream `#FFFAF0`, border tebal, Inter uppercase, marquee 20s); Tailwind v4 tanpa `tailwind.config.js` (token di `@theme`); build wajib 1x per unit frontend; `npm run lint` mencakup `.jsx`.
-- **Status Fase lain:** Fase 0-12 complete, Fase 13 complete, Event Category & Admission=Lock enhancement complete, Rate limiting (app layer) enhancement complete (unit test: 265, integration: 20), **Fase 15 Stress Testing complete**, **bypass-key hardening complete**, **README portfolio rewrite complete**.
-- **Task Selanjutnya:** **Fase 14 (Deployment AWS)** — setup EC2 + Docker Engine, Nginx reverse proxy di EC2 host (Opsi B: `/api/*` → `127.0.0.1:5000` backend, `/*` → `127.0.0.1:3000` frontend; hanya port 80/443 publik), deploy via GitHub Actions setelah test lolos.
+- **Status Fase lain:** Fase 0-16 complete (termasuk Fase 16 screenshots live). Rate limiting app + nginx complete. Unit test 275+ hijau, integration suite (+regression `overrideStatus`), E2E Playwright 10 hijau dengan 2 bug nyata tertangkap. **Fase 15 Stress Testing complete**, **bypass-key hardening complete**, **README portfolio rewrite + screenshots complete**.
 
 ## Ringkasan per Minggu
 
@@ -242,10 +241,10 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 16 — Polish & README
 
-- [x] Tulis README lengkap: problem statement, arsitektur, tech stack, cara setup, hasil stress test (angka aktual 2 run + verdict + ceiling analysis), API docs — **sisa**: screenshots dashboard/waiting room/checkout
-- [ ] Screenshot dashboard, waiting room, checkout flow
-- [ ] Review ulang semua endpoint sesuai PRD, hapus yang tidak terpakai
-- [ ] Cleanup console.log / kode debug
+- [x] Tulis README lengkap: problem statement, arsitektur, tech stack, cara setup, hasil stress test (angka aktual 2 run + verdict + ceiling analysis), API docs
+- [x] Screenshot dashboard, waiting room, checkout flow (live demo, commit `a90a6c6`, ter-embed di README + README.id)
+- [x] Review ulang semua endpoint sesuai PRD, hapus yang tidak terpakai (nihil temuan)
+- [x] Cleanup console.log / kode debug (nihil sisa; blok log `[E2E]` sementara sudah dihapus)
 
 ---
 
