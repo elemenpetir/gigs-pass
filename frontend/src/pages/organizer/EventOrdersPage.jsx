@@ -36,6 +36,22 @@ const statusBadge = (status) => {
   );
 };
 
+const REFUND_REASON_LABEL = {
+  event_cancelled: "EVENT CANCELLED BY THE ORGANIZER",
+  admin_override: "ADMIN PUTUSAN",
+};
+
+const statusBadgeWithReason = (status, reason) => {
+  return (
+    <span>
+      {statusBadge(status)}
+      {status === "refunded" && reason && (
+        <span className="ml-2 inline-block text-xs font-black uppercase tracking-widest text-foreground/60">{REFUND_REASON_LABEL[reason] || reason}</span>
+      )}
+    </span>
+  );
+};
+
 export default function EventOrdersPage() {
   const { id } = useParams();
 
@@ -257,7 +273,7 @@ export default function EventOrdersPage() {
                 <td className="py-3 px-3 whitespace-nowrap font-black text-sm">
                   {formatIDR(o.amount || 0)}
                 </td>
-                <td className="py-3 px-3 whitespace-nowrap">{statusBadge(o.status)}</td>
+                <td className="py-3 px-3 whitespace-nowrap">{statusBadgeWithReason(o.status, o.refund_reason)}</td>
                 <td className="py-3 px-3 whitespace-nowrap text-xs font-bold text-foreground opacity-70">
                   {o.paid_at ? formatEventDate(o.paid_at) : "—"}
                 </td>
