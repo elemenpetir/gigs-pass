@@ -216,26 +216,39 @@ export default function EventOrdersPage() {
           {statusData.length === 0 ? (
             <p className="text-sm font-bold opacity-60">No data</p>
           ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  innerRadius={50}
-                  stroke="#0a0a0a"
-                  strokeWidth={2}
-                >
-                  {statusData.map((_, i) => (
-                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<BrutChartTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
+            <>
+              <ResponsiveContainer width="100%" height={280}>
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    innerRadius={50}
+                    stroke="#0a0a0a"
+                    strokeWidth={2}
+                  >
+                    {statusData.map((_, i) => (
+                      <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} stroke="#0a0a0a" strokeWidth={2} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<BrutChartTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {statusData.map((s, i) => (
+                  <span key={s.name} className="inline-flex items-center gap-2 border-2 border-foreground bg-canvas px-2 py-1 text-xs font-black uppercase tracking-widest">
+                    <span
+                      className="inline-block w-3 h-3 border-2 border-foreground"
+                      style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                    />
+                    {s.name} ({s.value})
+                  </span>
+                ))}
+              </div>
+            </>
           )}
         </ChartCard>
       </div>
