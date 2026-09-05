@@ -42,87 +42,18 @@ frontend/
 │   └── lib/          # API client, utilities
 ```
 
-## Key Constraints (from PRD)
+## Product Constraints (sumber: docs/PRD.md dan docs/DECISIONS.md)
 
-### Redis Usage — ONLY for:
-- Virtual queue (Sorted Set): `queue:event:{event_id}:{category_id}`
-- Queue sequence counter: `queue:seq` (monotonic INCR — dipakai sebagai score ZADD agar FIFO ketat, bukan Date.now)
-- Seat lock with TTL: `lock:category:{category_id}:buyer:{user_id}` (general admission — lock per buyer, bukan per seat; TTL 300s; **diset saat dequeue** = admission)
-- Lock expiry tracker (Sorted Set, untuk cleanup lock yang ditinggalkan): `lockexpiry:category:{category_id}` (member `user_id`, score = epoch ms saat lock akan kedaluwarsa)
-- Atomic stock counter: `stock:category:{category_id}`
+Aturan bisnis lengkap tinggal di dua file itu. Wajib dibaca sebelum menulis kode:
+- `docs/PRD.md` - blueprint: problem, scope MVP, endpoint, data model, alur dana, deployment.
+- `docs/DECISIONS.md` - keputusan desain selama implementasi (format Tanggal/Konteks/Keputusan/Konsekuensi).
 
-**NOT used for:** general cache, session storage, or anything else.
-
-**Pengecualian cache (disetujui):** cache **in-memory process-local** (Node `Map` + TTL) untuk **data referensi yang praktis imutabel** (contoh: `ticket_categories` via `getCachedCategory`, TTL 60s di `queueService.js`) **diizinkan** — mengurangi query PG berulang tanpa menyentuh Redis. Larangan di atas tetap berlaku penuh untuk Redis.
-
-### Queue & SSE Design (Fase 4)
-- `joinQueue` — `ZADD` member `userId`, score dari `INCR queue:seq`. Re-join idempotent (jika sudah ada, tidak ZADD ulang).
-- **Unpaid-order guard (anti double-unpaid per tier):** `joinQueue` menolak (`409` "You still have an unpaid ticket for this tier — finish your payment") HANYA bila buyer punya order `awaiting_payment` untuk tier yang sama DAN lock masih hidup (`lockService.getReservation`). Begitu lock mati (TTL expire / dihapus), join diizinkan dan order unpaid lama di-**eager-expire** via `orderModel.markExpiredByBuyerAndCategory` (tanpa sentuh Redis/stock — cleanup dequeuer yang mengembalikan stock, jadi tetap bebas oversell). Order `pending` (sudah bayar) TIDAK memblokir — re-buy per tier diizinkan.
-- `dequeueBatch` — `ZPOPMIN` N buyer, cap batch dengan sisa `stock:category:{id}`. **Admission = lock**: tiap buyer yang di-admit langsung di-`SET lock:category:{id}:buyer:{uid} EX 300 NX` lalu `DECR stock` (kalau negatif → rollback `INCR stock` + `DEL lock`, buyer putus & harus antri ulang) lalu `ZADD lockexpiry:category:{id}` (score = now + 300s). Return hanya yang admitted. Dipanggil scheduler `src/jobs/queueDequeuer.js` (batch 50, interval 5s, override via env). Tidak ada marker `granted` terpisah — tersedia stok selalu segar karena DECR terjadi seketika saat admission.
-- SSE `GET /api/queue/:categoryId/stream` — **auth via Bearer header** (`authenticate` biasa), BUKAN token di URL. Tidak ada SSE token terpisah — cukup session JWT. Frontend memakai `@microsoft/fetch-event-source` (header custom + auto-reconnect). Event: `position` (perubahan posisi) lalu `granted` (user keluar antrian = sudah masuk & pegang lock) lalu koneksi ditutup.
-- Checkout (general admission, Fase 5): lock sudah ada saat admission, jadi `POST /api/checkout/:categoryId/lock` tinggal **verifikasi** reservasi via `lockService.getReservation` (cek lock + `PTTL` sisa waktu, bukan selalu 300). Belum ada/expired → 403 "join the queue first". Bayar sukses → `confirmSlot` (hapus lock + ZREM, stock TETAP turun). Gagal/TTL → `releaseSlot` (hapus lock + `INCR stock` + ZREM). One-shot admission: buyer yang gagal bayar atau lock-nya expire harus join antrian lagi. `POST /api/orders` yang kena guard unpaid → `409` dengan `error.data.order` (frontend resume, tidak menganggap "already purchased"). Join 409 di WaitingRoom → redirect otomatis ke halaman checkout untuk resume. Resi order dicek buyer via `GET /orders/:id` (auth + ownership; JOIN event/category) → frontend halaman statis `/orders/:id` (tanpa aksi).
-- Lock cleanup: dipanggil di awal `processQueueForCategory` di `src/jobs/queueDequeuer.js` (bukan job terpisah) — tiap tick (interval 5s, sama dengan dequeue) `ZRANGEBYSCORE lockexpiry:category:{id} 0 <now>` → tiap buyer yang lock-nya kedaluwarsa di-`DEL` lock + `INCR stock` + `ZREM`, dan order `awaiting_payment`-nya di-mark `expired`. Cleanup jalan SEBELUM `dequeueBatch` membaca stock, jadi admission selalu pakai angka stock yang segar. Logika cleanup ada di `lockService.cleanupExpiredLocks`. `queueDequeuer.run()` punya anti-overlap guard (`if (running) return`).
-
-### Ledger System
-- Double-entry bookkeeping — every transaction touches min 2 accounts
-- 4 account types: `buyer_wallet`, `organizer_pending`, `organizer_available`, `platform_revenue`
-- `ledger_entries` table is **immutable** — no UPDATE/DELETE, corrections via reversing entries
-- Order/fund status lives in `orders.status`, NOT in `ledger_entries` — ledger only records financial events
-- `orders.amount` = snapshot `ticket_categories.price` saat create order (Fase 7) — ledger pakai nilai ini, aman walau harga kategori diubah organizer
-- Komisi platform: `PLATFORM_COMMISSION_PERCENT` (default 10%) di `src/config/constants.js`
-- Pembayaran sukses → `withTransaction` (helper di `src/config/db.js`): `markPaid` + `ledgerService.recordPaymentSplit` (debit `buyer_wallet` = amount, kredit `organizer_pending` = amount − komisi, kredit `platform_revenue` = komisi) — semua dalam 1 `BEGIN...COMMIT`
-- Release dana (Fase 8) → `recordRelease` saat holding_period habis: debit `organizer_pending` + kredit `organizer_available` (jumlah = bagian organizer)
-- Refund (Fase 8) → `recordRefund` saat event di-cancel atau admin override: kredit `buyer_wallet` (= amount), debit `organizer_pending` (bagian organizer), debit `platform_revenue` (komisi) — reversing entry yang menyeimbangkan transaksi pembayaran asli. Semua refund memakai **satu status terminal `refunded`**; penyebabnya disimpan di kolom `orders.refund_reason` (nullable, hanya terisi saat `refunded`): `event_cancelled` (event dibatalkan resmi sebelum digelar — bulk, semua order dibayar langsung di-reverse) atau `admin_override` (putusan admin per order selama holding_period). Order hasil cancel TIDAK pernah masuk holding_period (`holding_until` NULL); order hasil override pernah (`holding_until` terisi). Tidak ada tahap refund terpisah — entry reversal dibuat se-transaksi dengan perubahan status.
-- `ledgerModel` TIDAK mengekspos fungsi update/delete — enforce immutability di service layer juga (assert desain, bukan cuma DB constraint)
-
-### Roles (hardcoded, not dynamic RBAC)
-- `buyer` — browse events (public), checkout (auth required)
-- `organizer` — create/manage events, view sales dashboard
-- `admin` — approve events, manual override order status, platform analytics
-
-### Order Status Flow
-```
-awaiting_payment (dibuat saat lock berhasil, BELUM bayar)
-   ├── bayar sukses   → pending (dana masuk, menunggu event_date)
-   └── gagal / TTL    → expired (lock lepas, stock balik ke pool)
-pending → holding_period (after event_date, via job orderLifecycle, holding_until = +7 hari)
-              ├── released (after 7 days, no issue, + recordRelease ledger)
-              ├── held (admin manual override POST /api/admin/orders/:id/override — ONLY valid while status = holding_period; dana tetap escrow)
-              └── refunded (status TUNGGAL dana dikembalikan — via cancel event ATAU admin override, + recordRefund; see refund_reason)
-```
-`pending` = sudah dibayar (PRD: "dana masuk") — order yang belum bayar memakai `awaiting_payment`, bukan `pending`. `paid_at` (nullable) mencatat kapan pembayaran berhasil. Transisi `pending→holding_period` dan `holding_period→released` dijalankan `src/jobs/orderLifecycle.js` (interval `ORDER_LIFECYCLE_INTERVAL_MS`, default 24 jam).
-
-### Event Status Flow (Limited Lifecycle)
-Event status hanya dapat diintervensi **SEBELUM event_date**. Setelah event digelar, intervensi pindah ke order flow:
-
-```
-draft → published (organizer)
-              ├── suspended (admin — violation investigasi, belum digelar)
-              │    ├── published (admin unsuspend, clear)
-              │    └── cancelled (admin confirmed batal) → trigger refunded (refund_reason='event_cancelled') di semua orders
-              └── cancelled (organizer/admin langsung) → trigger refunded (refund_reason='event_cancelled') di semua orders terkait
-
-SETELAH event_date LEWAT:
-  Event status: TIDAK BERUBAH (biarkan as-is)
-  Yang berjalan: Order status flow (holding_period → released/held/refunded)
-  Violation/dispute: ditangani via admin override di orders
-```
-
-### Event Status Constraints
-- `suspended`/`cancelled` hanya valid kalau `event_date > NOW()` (belum digelar)
-- Organizer bukan pemilik → update event gagal (403)
-- `publish` → hanya dari status `draft`
-- `suspend` → hanya dari status `published`, hanya admin
-- `cancel` → hanya dari status `published`/`suspended`, hanya organizer/admin, dan hanya jika belum digelar
-- `suspended` **tidak** trigger refund (hanya review sementara)
-- `cancelled` **wajib** trigger `refunded` (refund_reason='event_cancelled') di semua orders terkait
-
-### Event Category (genre/vibe)
-- Kolom `events.category` enum **NOT NULL** — 6 vibe: `music`, `festival`, `concert`, `comedy`, `art`, `culture` (CHECK constraint di migration `create-events`).
-- List slug: backend `EVENT_CATEGORIES` di `src/config/constants.js`; frontend mirror di `frontend/src/lib/categories.js` (`EVENT_CATEGORIES` + `categoryLabel`). Tambah/ubah kategori = update KEDUANYA + migration CHECK — jangan sampai diverge.
-- Create event **wajib** `category` (validasi `eventService.createEvent`); update opsional (validasi kalau dikirim).
-- `GET /api/events` dukung `?category=<slug>` (filter server-side di `eventModel.findPublished`) dan return `min_price` per event (LEFT JOIN `ticket_categories` + `MIN(price)` + `GROUP BY e.id`) — harga tiket termurah untuk tampilan "FROM Rp...".
-- Frontend `/events` (EventsPage) memfilter **client-side** (sekali fetch); `?category=` dipakai untuk deep-link dari BROWSE VIBES di Home. Navbar: Discover / Events — tidak ada link Categories terpisah.
+Contekan invarian (tidak boleh dilanggar, detail di dua file di atas):
+- Redis HANYA untuk: virtual queue (Sorted Set), counter `queue:seq`, lock TTL 300s, tracker `lockexpiry`, counter `stock`. Bukan cache/session. Pengecualian: cache in-memory process-local untuk referensi praktis imutabel (mis. `ticket_categories`, TTL 60s).
+- Ledger immutable: tanpa UPDATE/DELETE, koreksi via reversing entry. 4 akun tetap: `buyer_wallet`, `organizer_pending`, `organizer_available`, `platform_revenue`. Status dana di `orders.status`, bukan di ledger.
+- Role hardcoded: `buyer`, `organizer`, `admin`. Bukan dynamic RBAC.
+- Response envelope success/error untuk semua endpoint. Tanpa password/hash di respons.
+- Tambah/ubah kategori event = backend `constants.js` + frontend `lib/categories.js` + migration CHECK (lihat DECISIONS #11).
 
 ## API Response Convention (envelope format)
 
