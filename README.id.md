@@ -26,11 +26,16 @@ Dibangun sendiri dari awal sampai akhir: API backend dan business logic, flow fr
 
 ## Tangkapan Layar
 
-<!-- TODO: add screenshots
-- docs/screenshots/dashboard.png - organizer sales dashboard
-- docs/screenshots/waiting-room.png - buyer waiting room with live position
-- docs/screenshots/checkout.png - checkout with lock countdown
--->
+Data demo live di instance AWS free tier.
+
+![Ruang tunggu buyer dengan posisi antrean live](docs/screenshots/waiting-room.png)
+*Waiting room: posisi antrean live didorong lewat SSE.*
+
+![Checkout dengan hitung mundur lock](docs/screenshots/checkout.png)
+*Checkout: lock admission 300 detik dengan countdown, lalu mock payment.*
+
+![Dashboard penjualan organizer](docs/screenshots/dashboard.png)
+*Dashboard organizer: revenue, tiket terjual, status dana, dan chart per tier.*
 
 ---
 

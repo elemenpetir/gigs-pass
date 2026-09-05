@@ -26,11 +26,16 @@ Solo-built end to end: backend API and business logic, frontend buyer/organizer/
 
 ## Screenshots
 
-<!-- TODO: add screenshots
-- docs/screenshots/dashboard.png - organizer sales dashboard
-- docs/screenshots/waiting-room.png - buyer waiting room with live position
-- docs/screenshots/checkout.png - checkout with lock countdown
--->
+Live demo data on the AWS free-tier instance.
+
+![Buyer waiting room with live queue position](docs/screenshots/waiting-room.png)
+*Waiting room: live queue position pushed over SSE.*
+
+![Checkout with lock countdown](docs/screenshots/checkout.png)
+*Checkout: 300s admission lock with countdown, then mock payment.*
+
+![Organizer sales dashboard](docs/screenshots/dashboard.png)
+*Organizer dashboard: revenue, tickets sold, fund status, and per-tier charts.*
 
 ---
 
