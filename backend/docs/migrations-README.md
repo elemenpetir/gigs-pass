@@ -49,5 +49,5 @@ npm run migrate:down    # rollback 1 migration terakhir
 
 - **`ledger_entries` tidak pernah di-UPDATE atau di-DELETE dari application code.** Koreksi transaksi = insert baris baru (reversing entry). Ini prinsip inti double-entry ledger yang dirancang di PRD, jangan dilanggar saat implementasi service layer.
 - **Saldo akun dihitung dari `SUM` `ledger_entries`**, bukan disimpan sebagai kolom `balance` yang di-update langsung — mencegah saldo "menyimpang" dari histori transaksi aktualnya.
-- Struktur antrian (virtual queue) dan seat lock **tidak ada tabelnya di sini** — itu sengaja hidup di Redis (Upstash), lihat PRD bagian 7.
+- Struktur antrian (virtual queue) dan seat lock **tidak ada tabelnya di sini**, itu sengaja hidup di Redis (managed), lihat PRD bagian 7.
 - Redis **tidak** menyimpan uang/saldo apa pun — hanya state sementara (antrian, lock). Semua yang berkaitan dengan uang wajib lewat PostgreSQL.

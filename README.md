@@ -12,7 +12,7 @@ Event ticketing platform for high-demand ticket drops. Buyers join a virtual que
 
 - Node.js + Express.js
 - PostgreSQL (Supabase)
-- Redis (Upstash)
+- Redis (managed, rotasi Upstash / Redis Cloud)
 - JSON Web Token (JWT)
 - bcrypt
 - Cloudinary (image upload)
@@ -120,9 +120,9 @@ CI builds backend and frontend images once, pushes to GHCR, and CD pulls them on
 |  (React)    |     |  (Proxy)    |     |  (Express)  |
 +-------------+     +-------------+     +------+------+
                                                |
-                    +-------------+            |
-                    |  Upstash    |<-----------+
-                    |   Redis     |            |
+                     +-------------+            |
+                     |    Redis    |<-----------+
+                     |  (managed)  |            |
                     +-------------+            |
                                                |
                     +-------------+            |
@@ -287,7 +287,7 @@ Base URL: `/api`. All responses use a `{status, message, data}` envelope. Protec
 - Node.js 20+
 - Docker + Docker Compose
 - Supabase account (PostgreSQL)
-- Upstash account (Redis)
+- Upstash / Redis Cloud free account 
 
 ### Environment Variables
 

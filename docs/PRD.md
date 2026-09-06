@@ -5,7 +5,7 @@
 **Nama proyek:** Platform Ticketing Event dengan Virtual Queue & Internal Ledger System
 **Tipe proyek:** Fullstack web app (REST API + React frontend) untuk Proyek 2
 **Target roadmap:** Bulan 5 (Agustus), deadline fitur core akhir Agustus
-**Stack utama:** Node.js, Express.js, PostgreSQL (Supabase/Neon), Redis (Upstash), Server-Sent Events (SSE), React (Vite), Docker Compose, deploy ke AWS EC2
+**Stack utama:** Node.js, Express.js, PostgreSQL (Supabase/Neon), Redis (managed), Server-Sent Events (SSE), React (Vite), Docker Compose, deploy ke AWS EC2
 
 Project ini adalah platform penjualan tiket event/konser yang menyelesaikan dua kelas masalah backend yang berbeda dari Proyek 1 (AssetShield):
 
@@ -412,7 +412,7 @@ Hasil stress test (angka konkret) didokumentasikan di README sebagai bukti empir
 
 - **Compute:** AWS EC2 (bukan Render — WebSocket/SSE lebih stabil, tidak ada idle spin-down).
 - **Database:** PostgreSQL via Supabase atau Neon (free tier).
-- **Redis:** Upstash free tier (500K command/bulan).
+- **Redis:** managed free tier (Upstash / Redis Cloud dipakai bergantian, lihat DECISIONS #20-#21; dev/test/stress: Redis lokal).
 - **Cloud storage gambar:** Cloudinary free tier.
 - **Containerization:** Docker Compose (backend + frontend + reverse proxy).
 - **Budget control:** AWS Budgets dengan alert aktif (sudah di-setup).

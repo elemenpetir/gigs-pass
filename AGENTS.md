@@ -6,7 +6,7 @@ Always respond in Bahasa Indonesia, regardless of the language used in this file
 
 Event ticketing platform with virtual queue (Redis Sorted Set), TTL seat locking, and double-entry ledger system.
 
-**Stack:** Node.js + Express, PostgreSQL (Supabase/Neon), Redis (Upstash), React (Vite) + Tailwind + shadcn/ui
+**Stack:** Node.js + Express, PostgreSQL (Supabase/Neon), Redis (managed, rotasi Upstash / Redis Cloud, dev/test lokal), React (Vite) + Tailwind + shadcn/ui
 
 ## Architecture
 
@@ -178,7 +178,7 @@ Run against Supabase/Neon via `DATABASE_URL` env var.
 - `npm test` — unit test cepat (pakai `mockDb`, tanpa DB asli)
 - `npm run test:integration` — integration test terhadap **DB & Redis nyata** (`jest.config.integration.js`, `--runInBand`); migration dijalankan otomatis ke test DB oleh `globalSetup`
 - `npm run test:all` — keduanya berurutan
-- Prasyarat integration test (dari `backend/.env`): `DATABASE_URL_TEST` (test DB terpisah, mis. Neon branch), `DATABASE_SSL=true`, `REDIS_URL` (Upstash)
+- Prasyarat integration test (dari `backend/.env`): `DATABASE_URL_TEST` (test DB terpisah, mis. Neon branch), `DATABASE_SSL=true`, `REDIS_URL` (Redis lokal, jangan tembak Redis managed prod untuk load test, lihat `docs/deployment.md` §5a)
 - Kalau `DATABASE_URL_TEST` kosong, `test:integration` gagal dengan pesan jelas — jangan dianggap bug aplikasi
 
 ### Stress Testing (k6)

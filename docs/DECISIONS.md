@@ -118,3 +118,8 @@ Aturan file ini:
 - Konteks: Satu-satunya Redis (Upstash free, 500K commands/bulan) dipakai bareng prod + stress test; run k6 800 VU gabungan menghabiskan kuota → join queue prod 500 (`QUEUE BROKE DOWN`) sampai reset bulanan, demo tumbang.
 - Keputusan: Prod pindah ke Redis Cloud free (30MB, throttle 100 ops/detik, tanpa bom kuota bulanan); URL lama disimpan sebagai baris komentar di `.env` yang sama (tepat satu `REDIS_URL` aktif); stress test dilarang ke Redis managed prod (wajib alihkan ke Redis lokal sementara, lihat `docs/deployment.md` §5a). Akun Upstash kedua (gmail lain) ditolak (abu-abu secara ToS + jebol lagi); Cloudflare KV/D1 ditolak (eventual consistency + tanpa operasi atomik → merusak FIFO/oversell, butuh rewrite + membunuh tesis Redis).
 - Konsekuensi: Nol perubahan kode (ioredis URL-based, stock self-heal via fallback `quota − sold`); demo normal (<100 commands/sesi) tidak akan pernah menyentuh batas.
+
+### #21 Rotasi Upstash / Redis Cloud bergantian (2026-09)
+- Konteks: Kuota Upstash pulih tiap reset bulanan, sehingga satu provider tidak perlu ditinggal permanen.
+- Keputusan: Upstash dan Redis Cloud dipakai bergantian sebagai prod aktif; URL nonaktif disimpan sebagai baris komentar di `.env` yang sama (tepat satu `REDIS_URL` aktif); switch manual via SSH mengikuti `docs/deployment.md` §5a. Dev/test/stress tetap Redis lokal.
+- Konsekuensi: Tiap switch mereset antrian/lock (user rejoin, stock self-heal); beban pantau kuota 2 dashboard; nol perubahan kode (ioredis URL-based).

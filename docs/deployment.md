@@ -89,7 +89,9 @@ NODE_ENV=production
 PORT=5000
 DATABASE_URL=postgresql://...supabase/neon-prod...
 DATABASE_SSL=true
-REDIS_URL=rediss://...upstash-prod...
+# Prod rotasi Upstash / Redis Cloud: SATU aktif, satu komentar (prosedur switch lihat §5a)
+REDIS_URL=rediss://...provider-aktif...
+# REDIS_URL=rediss://...provider-cadangan...
 JWT_SECRET=<secret-kuat-acak>
 JWT_EXPIRES_IN=7d
 CLOUDINARY_CLOUD_NAME=...
@@ -171,6 +173,8 @@ Jalankan k6 dari mesin penguji (bukan dari EC2), lalu **wajib restore via §5b**
 > Setelah selesai: hapus container tmp (`docker rm -f gigs-redis-tmp`), uncomment URL prod, `up -d` lagi. Stock rebuild otomatis saat halaman event dibuka (fallback `quota − sold`, tanpa re-init manual).
 >
 > Pola multi-URL: URL cadangan disimpan sebagai baris komentar (`# REDIS_URL=...`) di file `.env` yang SAMA agar switch mudah — tepat SATU `REDIS_URL` aktif (dua-duanya uncomment = yang bawah menang diam-diam). JANGAN duplikat file `.env` di folder lain (insiden `backend/.env` basi, lihat §3.1).
+>
+> **Rotasi provider (DECISIONS #21):** untuk pindah prod aktif Upstash <-> Redis Cloud: komentari URL lama, uncomment URL baru di `/opt/gigspass/.env`, `docker compose up -d`, verifikasi 1x join queue 200. Antrian/lock ikut reset (user rejoin), stock rebuild otomatis.
 
 ## 5b. Restore ke Produksi (setelah stress test / maintenance)
 
