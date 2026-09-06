@@ -353,7 +353,6 @@ k6 run --env TARGET_URL=http://localhost --env CATEGORY_ID=<category_id> tests/l
 4. **Real payments**: replace the mock with a payment gateway sandbox (e.g. Xendit) behind the existing order state machine, which requires no architectural changes.
 5. **Leave Queue** (`POST /queue/:categoryId/leave`): `ZREM` the buyer from the sorted set; if the buyer already holds a lock, the slot self-heals via TTL cleanup within 300s. Rejoin remains safe because queue sequence is monotonically increasing.
 6. **SSE optimization**: replace the current per-connection 2s position polling with a server-push model. Currently each buyer in the waiting room queries their position every 2 seconds regardless of queue activity. The proposed approach: the dequeuer announces changes only when they occur via two methods: `applyAdmission` (popped buyers receive a direct `granted` event, remaining buyers get position decremented by batch size) and `applyLeave` (buyers behind the leaver get -1, buyers ahead are unchanged). Initial position is fetched once on connect; auto-reconnect serves as natural re-sync. Zero redundant Postgres and Redis queries at steady state.
-7. **Redis re-init procedure**: if Upstash is flushed, stock counters and queue data are lost while orders remain in Postgres. A reconciliation job or runbook (`stock = quota - active/paid orders` computed from DB) is needed for production resilience. For the current portfolio scope this is documented as a known limitation.
 
 ---
 
