@@ -86,10 +86,10 @@ export default function EventDetailPage() {
 
   return (
     <>
-      <nav className="pt-6 font-bold uppercase text-sm">
+      <nav className="pt-6 font-bold uppercase text-sm flex items-center gap-2">
         <BackLink to="/">DISCOVER</BackLink>
-        <span className="mx-2 text-foreground/40">/</span>
-        <span className="font-black">{event.title}</span>
+        <span className="text-foreground/40">/</span>
+        <span className="font-black truncate min-w-0">{event.title}</span>
       </nav>
 
       <section className="py-10 md:py-14 grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
