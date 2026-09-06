@@ -158,6 +158,20 @@ cd /opt/gigspass && docker compose up -d
 
 Jalankan k6 dari mesin penguji (bukan dari EC2), lalu **wajib restore via §5b** (limiter produksi 30/600 + hapus port 5000 di SG bila dibuka).
 
+> **Redis guardrail (insiden kuota Sep 2026, lihat DECISIONS #20):** JANGAN arahkan stress test ke Redis managed prod — run k6 800 VU gabungan pernah menghabiskan kuota Upstash (500K cmd/bulan) → join queue prod 500 sampai reset bulanan. Sebelum k6, alihkan dulu ke Redis lokal sementara:
+>
+> ```bash
+> docker run -d --name gigs-redis-tmp --network $(docker network ls --format '{{.Name}}' | grep -m1 gigspass) redis:7-alpine
+> nano /opt/gigspass/.env
+> # REDIS_URL=rediss://...prod...   (komentar sementara)
+> REDIS_URL=redis://gigs-redis-tmp:6379
+> cd /opt/gigspass && docker compose up -d
+> ```
+>
+> Setelah selesai: hapus container tmp (`docker rm -f gigs-redis-tmp`), uncomment URL prod, `up -d` lagi. Stock rebuild otomatis saat halaman event dibuka (fallback `quota − sold`, tanpa re-init manual).
+>
+> Pola multi-URL: URL cadangan disimpan sebagai baris komentar (`# REDIS_URL=...`) di file `.env` yang SAMA agar switch mudah — tepat SATU `REDIS_URL` aktif (dua-duanya uncomment = yang bawah menang diam-diam). JANGAN duplikat file `.env` di folder lain (insiden `backend/.env` basi, lihat §3.1).
+
 ## 5b. Restore ke Produksi (setelah stress test / maintenance)
 
 ```bash
