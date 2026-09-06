@@ -178,7 +178,7 @@ Thresholds were not met on either run. The ceiling on a free-tier micro instance
 - **Graceful degradation.** Overload produced clean 500 JSON errors with the process alive for the full run, no hangs or data corruption.
 - **Based on the results, the primary bottleneck appears to be CPU saturation on t3.micro (single vCPU), not queue or ledger logic.** The database pool (max 20) has sufficient headroom for the measured load (~80 req/s); the pool size is a deliberate configuration choice, not a platform constraint. Vertical scaling is the next step to verify this.
 - **Rate-limit caveat:** Both runs came from a single egress IP with limits lifted. These error/latency numbers must not be reused for per-IP limiter tuning. App defaults are validated separately by synthetic tests.
-- **Quota caveat (Sep 2026):** These runs burned through the Upstash free quota (500K commands/month), taking down prod queueing until the monthly reset. Prod Redis has since moved to Redis Cloud free (no monthly command cap); load tests must never target managed prod Redis (see `docs/deployment.md` §5a).
+- **Quota caveat (Sep 2026):** These runs burned through the Upstash free quota (500K commands/month), taking down prod queueing until the monthly reset. Prod Redis now rotates between Upstash and Redis Cloud free (see docs/DECISIONS.md #21); load tests must never target managed prod Redis (see `docs/deployment.md` §5a).
 
 ### Post-Load Ledger Audit
 
