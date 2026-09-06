@@ -9,3 +9,6 @@ export { Label } from "./ui/label";
 // Layout Components
 export { TopNav } from "./layout/TopNav";
 export { Footer } from "./layout/Footer";
+
+// Common Components
+export { BackLink } from "./common/BackLink";

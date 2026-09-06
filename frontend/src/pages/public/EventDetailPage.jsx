@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowRight, Calendar, Ticket } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Ticket } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { BackLink } from "@/components";
 import { formatEventDate, formatIDR } from "@/lib/format";
 
 function MarqueeLine() {
@@ -77,7 +78,7 @@ export default function EventDetailPage() {
         <h2 className="text-5xl font-black uppercase tracking-tighter mb-4">event not found</h2>
         <p className="border-2 border-error bg-error/10 text-error font-bold px-4 py-3 uppercase text-sm inline-block">{error || "No such event."}</p>
         <div className="mt-8">
-          <Link to="/" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">← BACK TO DISCOVER</Link>
+          <Link to="/" className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button"><ArrowLeft size={18} strokeWidth={3} /> BACK TO DISCOVER</Link>
         </div>
       </section>
     );
@@ -86,7 +87,7 @@ export default function EventDetailPage() {
   return (
     <>
       <nav className="pt-6 font-bold uppercase text-sm">
-        <Link to="/" className="hover:text-gigs-pink transition-colors">← DISCOVER</Link>
+        <BackLink to="/">DISCOVER</BackLink>
         <span className="mx-2 text-foreground/40">/</span>
         <span className="font-black">{event.title}</span>
       </nav>

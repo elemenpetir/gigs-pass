@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { Ticket } from "lucide-react";
+import { ArrowLeft, ArrowRight, Ticket } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { BackLink } from "@/components";
 import { formatEventDate, formatIDR } from "@/lib/format";
 
 const STATUS_STYLES = {
@@ -62,7 +63,7 @@ export default function OrderDetailPage() {
         <h2 className="text-5xl font-black uppercase tracking-tighter mb-4">stub not found</h2>
         <p className="border-2 border-error bg-error/10 text-error font-bold px-4 py-3 uppercase text-sm inline-block">{error || "No such order."}</p>
         <div className="mt-8">
-          <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">← BACK TO MY ORDERS</Link>
+          <Link to="/orders" className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button"><ArrowLeft size={18} strokeWidth={3} /> BACK TO MY ORDERS</Link>
         </div>
       </section>
     );
@@ -74,7 +75,7 @@ export default function OrderDetailPage() {
     <section className="py-16 flex justify-center">
       <div className="w-full max-w-xl">
         <nav className="mb-10 font-bold uppercase text-sm">
-          <Link to="/orders" className="hover:text-gigs-pink transition-colors">← MY ORDERS</Link>
+          <BackLink to="/orders">MY ORDERS</BackLink>
         </nav>
 
         <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-2 flex items-center gap-4">
@@ -136,7 +137,7 @@ export default function OrderDetailPage() {
         </div>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to={`/events/${order.event_id}`} className="bg-gigs-pink text-foreground px-6 py-3 font-black uppercase brut-border-2 brut-button text-center hover:bg-gigs-yellow transition-colors">VIEW EVENT →</Link>
+          <Link to={`/events/${order.event_id}`} className="inline-flex items-center justify-center gap-2 bg-gigs-pink text-foreground px-6 py-3 font-black uppercase brut-border-2 brut-button text-center hover:bg-gigs-yellow transition-colors">VIEW EVENT <ArrowRight size={18} strokeWidth={3} /></Link>
           <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button text-center">ALL ORDERS</Link>
         </div>
       </div>

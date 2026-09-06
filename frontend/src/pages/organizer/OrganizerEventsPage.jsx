@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, Plus, Ticket, Coins, Pencil } from "lucide-react";
+import { ArrowRight, Calendar, Plus, Ticket, Coins, Pencil } from "lucide-react";
 import { api } from "@/lib/api";
 import { formatEventDate, isPastEvent } from "@/lib/format";
 
@@ -108,8 +108,8 @@ export default function OrganizerEventsPage() {
           <Calendar size={48} strokeWidth={3} className="mx-auto mb-4 text-gigs-pink" />
           <h2 className="text-3xl font-black uppercase tracking-tighter mb-2">no events yet</h2>
           <p className="font-bold">Your first gig starts with a big idea. Get it on the calendar. <span className="text-gigs-pink">✸</span></p>
-          <Link to="/organizer/events/new" className="mt-8 inline-block bg-gigs-pink text-foreground px-6 py-3 font-black uppercase brut-border-2 brut-button">
-            CREATE EVENT →
+          <Link to="/organizer/events/new" className="mt-8 inline-flex items-center justify-center gap-2 bg-gigs-pink text-foreground px-6 py-3 font-black uppercase brut-border-2 brut-button">
+            CREATE EVENT <ArrowRight size={18} strokeWidth={3} />
           </Link>
         </div>
       ) : (

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowRight, Clock, Ticket, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Ticket, CheckCircle2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { BackLink } from "@/components";
 import { formatEventDate, formatIDR } from "@/lib/format";
 
 function formatCountdown(totalSeconds) {
@@ -136,7 +137,7 @@ export default function CheckoutPage() {
           <h2 data-testid="payment-success-heading" className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85]">TICKET<br />CONFIRMED.</h2>
           <p className="mt-6 font-black uppercase text-lg">Your ticket is secured (Order: #{order?.id}).</p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/orders" className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">MY ORDERS →</Link>
+            <Link to="/orders" className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">MY ORDERS <ArrowRight size={18} strokeWidth={3} /></Link>
             <Link to="/" className="bg-background px-6 py-3 font-black uppercase brut-border-2 brut-button hover:bg-gigs-yellow">BACK TO DISCOVER</Link>
           </div>
         </div>
@@ -158,7 +159,7 @@ export default function CheckoutPage() {
         <div className="border-4 border-foreground bg-gigs-orange p-10 brut-shadow text-center">
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9]">TOO SLOW.<br />SPOT GONE.</h2>
           <p className="mt-6 font-black uppercase text-lg">Your lock expired and the slot went back to the pool.</p>
-          <Link to={`/events/${eventId}`} className="mt-8 inline-block bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">REJOIN QUEUE →</Link>
+          <Link to={`/events/${eventId}`} className="mt-8 inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">REJOIN QUEUE <ArrowRight size={18} strokeWidth={3} /></Link>
         </div>
       );
     }
@@ -168,7 +169,7 @@ export default function CheckoutPage() {
         <div className="border-4 border-foreground bg-gigs-purple p-10 brut-shadow text-center">
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9]">PAYMENT<br />FAILED.</h2>
           <p className="mt-6 font-black uppercase text-lg">Your spot was released back to the pool. One buyer = one shot.</p>
-          <Link to={`/events/${eventId}`} className="mt-8 inline-block bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">REJOIN QUEUE →</Link>
+          <Link to={`/events/${eventId}`} className="mt-8 inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">REJOIN QUEUE <ArrowRight size={18} strokeWidth={3} /></Link>
         </div>
       );
     }
@@ -179,7 +180,7 @@ export default function CheckoutPage() {
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9]">HOLD ON.</h2>
           <p className="mt-6 border-2 border-error bg-error/10 text-error font-bold px-4 py-3 uppercase text-sm inline-block">{error || "Processing…"}</p>
           <div className="mt-8">
-            <Link to={`/events/${eventId}`} className="bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button">← BACK TO EVENT</Link>
+            <Link to={`/events/${eventId}`} className="inline-flex items-center justify-center gap-2 bg-foreground text-background px-6 py-3 font-black uppercase brut-border-2 brut-button"><ArrowLeft size={18} strokeWidth={3} /> BACK TO EVENT</Link>
           </div>
         </div>
       );
@@ -246,7 +247,7 @@ export default function CheckoutPage() {
     <section className="py-16 flex justify-center">
       <div className="w-full max-w-2xl">
         <nav className="mb-10 font-bold uppercase text-sm">
-          <Link to={`/events/${eventId}`} className="hover:text-gigs-pink transition-colors">← {event?.title || "BACK TO EVENT"}</Link>
+          <BackLink to={`/events/${eventId}`}>{event?.title || "BACK TO EVENT"}</BackLink>
         </nav>
 
         {status === "loading" ? (

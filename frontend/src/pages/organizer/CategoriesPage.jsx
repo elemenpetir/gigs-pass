@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Plus, Pencil, Check, X } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { ArrowRight, Plus, Pencil, Check, X } from "lucide-react";
 import { api } from "@/lib/api";
-import { Input, Label, Badge } from "@/components";
+import { Input, Label, Badge, BackLink } from "@/components";
 import { formatIDR } from "@/lib/format";
 
 const emptyEdit = { id: null, name: "", price: "", quota: "" };
@@ -105,9 +105,7 @@ export default function CategoriesPage() {
   return (
     <section className="py-4">
       <nav className="mb-8 font-bold uppercase text-sm">
-        <Link to="/organizer/events" className="hover:text-gigs-pink transition-colors">
-          ← MY EVENTS
-        </Link>
+        <BackLink to="/organizer/events">MY EVENTS</BackLink>
       </nav>
 
       <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-2 flex items-center gap-4 flex-wrap">
@@ -149,9 +147,9 @@ export default function CategoriesPage() {
             type="submit"
             data-testid="category-form-submit"
             disabled={creating}
-            className="w-full border-2 border-foreground bg-foreground text-background font-black uppercase text-lg px-6 py-3 brut-shadow brut-button disabled:opacity-50"
+            className="w-full border-2 border-foreground bg-foreground text-background font-black uppercase text-lg px-6 py-3 brut-shadow brut-button disabled:opacity-50 inline-flex items-center justify-center gap-2"
           >
-            {creating ? "ADDING..." : "ADD TIER →"}
+            {creating ? "ADDING..." : <>ADD TIER <ArrowRight size={20} strokeWidth={3} /></>}
           </button>
         </form>
 

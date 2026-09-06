@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 export default function LoginPage() {
@@ -102,9 +103,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full border-2 border-foreground bg-gigs-pink text-foreground font-black uppercase text-lg px-8 py-4 brut-shadow brut-button disabled:opacity-50"
+            className="w-full border-2 border-foreground bg-gigs-pink text-foreground font-black uppercase text-lg px-8 py-4 brut-shadow brut-button disabled:opacity-50 inline-flex items-center justify-center gap-2"
           >
-            {submitting ? "..." : mode === "login" ? "EXPLORE EVENTS →" : "SIGN UP →"}
+            {submitting ? "..." : mode === "login" ? <>EXPLORE EVENTS <ArrowRight size={20} strokeWidth={3} /></> : <>SIGN UP <ArrowRight size={20} strokeWidth={3} /></>}
           </button>
         </form>
       </div>

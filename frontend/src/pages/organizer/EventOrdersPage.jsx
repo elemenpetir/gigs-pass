@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Coins, Calendar, Ticket, User, BarChart3, PieChart as PieIcon } from "lucide-react";
 import {
   Bar,
@@ -16,6 +16,7 @@ import {
 import { api } from "@/lib/api";
 import { formatIDR, formatEventDate } from "@/lib/format";
 import { CHART_COLORS, axisTick, moneyTick, BrutChartTooltip, ChartCard } from "@/components/ui/chart";
+import { BackLink } from "@/components";
 
 const STATUS_STYLES = {
   awaiting_payment: { label: "AWAITING PAYMENT", cls: "bg-gigs-yellow text-foreground border-foreground" },
@@ -123,9 +124,7 @@ export default function EventOrdersPage() {
   return (
     <section className="py-4">
       <nav className="mb-8 font-bold uppercase text-sm">
-        <Link to="/organizer/events" className="hover:text-gigs-pink transition-colors">
-          ← MY EVENTS
-        </Link>
+        <BackLink to="/organizer/events">MY EVENTS</BackLink>
       </nav>
 
       <div className="mb-10">

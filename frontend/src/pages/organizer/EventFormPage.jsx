@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ImagePlus } from "lucide-react";
+import { ArrowRight, ImagePlus } from "lucide-react";
 import { api } from "@/lib/api";
-import { Input, Textarea, Select, Label } from "@/components";
+import { Input, Textarea, Select, Label, BackLink } from "@/components";
 import { EVENT_CATEGORIES } from "@/lib/categories";
 
 function toDatetimeLocal(iso) {
@@ -107,9 +107,7 @@ export default function EventFormPage() {
   return (
     <section className="py-4">
       <nav className="mb-8 font-bold uppercase text-sm">
-        <Link to="/organizer/events" className="hover:text-gigs-pink transition-colors">
-          ← MY EVENTS
-        </Link>
+        <BackLink to="/organizer/events">MY EVENTS</BackLink>
       </nav>
 
       <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-2 flex items-center gap-4">
@@ -185,7 +183,7 @@ export default function EventFormPage() {
             disabled={submitting}
             className="inline-flex items-center justify-center gap-2 border-2 border-foreground bg-gigs-pink text-foreground font-black uppercase text-lg px-8 py-4 brut-shadow brut-button disabled:opacity-50"
           >
-            {submitting ? "SAVING..." : editing ? "SAVE CHANGES →" : "CREATE EVENT →"}
+            {submitting ? "SAVING..." : editing ? <>SAVE CHANGES <ArrowRight size={20} strokeWidth={3} /></> : <>CREATE EVENT <ArrowRight size={20} strokeWidth={3} /></>}
           </button>
           <Link
             to="/organizer/events"

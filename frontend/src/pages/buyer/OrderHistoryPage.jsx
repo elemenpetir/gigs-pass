@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Ticket } from "lucide-react";
+import { ArrowRight, Ticket } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { BackLink } from "@/components";
 import { formatEventDate, formatIDR } from "@/lib/format";
 
 const STATUS_STYLES = {
@@ -70,7 +71,7 @@ export default function OrderHistoryPage() {
   return (
     <section className="py-16">
       <nav className="mb-10 font-bold uppercase text-sm">
-        <Link to="/" className="hover:text-gigs-pink transition-colors">← DISCOVER</Link>
+        <BackLink to="/">DISCOVER</BackLink>
       </nav>
 
       <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-2 flex items-center gap-4">
@@ -87,7 +88,7 @@ export default function OrderHistoryPage() {
           <Ticket size={48} strokeWidth={3} className="mx-auto mb-4 text-gigs-pink" />
           <h2 className="text-3xl font-black uppercase tracking-tighter mb-2">no tickets yet</h2>
           <p className="font-bold">Your story starts here. Go find your next gig. <span className="text-gigs-pink">✸</span></p>
-          <Link to="/" className="mt-8 inline-block bg-gigs-pink text-foreground px-6 py-3 font-black uppercase brut-border-2 brut-button">EXPLORE EVENTS →</Link>
+          <Link to="/" className="mt-8 inline-flex items-center justify-center gap-2 bg-gigs-pink text-foreground px-6 py-3 font-black uppercase brut-border-2 brut-button">EXPLORE EVENTS <ArrowRight size={18} strokeWidth={3} /></Link>
         </div>
       ) : (
         <div className="flex flex-col">
