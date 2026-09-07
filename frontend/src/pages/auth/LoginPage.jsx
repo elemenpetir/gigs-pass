@@ -59,8 +59,8 @@ export default function LoginPage() {
   };
 
   const demoAccounts = [
-    { role: "Buyer", email: "demo.buyer@gigspass.com" },
-    { role: "Organizer", email: "demo.organizer@gigspass.com" },
+    { role: "Buyer", email: "test@example.com" },
+    { role: "Organizer", email: "organizer@example.com" },
     { role: "Admin", email: "demo.admin@gigspass.com" },
   ];
 
