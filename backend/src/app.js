@@ -36,6 +36,6 @@ app.use("/api/queue", queueRoutes);
 app.use("/api/checkout", checkoutRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/analytics", analyticsRoutes);
+app.use("/api/reports", analyticsRoutes);
 
 module.exports = app;

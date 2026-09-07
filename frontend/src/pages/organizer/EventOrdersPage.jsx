@@ -66,7 +66,7 @@ export default function EventOrdersPage() {
     const [eventData, ordersData, analyticsData] = await Promise.all([
       api.get(`/events/${id}`),
       api.get(`/events/${id}/orders`),
-      api.get(`/analytics/event/${id}/overview`),
+      api.get(`/reports/event/${id}/overview`),
     ]);
     return {
       event: eventData.event,

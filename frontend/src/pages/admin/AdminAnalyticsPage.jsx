@@ -34,7 +34,7 @@ export default function AdminAnalyticsPage() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    return api.get("/analytics/platform/overview");
+    return api.get("/reports/platform/overview");
   }, []);
 
   useEffect(() => {

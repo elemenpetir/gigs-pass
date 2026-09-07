@@ -123,3 +123,8 @@ Aturan file ini:
 - Konteks: Kuota Upstash pulih tiap reset bulanan, sehingga satu provider tidak perlu ditinggal permanen.
 - Keputusan: Upstash dan Redis Cloud dipakai bergantian sebagai prod aktif; URL nonaktif disimpan sebagai baris komentar di `.env` yang sama (tepat satu `REDIS_URL` aktif); switch manual via SSH mengikuti `docs/deployment.md` §5a. Dev/test/stress tetap Redis lokal.
 - Konsekuensi: Tiap switch mereset antrian/lock (user rejoin, stock self-heal); beban pantau kuota 2 dashboard; nol perubahan kode (ioredis URL-based).
+
+### #22 Rename /api/analytics → /api/reports (ad-blocker, 2026-09)
+- Konteks: Halaman Event Orders organizer gagal total ("Failed to fetch") di browser dengan ad-blocker: `GET /api/analytics/.../overview → net::ERR_BLOCKED_BY_CLIENT`. Filter EasyPrivacy memblokir substring `/analytics/` di URL mana pun, termasuk first-party milik sendiri (praktik industri: PostHog melarang path `/analytics|tracking|telemetry`, Plausible memakai `/api/event`).
+- Keputusan: Mount backend pindah ke `/api/reports` (+ 2 call site frontend); nama modul internal (`analyticsService`/`analyticsModel`/routes) tidak diubah; route frontend `/admin/analytics` tidak diubah (client-side only, tanpa HTTP request).
+- Konsekuensi: Tidak ada perubahan SQL/logika; unit test mock-based tetap hijau tanpa edit; `stats`/`insights` ditolak sebagai pengganti (masuk daftar hitam sebagian vendor).

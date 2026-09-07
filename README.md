@@ -275,8 +275,8 @@ Base URL: `/api`. All responses use a `{status, message, data}` envelope. Protec
 | GET    | `/admin/events`                 | Admin             | all events                                 |
 | GET    | `/admin/orders`                 | Admin             | all orders                                 |
 | POST   | `/admin/orders/:id/override`    | Admin             | `held` or `refunded` during holding period |
-| GET    | `/analytics/event/:id/overview` | Organizer (owner) | revenue, sales per tier, fund status       |
-| GET    | `/analytics/platform/overview`  | Admin             | cross-event summary                        |
+| GET    | `/reports/event/:id/overview`   | Organizer (owner) | revenue, sales per tier, fund status       |
+| GET    | `/reports/platform/overview`    | Admin             | cross-event summary                        |
 
 ---
 

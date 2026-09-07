@@ -356,8 +356,8 @@ GET  /api/admin/ledger/transactions
 ### 8.7 Analytics
 
 ```txt
-GET /api/analytics/event/:id/overview
-GET /api/analytics/platform/overview   (admin)
+GET /api/reports/event/:id/overview
+GET /api/reports/platform/overview   (admin)
 ```
 
 ---
