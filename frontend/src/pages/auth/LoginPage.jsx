@@ -42,6 +42,28 @@ export default function LoginPage() {
 
   const inputClass = "w-full border-2 border-foreground bg-canvas px-4 py-3 font-bold text-body-md focus:shadow-brut focus:outline-none";
 
+  const demoLogin = async (demoEmail) => {
+    setMode("login");
+    setError("");
+    setEmail(demoEmail);
+    setPassword("demo1234");
+    setSubmitting(true);
+    try {
+      await login(demoEmail, "demo1234");
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const demoAccounts = [
+    { role: "Buyer", email: "demo.buyer@gigspass.com" },
+    { role: "Organizer", email: "demo.organizer@gigspass.com" },
+    { role: "Admin", email: "demo.admin@gigspass.com" },
+  ];
+
   return (
     <section className="py-16 md:py-24 flex justify-center">
       <div className="w-full max-w-md">
@@ -108,6 +130,25 @@ export default function LoginPage() {
             {submitting ? "..." : mode === "login" ? <>EXPLORE EVENTS <ArrowRight size={20} strokeWidth={3} /></> : <>SIGN UP <ArrowRight size={20} strokeWidth={3} /></>}
           </button>
         </form>
+
+        {mode === "login" && (
+          <div className="mt-10 border-t-4 border-foreground pt-6">
+            <p className="font-black uppercase text-sm mb-3">No account? Try a demo:</p>
+            <div className="grid grid-cols-3 gap-2">
+              {demoAccounts.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => demoLogin(acc.email)}
+                  className="border-2 border-foreground bg-canvas font-black uppercase text-sm px-2 py-3 brut-button hover:bg-gigs-yellow disabled:opacity-50"
+                >
+                  {acc.role}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
