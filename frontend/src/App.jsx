@@ -33,8 +33,8 @@ function App() {
             <Route path="/events/:id" element={<EventDetailPage />} />
             <Route path="/events/:eventId/join/:categoryId" element={<WaitingRoomPage />} />
             <Route path="/events/:eventId/checkout/:categoryId" element={<CheckoutPage />} />
-            <Route path="/orders" element={<OrderHistoryPage />} />
-            <Route path="/orders/:id" element={<OrderDetailPage />} />
+            <Route path="/orders" element={<RequireRole role="buyer"><OrderHistoryPage /></RequireRole>} />
+            <Route path="/orders/:id" element={<RequireRole role="buyer"><OrderDetailPage /></RequireRole>} />
             <Route path="/login" element={<LoginPage />} />
           </Route>
 
