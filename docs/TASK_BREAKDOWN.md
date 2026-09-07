@@ -6,7 +6,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ## Status Terkini (Active Context)
 - **Terakhir Dikerjakan:** E2E Playwright 10 hijau (smoke, auth, buyer full flow, organizer, admin hold/refund; workflow manual) + 2 bug nyata temuan E2E (konflik tipe PG `overrideStatus` + refund reason hilang di dashboard, keduanya fix + regression test) + trek guard tanggal 3 unit (tolak join 410, state `EVENT ENDED`, hide suspend/cancel event lampau) + tombol Cancel organizer + legenda donat + README screenshots live (3 PNG) + migrasi `docs/DECISIONS.md` (19 entri) + ramping `AGENTS.md` + **sesi Sep 2026: strategi rotasi Redis Upstash / Redis Cloud (insiden kuota, DECISIONS #20-#21) + guardrail docs (§5a, multi-URL, quota caveat) + komponen `BackLink` + unifikasi ikon panah ke lucide + fix breadcrumb + hapus future-work re-init (self-heal terbukti)**. Repo bersih, produksi live.
-- **Task Selanjutnya:** tidak ada task wajib tersisa (Fase 0-16 complete, monitoring 429 ditutup, screenshots live). Sisa backlog opsional bila waktu ada (Xendit, WebSocket, Leave Queue, dsb.) + 1 unit guardrail tertunda: `stress-test.yml` jadikan `TARGET_URL` input manual (anti-tembak prod).
+- **Sesi lanjutan (demo recruiter + 2 bug live):** tombol demo login di `LoginPage` (Buyer=`test@example.com`, Organizer=`organizer@example.com`, Admin=`demo.admin@gigspass.com`, password `demo1234`; migration `1722800008000`+`1722800009000`, akun demo kosong dihapus) + rename `/api/analytics` → `/api/reports` (ad-blocker `ERR_BLOCKED_BY_CLIENT`, DECISIONS #22) + `RequireRole` buyer untuk `/orders` & `/orders/:id` (`from` basi saat ganti akun memantul ke `/`, DECISIONS #23).
+- **Task Selanjutnya:** tidak ada task wajib tersisa (Fase 0-16 complete, monitoring 429 ditutup, screenshots live). Sisa backlog opsional bila waktu ada (Xendit, WebSocket, Leave Queue, dsb.) + 1 unit guardrail tertunda: `stress-test.yml` jadikan `TARGET_URL` input manual (anti-tembak prod). Verifikasi live tertunda (manual, user): halaman Event Orders organizer dengan ad-blocker ON + landing ganti akun buyer→organizer.
 - **Refactor frontend terbaru (sesi ini, setelah Fase 9/11):**
   - `style: scale down hero section components and fix linebreaks` + `style: relocate all access tape to coming up section` — penyesuaian proporsi font & card Hero section pada `Home.jsx` dan penyelarasan spesifikasi di `docs/design/design.md`.
   - `refactor: reorganize pages into role-based folders` — `frontend/src/pages/` kini dipisah per role: `auth/`, `public/`, `buyer/`, `organizer/`, `admin/`; `PlaceholderPage.jsx` (dead code) dihapus.
@@ -146,8 +147,8 @@ Checklist ini pelengkap PRD.md dan migration files — bukan pengganti, baca det
 
 ### Fase 9 — Dashboard Statistik
 
-- [x] Endpoint `GET /api/analytics/event/:id/overview` (organizer) — revenue, tiket terjual per kategori, status dana
-- [x] Endpoint `GET /api/analytics/platform/overview` (admin) — ringkasan lintas event
+- [x] Endpoint `GET /api/reports/event/:id/overview` (organizer) — revenue, tiket terjual per kategori, status dana (rename dari `/api/analytics`, DECISIONS #22)
+- [x] Endpoint `GET /api/reports/platform/overview` (admin) — ringkasan lintas event (rename dari `/api/analytics`, DECISIONS #22)
 - [x] Frontend: halaman dashboard organizer (chart sederhana, Recharts)
 - [x] Frontend: halaman dashboard admin
 

@@ -128,3 +128,8 @@ Aturan file ini:
 - Konteks: Halaman Event Orders organizer gagal total ("Failed to fetch") di browser dengan ad-blocker: `GET /api/analytics/.../overview → net::ERR_BLOCKED_BY_CLIENT`. Filter EasyPrivacy memblokir substring `/analytics/` di URL mana pun, termasuk first-party milik sendiri (praktik industri: PostHog melarang path `/analytics|tracking|telemetry`, Plausible memakai `/api/event`).
 - Keputusan: Mount backend pindah ke `/api/reports` (+ 2 call site frontend); nama modul internal (`analyticsService`/`analyticsModel`/routes) tidak diubah; route frontend `/admin/analytics` tidak diubah (client-side only, tanpa HTTP request).
 - Konsekuensi: Tidak ada perubahan SQL/logika; unit test mock-based tetap hijau tanpa edit; `stats`/`insights` ditolak sebagai pengganti (masuk daftar hitam sebagian vendor).
+
+### #23 RequireRole untuk halaman order buyer (stale from saat ganti akun, 2026-09)
+- Konteks: Ganti akun buyer → organizer mempertahankan `location.state.from=/orders`; `LoginPage` me-restore-nya buta-role sehingga organizer nyangkut di halaman buyer dengan 403. Akar masalah: `/orders` & `/orders/:id` satu-satunya halaman per-role tanpa guard (organizer/admin sudah dibungkus).
+- Keputusan: Bungkus kedua route dengan `RequireRole role="buyer"` (`App.jsx`, ±4 baris); mismatch memantul ke `/` (perilaku guard yang sudah ada, tanpa helper/landing map baru). Backend sudah buyer-only, jadi tidak ada kapabilitas yang dicabut; organizer tetap tidak bisa beli (lihat rute checkout/orders).
+- Konsekuensi: Semua jalur masuk salah-role (stale from, bookmark, back-button, URL manual) berakhir di `/`; alur guard E2E buyer tidak berubah.

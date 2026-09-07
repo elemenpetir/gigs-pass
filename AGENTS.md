@@ -55,6 +55,8 @@ Contekan invarian (tidak boleh dilanggar, detail di dua file di atas):
 - Role hardcoded: `buyer`, `organizer`, `admin`. Bukan dynamic RBAC.
 - Response envelope success/error untuk semua endpoint. Tanpa password/hash di respons.
 - Tambah/ubah kategori event = backend `constants.js` + frontend `lib/categories.js` + migration CHECK (lihat DECISIONS #11).
+- Path endpoint API hindari substring yang di-flag ad-blocker (`analytics`, `track`, `collect`, `pixel`, `metrics`, ...) — dashboard memakai `/api/reports` (lihat DECISIONS #22).
+- Halaman per-role wajib dibungkus `RequireRole` (buyer termasuk) agar salah-role memantul ke `/`, bukan 403 (lihat DECISIONS #23).
 
 ## API Response Convention (envelope format)
 
