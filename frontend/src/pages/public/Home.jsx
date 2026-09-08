@@ -255,7 +255,7 @@ export default function Home() {
       <section id="whats-hot" className="py-16 md:py-24 border-t-4 border-foreground mt-8 relative z-10">
         <Tape 
           items={["/// SOLD OUT", "/// TOO LATE"]} 
-          className="-top-12 md:top-3 -left-12 md:-left-16 w-96 md:w-md -rotate-25 z-0" 
+          className="-top-11 md:top-3 -left-12 md:-left-16 w-72 md:w-md -rotate-25 z-0" 
         />
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
