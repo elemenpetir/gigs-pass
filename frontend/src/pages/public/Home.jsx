@@ -18,7 +18,7 @@ function Marquee({ items, className = "" }) {
 
 function Tape({ items, className = "" }) {
   return (
-    <div className={`absolute bg-gigs-yellow text-foreground font-black text-lg md:text-xl uppercase tracking-tighter py-1 border-y-4 border-foreground z-30 pointer-events-none select-none flex overflow-hidden ${className}`}>
+    <div className={`absolute bg-gigs-yellow text-foreground font-black text-lg md:text-xl uppercase tracking-tighter py-1 border-y-4 border-foreground pointer-events-none select-none flex overflow-hidden ${className}`}>
       <Marquee items={items} />
     </div>
   );
@@ -45,7 +45,7 @@ function EventImage({ event, ratioClass = "aspect-4/3", grayscale = true }) {
 function Hero({ heroEvent }) {
   return (
     <section className="relative py-8 md:py-12 flex flex-col md:flex-row gap-8 md:gap-4 items-center justify-between">
-      <Tape items={["/// WARNING", "/// SELLING FAST"]} className="-right-16 rotate-30 md:-right-24 top-4 md:top-12 w-72 md:w-96" />
+      <Tape items={["/// WARNING", "/// SELLING FAST"]} className="-right-16 rotate-30 md:-right-24 top-4 md:top-12 w-72 md:w-96 z-30" />
 
       <div className="w-full md:w-3/5 z-10 relative">
         <div className="absolute -top-2.5 -left-5 text-xs font-bold bg-gigs-teal px-2 py-0.5 brut-border-2 -rotate-20 z-20">NO. 01</div>
