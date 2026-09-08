@@ -11,8 +11,8 @@ const TopNav = forwardRef(
       ref={ref}
       {...props}
     >
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between p-4 md:px-8">
-        <div className="flex items-center gap-8 md:gap-12 mb-4 md:mb-0">
+      <div className="max-w-7xl mx-auto flex flex-row items-center justify-between p-4 md:px-8">
+        <div className="flex items-center gap-8 md:gap-12">
           {logo ? (
             <div className="text-3xl md:text-5xl font-black tracking-tighter leading-none">
               {logo}
