@@ -314,7 +314,7 @@ export default function Home() {
         />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-12 flex items-center gap-4">
+          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-12 flex items-center gap-4 drop-shadow-[4px_4px_0_#0a0a0a]">
             COMING UP <ArrowRight size={48} className="text-gigs-pink" strokeWidth={4} />
           </h2>
 
