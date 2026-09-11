@@ -34,7 +34,7 @@ lihat `deploy/nginx/gigspass.conf`) + `express-rate-limit` (presisi perilaku).
 | Type | Port | Source | Catatan |
 |---|---|---|---|
 | HTTP | 80 | 0.0.0.0/0 | pintu publik |
-| HTTPS | 443 | 0.0.0.0/0 | untuk TLS kelak |
+| HTTPS | 443 | 0.0.0.0/0 | TLS aktif (Let's Encrypt, gigspass.xyz) |
 | SSH | 22 | IP kamu saja | JANGAN 0.0.0.0/0 |
 
 Opsional (tercatat di TASK_BREAKDOWN): domain di belakang Cloudflare free tier →

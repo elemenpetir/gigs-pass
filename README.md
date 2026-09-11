@@ -47,6 +47,7 @@ Solo-built end to end: backend API and business logic, frontend buyer/organizer/
 
 - **App:** https://gigspass.xyz (demo instance on AWS free tier)
 - Registration is open. Create a buyer account and try the queue flow: pick an event, join the queue, watch your position update live, check out when admitted.
+- Recruiters in a hurry: use the demo buttons on the login page (Buyer, Organizer, Admin with preloaded data, no registration needed).
 - Prefer running locally? See [Development Setup](#development-setup).
 
 ---
@@ -193,7 +194,7 @@ After 50k+ load-test requests against production data, read-only integrity queri
 
 ## Test Coverage
 
-- **271 unit tests**, all passing (services, models, middlewares, jobs, queue/lock/ledger logic with mocked DB)
+- **275 unit tests**, all passing (services, models, middlewares, jobs, queue/lock/ledger logic with mocked DB)
 - **Integration suite** against real PostgreSQL and Redis (migrations auto-applied to a separate test database)
 - **k6 load tests** as above, with results committed to this file
 - **Playwright E2E (10 tests, manual workflow)** against live backend + real PostgreSQL/Redis (auth, buyer queue-checkout, organizer, admin override); trigger via Actions tab, E2E workflow, Run workflow
@@ -328,7 +329,7 @@ k6 run --env TARGET_URL=http://localhost --env CATEGORY_ID=<category_id> tests/l
 
 ## Deployment
 
-- AWS EC2 free tier (`t3.micro`, 1 vCPU, 1 GB), Nginx host reverse proxy (port 80)
+- AWS EC2 free tier (`t3.micro`, 1 vCPU, 1 GB), Nginx host reverse proxy (ports 80/443, Let's Encrypt TLS)
 - Docker Compose: backend (5000), frontend (3000); Redis/Postgres external
 - CI builds GHCR images on green pipelines; CD deploys to EC2 via SSM with health check
 - Security Groups: 22 (SSH), 80/443 only. No app ports exposed.

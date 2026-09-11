@@ -119,7 +119,7 @@ See home page for 4 expression variants; all share the system tokens:
 - Rows: `grid grid-cols-12`, thick `border-b-2 border-background/20`, hover `bg-background/10`; date `text-xl font-bold` (accent on hot rows), title `text-3xl font-black uppercase` (hover accent), action "TICKETS" button `brut-border-2` hidden → visible on group-hover.
 
 ### 7.7 Corner Tapes
-- Absolute-positioned rotated strips (`rotate-30`, `-rotate-25`, `rotate-40`, etc.), `bg-gigs-yellow border-y-4 border-foreground font-black uppercase`, containing `animate-marquee` text ("/// SOLD OUT", "/// SELLING FAST", "/// ALL ACCESS", etc.). `pointer-events-none select-none`, z-index above content, partially off-screen for a taped-on look.
+- Absolute-positioned rotated strips (`rotate-30`, `-rotate-25`, `rotate-40`, etc.), `bg-gigs-yellow border-y-4 border-foreground font-black uppercase`, containing `animate-marquee` text ("/// SOLD OUT", "/// SELLING FAST", "/// ALL ACCESS", etc.). `pointer-events-none select-none`, layered behind headline text (text always stays legible over decoration), partially off-screen for a taped-on look.
 
 ### 7.8 Footer
 - Loud block: `bg-gigs-pink border-t-4 border-foreground`, uppercase black text throughout. Four columns: brand (oversized GIGS PASS.), Explore / Support links (`hover:underline`), "For Organizers" CTA (`bg-background brut-border-4 brut-shadow`, hover `bg-gigs-yellow`). Bottom bar `border-t-4 border-foreground` with copyright + Terms/Privacy.
