@@ -45,7 +45,7 @@ Solo-built end to end: backend API and business logic, frontend buyer/organizer/
 
 ## Live Demo
 
-- **App:** http://13-214-56-223.nip.io (demo instance on AWS free tier)
+- **App:** https://gigspass.xyz (demo instance on AWS free tier)
 - Registration is open. Create a buyer account and try the queue flow: pick an event, join the queue, watch your position update live, check out when admitted.
 - Prefer running locally? See [Development Setup](#development-setup).
 

@@ -9,7 +9,7 @@ Tujuan: memverifikasi flow queue → admission → checkout → payment dan desi
 
 ## Prasyarat / Data Test
 
-- Environment: live `http://13.214.56.223` (rekomendasi, fix sudah ter-deploy) atau lokal (backend + frontend dev, Supabase/Neon, Redis lokal).
+- Environment: live `https://gigspass.xyz` (rekomendasi, fix sudah ter-deploy) atau lokal (backend + frontend dev, Supabase/Neon, Redis lokal).
 - Akun **organizer** untuk membuat/mempublikasi event.
 - Event test "Queue Flow Test" dengan minimal 2 tier:
   - **VIP — quota 2**

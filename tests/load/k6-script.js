@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
-const BASE_URL = __ENV.TARGET_URL || 'http://13.214.56.223';
+const BASE_URL = __ENV.TARGET_URL || 'https://gigspass.xyz';
 const CATEGORY_ID = __ENV.CATEGORY_ID || 'b66b6216-6c9b-44b5-a5f2-27a9040a688f';
 
 // ============================================

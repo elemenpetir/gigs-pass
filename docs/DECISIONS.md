@@ -133,3 +133,8 @@ Aturan file ini:
 - Konteks: Ganti akun buyer → organizer mempertahankan `location.state.from=/orders`; `LoginPage` me-restore-nya buta-role sehingga organizer nyangkut di halaman buyer dengan 403. Akar masalah: `/orders` & `/orders/:id` satu-satunya halaman per-role tanpa guard (organizer/admin sudah dibungkus).
 - Keputusan: Bungkus kedua route dengan `RequireRole role="buyer"` (`App.jsx`, ±4 baris); mismatch memantul ke `/` (perilaku guard yang sudah ada, tanpa helper/landing map baru). Backend sudah buyer-only, jadi tidak ada kapabilitas yang dicabut; organizer tetap tidak bisa beli (lihat rute checkout/orders).
 - Konsekuensi: Semua jalur masuk salah-role (stale from, bookmark, back-button, URL manual) berakhir di `/`; alur guard E2E buyer tidak berubah.
+
+### #24 Custom domain + HTTPS gratis (Rumahweb .xyz + Let's Encrypt, 2026-09)
+- Konteks: Demo live di IP mentah + HTTP ("Not secure") kurang layak untuk recruiter; is-a.dev menolak (konten produk end-user, bukan portofolio/dev-tool).
+- Keputusan: `gigspass.xyz` (promo Rumahweb .xyz gratis tahun-1) → A record ke Elastic IP (wajib sebelum DNS) → certbot `--nginx` (auto-install gagal karena `server_name _`, diperbaiki jadi nama eksplisit + `certbot install`) → 443 + redirect 80→443. Frontend tanpa rebuild (base URL relatif `/api`); default k6/stress-test pindah ke `https://gigspass.xyz`.
+- Konsekuensi: Nol perubahan kode aplikasi; renewal tahun-2 bayar (putuskan nanti); pelajaran diagnostik DNS: bedakan panel vs authoritative (query langsung NS) vs resolver publik (DoH) — replikasi antar NS bisa tidak sinkron berjam-jam.
